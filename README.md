@@ -2,7 +2,7 @@
 
 **A Progressive Web App for University Students**
 
-Timeout is a PWA designed to help university students balance academic deadlines, travel, social life, and personal well-being — all in one place.
+Timeout is a PWA designed to help university students balance academic deadlines, travel, social life, and personal well-being, all in one place.
 
 ---
 
@@ -102,48 +102,6 @@ Timeout is a PWA designed to help university students balance academic deadlines
 
 ---
 
-## Project Structure
-
-```
-Timeout/
-├── manage.py                 # Django CLI entry point
-├── requirements.txt          # Python dependencies
-├── .gitignore
-│
-├── timeout_pwa/              # Project configuration
-│   ├── settings.py           # Django settings
-│   ├── urls.py               # Root URL configuration
-│   ├── wsgi.py               # WSGI deployment
-│   └── asgi.py               # ASGI deployment
-│
-├── timeout/                  # Main application (single-app architecture)
-│   ├── models.py             # Database models (Custom User)
-│   ├── views.py              # View logic
-│   ├── urls.py               # App URL routing
-│   ├── admin.py              # Admin configuration
-│   ├── migrations/           # Database migrations
-│   └── templates/timeout/    # App-specific templates
-│       ├── landing.html
-│       ├── login.html
-│       ├── signup.html
-│       ├── dashboard.html
-│       ├── profile.html
-│       ├── calendar.html
-│       ├── notes.html
-│       ├── statistics.html
-│       └── social.html
-│
-├── templates/                # Global templates
-│   └── base.html             # Base template with Bootstrap 5
-│
-└── static/                   # Static assets
-    ├── css/custom.css
-    ├── js/main.js
-    └── img/
-```
-
----
-
 ## Deployment
 
 This project is configured for deployment on **PythonAnywhere**.
@@ -169,12 +127,6 @@ This project is configured for deployment on **PythonAnywhere**.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## License
-
-This project is licensed under the MIT License.
 
 ---
 
