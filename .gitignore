@@ -1,36 +1,147 @@
-# Django
-db.sqlite3
-*.pyc
-__pycache__/
+# ===================
+# Python / Django
+# ===================
 *.py[cod]
 *$py.class
+*.pot
+__pycache__/
 
-# Media and Static files (collected)
-media/
+# Django database
+db.sqlite3
+db.sqlite3-journal
+
+# Django migrations (optional - uncomment if you don't want to track)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# ===================
+# Static Files (Collected)
+# ===================
 staticfiles/
+static_root/
 
-# Environment
-.env
+# ===================
+# Media Files (User Uploads)
+# ===================
+media/
+
+# ===================
+# Distribution / Build
+# ===================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ===================
+# Virtual Environments
+# ===================
 .venv/
 venv/
-ENV/
 env/
+ENV/
+.env/
+virtualenv/
 
-# IDE
+# ===================
+# Environment Variables
+# ===================
+.env
+*.env
+.envrc
+local_settings.py
+
+# ===================
+# Testing
+# ===================
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+pytest_cache/
+
+# ===================
+# IDE / Editors
+# ===================
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
 
-# OS
+# ===================
+# OS Generated
+# ===================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
+# ===================
 # Logs
+# ===================
 *.log
+logs/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Local settings
-local_settings.py
+# ===================
+# PWA / Frontend
+# ===================
+.sass-cache/
+*.css.map
+*.js.map
+node_modules/
 
-.env
+# ===================
+# Jupyter Notebook
+# ===================
+.ipynb_checkpoints/
+
+# ===================
+# mypy / Type Checking
+# ===================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ===================
+# Celery
+# ===================
+celerybeat-schedule
+celerybeat.pid
+
+# ===================
+# Secrets (Never commit!)
+# ===================
+*.pem
+*.key
+secrets.json
+credentials.json
