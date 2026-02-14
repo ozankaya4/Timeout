@@ -1,0 +1,46 @@
+from django.contrib.admin.sites import AdminSite
+from django.test import TestCase, RequestFactory
+from django.contrib.auth import get_user_model
+
+from timeout.admin import UserAdmin
+
+User = get_user_model()
+
+
+class UserAdminTests(TestCase):
+    """Tests for the custom UserAdmin configuration."""
+
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = UserAdmin(User, self.site)
+        self.superuser = User.objects.create_superuser(
+            username='admin', email='admin@test.com', password='Admin@1234'
+        )
+
+    def test_list_display(self):
+        self.assertIn('university', self.admin.list_display)
+        self.assertIn('year_of_study', self.admin.list_display)
+
+    def test_list_filter_includes_custom_fields(self):
+        filters = self.admin.list_filter
+        self.assertIn('university', filters)
+        self.assertIn('management_style', filters)
+        self.assertIn('privacy_private', filters)
+
+    def test_search_fields_includes_university(self):
+        self.assertIn('university', self.admin.search_fields)
+
+    def test_custom_fieldsets_present(self):
+        fieldset_names = [fs[0] for fs in self.admin.fieldsets]
+        self.assertIn('Profile', fieldset_names)
+        self.assertIn('Preferences', fieldset_names)
+        self.assertIn('Social', fieldset_names)
+
+    def test_add_fieldsets_present(self):
+        fieldset_names = [fs[0] for fs in self.admin.add_fieldsets]
+        self.assertIn('Profile', fieldset_names)
+
+    def test_admin_changelist_loads(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get('/admin/timeout/user/')
+        self.assertEqual(response.status_code, 200)
