@@ -1,4 +1,8 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.contrib.auth import login, authenticate, logout
+from django.shortcuts import render, redirect
+
+from .forms import SignupForm, LoginForm
 
 
 def landing(request):
@@ -6,14 +10,48 @@ def landing(request):
     return render(request, 'timeout/landing.html')
 
 
+def signup_view(request):
+    """Handle user registration."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Account created successfully!')
+            return redirect('dashboard')
+    else:
+        form = SignupForm()
+
+    return render(request, 'timeout/signup.html', {'form': form})
+
+
 def login_view(request):
-    """Login page view."""
-    return render(request, 'timeout/login.html')
+    """Handle user login."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f'Welcome back, {user.username}!')
+            next_url = request.GET.get('next', 'dashboard')
+            return redirect(next_url)
+    else:
+        form = LoginForm()
+
+    return render(request, 'timeout/login.html', {'form': form})
 
 
-def signup(request):
-    """Signup page view."""
-    return render(request, 'timeout/signup.html')
+def logout_view(request):
+    """Handle user logout."""
+    logout(request)
+    messages.info(request, 'You have been logged out.')
+    return redirect('landing')
 
 
 def dashboard(request):
