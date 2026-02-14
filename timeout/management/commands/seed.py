@@ -22,16 +22,20 @@ SUPERUSER_EMAIL = 'john.doe@email.com'
 DEFAULT_PASSWORD = 'Student@123'
 
 UNIVERSITIES = [
-    'Galatasaray University',
-    'Bogazici University',
-    'Istanbul Technical University',
-    'METU',
-    'Koc University',
-    'Sabanci University',
-    'Bilkent University',
-    'Ankara University',
-    'Hacettepe University',
-    'Ege University',
+    'Kings College London',
+    'Imperial College London',
+    'University College London',
+    'Oxford University',
+    'Cambridge University',
+    'University of Manchester',
+    'University of Edinburgh',
+    'University of Warwick',
+    'University of Glasgow',
+    'London School of Economics',
+    'London Business School',
+    'University of Bath',
+    'Newcastle University',
+    'Durham University',
 ]
 
 INTERESTS = [

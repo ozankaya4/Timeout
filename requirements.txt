@@ -2,3 +2,4 @@ django
 pillow
 faker
 argon2-cffi
+coverage
