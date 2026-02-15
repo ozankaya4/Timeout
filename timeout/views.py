@@ -1,8 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
-from .forms import SignupForm, LoginForm
+from .forms import SignupForm, LoginForm, CompleteProfileForm
 
 
 def landing(request):
@@ -19,7 +20,7 @@ def signup_view(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, 'Account created successfully!')
             return redirect('dashboard')
     else:
@@ -52,6 +53,21 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('landing')
+
+
+@login_required
+def complete_profile(request):
+    """Let social-auth users fill in missing profile fields."""
+    if request.method == 'POST':
+        form = CompleteProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile completed successfully!')
+            return redirect('dashboard')
+    else:
+        form = CompleteProfileForm(instance=request.user)
+
+    return render(request, 'timeout/complete_profile.html', {'form': form})
 
 
 def dashboard(request):

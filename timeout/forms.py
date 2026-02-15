@@ -113,6 +113,38 @@ class SignupForm(forms.ModelForm):
         return user
 
 
+class CompleteProfileForm(forms.ModelForm):
+    """Form for social-auth users to fill in missing profile fields."""
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'university', 'year_of_study']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Choose a username',
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'First name',
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Last name',
+            }),
+            'university': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your university',
+            }),
+            'year_of_study': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Year of study',
+                'min': 1,
+                'max': 7,
+            }),
+        }
+
+
 class LoginForm(AuthenticationForm):
     """Login form styled with Bootstrap classes."""
 

@@ -3,3 +3,4 @@ pillow
 faker
 argon2-cffi
 coverage
+django-allauth
