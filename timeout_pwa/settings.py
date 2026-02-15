@@ -35,6 +35,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    # Third-party apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.discord',
+    'allauth.socialaccount.providers.linkedin_oauth2',
     # Local apps
     'timeout',
 ]
@@ -47,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'timeout_pwa.urls'
@@ -83,6 +93,17 @@ DATABASES = {
 
 # Custom User Model
 AUTH_USER_MODEL = 'timeout.User'
+
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
+# Sites framework (required by allauth)
+SITE_ID = 1
 
 
 # Password hashing — Argon2 is the primary hasher
@@ -155,3 +176,55 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'landing'
+
+
+# =============================================================================
+# django-allauth configuration
+# =============================================================================
+
+# Account settings
+ACCOUNT_LOGIN_METHODS = {'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_SIGNUP_REDIRECT_URL = '/complete-profile/'
+
+# Social account settings
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_ADAPTER = 'timeout.adapters.TimeoutSocialAccountAdapter'
+
+# Provider-specific configuration
+# Add your OAuth keys via Django admin > Social Applications
+# or set them here for development:
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': '',
+            'secret': '',
+        },
+    },
+    'github': {
+        'SCOPE': ['user:email'],
+        'APP': {
+            'client_id': '',
+            'secret': '',
+        },
+    },
+    'discord': {
+        'SCOPE': ['identify', 'email'],
+        'APP': {
+            'client_id': '',
+            'secret': '',
+        },
+    },
+    'linkedin_oauth2': {
+        'SCOPE': ['openid', 'profile', 'email'],
+        'APP': {
+            'client_id': '',
+            'secret': '',
+        },
+    },
+}

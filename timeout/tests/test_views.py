@@ -166,3 +166,45 @@ class LogoutViewTests(TestCase):
     def test_logout_ends_session(self):
         self.client.get(reverse('logout'))
         self.assertNotIn('_auth_user_id', self.client.session)
+
+
+class CompleteProfileViewTests(TestCase):
+    """Tests for the complete_profile view."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='social_user', password='TestPass1!'
+        )
+        self.client.login(username='social_user', password='TestPass1!')
+
+    def test_complete_profile_get(self):
+        response = self.client.get(reverse('complete_profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'timeout/complete_profile.html')
+        self.assertIn('form', response.context)
+
+    def test_complete_profile_post_valid(self):
+        response = self.client.post(reverse('complete_profile'), {
+            'username': 'updated_user',
+            'first_name': 'Updated',
+            'last_name': 'User',
+            'university': 'Oxford University',
+            'year_of_study': 2,
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.university, 'Oxford University')
+        self.assertEqual(self.user.year_of_study, 2)
+
+    def test_complete_profile_post_invalid(self):
+        response = self.client.post(reverse('complete_profile'), {
+            'username': '',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'timeout/complete_profile.html')
+
+    def test_complete_profile_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('complete_profile'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
