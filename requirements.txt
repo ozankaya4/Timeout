@@ -4,3 +4,6 @@ faker
 argon2-cffi
 coverage
 django-allauth
+requests
+pyJWT
+cryptography
