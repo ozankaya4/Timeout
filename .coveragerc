@@ -1,0 +1,17 @@
+[run]
+source = timeout
+omit =
+    */migrations/*
+    */tests/*
+    manage.py
+    timeout_pwa/settings.py
+    timeout_pwa/wsgi.py
+    timeout_pwa/asgi.py
+
+[report]
+show_missing = True
+skip_empty = True
+fail_under = 90
+
+[html]
+directory = htmlcov

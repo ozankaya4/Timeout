@@ -1,0 +1,87 @@
+<div class="card mb-3">
+    <div class="card-body">
+        <!-- Post Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h6 class="mb-0">
+                    <a href="{% url 'user_profile' post.author.username %}" class="text-decoration-none">
+                        {{ post.author.username }}
+                    </a>
+                </h6>
+                <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                {% if post.privacy == 'followers_only' %}
+                    <span class="badge bg-secondary ms-2">Followers Only</span>
+                {% endif %}
+            </div>
+            {% if post.author == user or user.is_staff %}
+                <form method="post" action="{% url 'delete_post' post.id %}"
+                      onsubmit="return confirm('Delete this post?');" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- Post Content -->
+        <p class="card-text">{{ post.content }}</p>
+
+        <!-- Linked Event -->
+        {% if post.event %}
+            <div class="alert alert-info mb-3">
+                <strong>📅 Event:</strong> {{ post.event.title }}<br>
+                <small>{{ post.event.start_datetime|date:"F j, Y g:i A" }}</small>
+            </div>
+        {% endif %}
+
+        <!-- Post Actions -->
+        <div class="d-flex gap-3 border-top pt-3">
+            <button class="btn btn-sm btn-outline-primary like-btn"
+                    data-post-id="{{ post.id }}"
+                    data-liked="false">
+                <span class="like-icon">🤍</span>
+                <span class="like-count">{{ post.likes.count }}</span> Likes
+            </button>
+
+            <button class="btn btn-sm btn-outline-secondary"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#comments-{{ post.id }}">
+                💬 {{ post.comments.count }} Comments
+            </button>
+
+            <button class="btn btn-sm btn-outline-warning bookmark-btn"
+                    data-post-id="{{ post.id }}"
+                    data-bookmarked="false">
+                <span class="bookmark-icon">🏷️</span>
+                Bookmark
+            </button>
+        </div>
+
+        <!-- Comments Section (Collapsed) -->
+        <div class="collapse mt-3" id="comments-{{ post.id }}">
+            <div class="border-top pt-3">
+                <!-- Add Comment Form -->
+                <form method="post" action="{% url 'add_comment' post.id %}" class="mb-3">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <textarea name="content" class="form-control" rows="2"
+                                  placeholder="Write a comment..." required></textarea>
+                        <button type="submit" class="btn btn-primary">Comment</button>
+                    </div>
+                </form>
+
+                <!-- Comments List -->
+                {% for comment in post.comments.all %}
+                    <div class="mb-2 {% if comment.parent %}ms-4{% endif %}">
+                        <strong>
+                            <a href="{% url 'user_profile' comment.author.username %}">
+                                {{ comment.author.username }}
+                            </a>
+                        </strong>
+                        <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                        <p class="mb-0">{{ comment.content }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

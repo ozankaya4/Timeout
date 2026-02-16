@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block title %}Login - Timeout{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h2 class="card-title text-center mb-4">Log In</h2>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Password</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Log In</button>
+                </form>
+
+                <!-- Social Login Divider -->
+                <div class="d-flex align-items-center my-3">
+                    <hr class="flex-grow-1">
+                    <span class="px-3 text-muted small">or sign in with</span>
+                    <hr class="flex-grow-1">
+                </div>
+
+                <!-- Social Login Buttons -->
+                <div class="d-grid gap-2">
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger">
+                        Sign in with Google
+                    </a>
+                    <a href="{% provider_login_url 'github' %}" class="btn btn-outline-dark">
+                        Sign in with GitHub
+                    </a>
+                    <a href="{% provider_login_url 'discord' %}" class="btn btn-outline-primary">
+                        Sign in with Discord
+                    </a>
+                    <a href="{% provider_login_url 'linkedin_oauth2' %}" class="btn btn-outline-info">
+                        Sign in with LinkedIn
+                    </a>
+                </div>
+
+                <p class="text-center mt-3 mb-0">
+                    Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -10,9 +10,6 @@ __pycache__/
 db.sqlite3
 db.sqlite3-journal
 
-# Django migrations (optional - uncomment if you don't want to track)
-# */migrations/*.py
-# !*/migrations/__init__.py
 
 # ===================
 # Static Files (Collected)
@@ -139,7 +136,7 @@ celerybeat-schedule
 celerybeat.pid
 
 # ===================
-# Secrets (Never commit!)
+# Secrets
 # ===================
 *.pem
 *.key
