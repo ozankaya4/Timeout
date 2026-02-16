@@ -24,7 +24,7 @@ def signup_view(request):
     else:
         form = SignupForm()
 
-    return render(request, 'timeout/auth/signup.html', {'form': form})
+    return render(request, 'auth/signup.html', {'form': form})
 
 
 def login_view(request):
@@ -46,7 +46,7 @@ def login_view(request):
     else:
         form = LoginForm()
 
-    return render(request, 'timeout/auth/login.html', {'form': form})
+    return render(request, 'auth/login.html', {'form': form})
 
 
 def logout_view(request):
@@ -69,4 +69,4 @@ def complete_profile(request):
         form = CompleteProfileForm(instance=request.user)
 
     context = {'form': form}
-    return render(request, 'timeout/auth/complete_profile.html', context)
+    return render(request, 'auth/complete_profile.html', context)

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Social Feed - Timeout{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Create Post Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Create Post</h5>
+                    <form method="post" action="{% url 'create_post' %}">
+                        {% csrf_token %}
+                        {{ post_form.content }}
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                {{ post_form.event }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ post_form.privacy }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Post</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Feed Tabs -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'following' %}active{% endif %}"
+                       href="?tab=following">Following</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'discover' %}active{% endif %}"
+                       href="?tab=discover">Discover</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'bookmarks' %}">Bookmarks</a>
+                </li>
+            </ul>
+
+            <!-- Posts Feed -->
+            {% if posts %}
+                {% for post in posts %}
+                    {% include 'social/_post_card.html' with post=post %}
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    {% if active_tab == 'following' %}
+                        No posts yet. Follow some users to see their posts here!
+                    {% else %}
+                        No posts to discover yet.
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/social.js' %}"></script>
+{% endblock %}

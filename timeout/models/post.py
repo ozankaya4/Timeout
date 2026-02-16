@@ -15,13 +15,14 @@ class Post(models.Model):
         related_name='posts',
     )
     content = models.TextField(max_length=5000)
-    image = models.ImageField(
-        upload_to='post_images/',
-        blank=True,
+    event = models.ForeignKey(
+        'Event',
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name='posts',
+        help_text='Optional calendar event associated with this post'
     )
-    link_url = models.URLField(blank=True)
-    link_title = models.CharField(max_length=200, blank=True)
     privacy = models.CharField(
         max_length=20,
         choices=Privacy.choices,

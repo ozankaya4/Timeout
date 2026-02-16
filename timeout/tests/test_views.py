@@ -11,17 +11,17 @@ class PublicPageTests(TestCase):
     def test_landing_page(self):
         response = self.client.get(reverse('landing'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/pages/landing.html')
+        self.assertTemplateUsed(response, 'pages/landing.html')
 
     def test_login_page(self):
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/login.html')
+        self.assertTemplateUsed(response, 'auth/login.html')
 
     def test_signup_page(self):
         response = self.client.get(reverse('signup'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/signup.html')
+        self.assertTemplateUsed(response, 'auth/signup.html')
 
 
 class AuthenticatedPageTests(TestCase):
@@ -99,7 +99,7 @@ class SignupViewTests(TestCase):
             'password2': 'short',
         })
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/signup.html')
+        self.assertTemplateUsed(response, 'auth/signup.html')
         self.assertFalse(User.objects.filter(username='bad').exists())
 
     def test_signup_redirects_authenticated_user(self):
@@ -142,7 +142,7 @@ class LoginViewTests(TestCase):
             'password': 'WrongPassword!',
         })
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/login.html')
+        self.assertTemplateUsed(response, 'auth/login.html')
 
     def test_login_redirects_authenticated_user(self):
         self.client.login(username='loginuser', password='TestPass1!')
@@ -180,7 +180,7 @@ class CompleteProfileViewTests(TestCase):
     def test_complete_profile_get(self):
         response = self.client.get(reverse('complete_profile'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/complete_profile.html')
+        self.assertTemplateUsed(response, 'auth/complete_profile.html')
         self.assertIn('form', response.context)
 
     def test_complete_profile_post_valid(self):
@@ -201,7 +201,7 @@ class CompleteProfileViewTests(TestCase):
             'username': '',
         })
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'timeout/auth/complete_profile.html')
+        self.assertTemplateUsed(response, 'auth/complete_profile.html')
 
     def test_complete_profile_requires_login(self):
         self.client.logout()

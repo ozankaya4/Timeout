@@ -5,6 +5,10 @@ from .auth import (
     validate_password_strength,
     check_similarity,
 )
+from .social import (
+    PostForm,
+    CommentForm,
+)
 
 __all__ = [
     'SignupForm',
@@ -12,4 +16,6 @@ __all__ = [
     'CompleteProfileForm',
     'validate_password_strength',
     'check_similarity',
+    'PostForm',
+    'CommentForm',
 ]
