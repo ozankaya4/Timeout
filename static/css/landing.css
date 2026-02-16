@@ -1,3 +1,5 @@
+
+
 /* Hero Section */
 .hero-section {
     background: linear-gradient(135deg, #525AFF, #6D8BC0, #4AB5B5);
@@ -74,18 +76,104 @@
     background: #e9ecef
 }
 
-/* FAQ Section */
-.faq-card {
-    background: white;
-    border: 1px solid #e9ecef;
-    transition: all 0.3s ease;
-    opacity: 1;
-    transform: translateY(10px);
+/* FAQ section */
+.faq-accordion .faq-item{
+  border: 0;
+  background: transparent;
+  margin-bottom: 1rem;
 }
 
-.faq-card.animate-visible {
-    opacity: 1;
-    transform: translateY(0);
-    animation: fadeInUp 0.6s ease-out forwards;
+.faq-accordion .accordion-header{
+  border-radius: 1rem;
+}
+
+.faq-accordion .faq-btn{
+  background: #fff;
+  border: 1px solid #eef0f2;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  padding: 1.1rem 1.25rem;
+  font-weight: 700;
+}
+
+.faq-accordion .accordion-button::after{
+  filter: invert(19%) sepia(88%) saturate(5050%) hue-rotate(350deg) brightness(96%) contrast(100%);
+}
+
+/* card rounded when it's opened*/
+.faq-accordion .accordion-button:not(.collapsed){
+  color: inherit;
+  background: #fff;
+  box-shadow: none;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* body area */
+.faq-accordion .accordion-collapse{
+  border: 1px solid #eef0f2;
+  border-top: 0;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  background: #fff;
+}
+
+.faq-body{
+  color: #6c757d;
+  line-height: 1.7;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+
+/* for small display ex) laptop */
+@media (max-width: 1440px){
+  .container{
+    max-width: 1000px;
+  }
+
+  #features,
+  #how-it-works,
+  #qa{
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  .feature-card{
+    padding: 1.25rem !important;
+  }
+
+  .step-icon{
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .hero-title{
+    font-size: 2.8rem;
+    line-height: 1.15;
+  }
+
+  .hero-lead{
+    font-size: 1.3rem !important;
+  }
+
+  #features h2,
+  #how-it-works h2,
+  #qa h2{
+    font-size: 2.2rem;  
+  }
+
+  .feature-card h3{
+    font-size: 1.2rem;
+  }
+
+  #how-it-works h3{
+    font-size: 1.15rem;
+  }
+
+  .faq-accordion .faq-btn{
+    font-size: 1rem;
+  }
 }
 
