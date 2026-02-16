@@ -1,0 +1,91 @@
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #525AFF, #6D8BC0, #4AB5B5);
+    padding: 120px 0 80px;
+    display: flex;
+    align-items: center;
+}
+
+/* Feature Badge */
+.feature-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    color: white;
+    font-weight: 500;
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateY(10px);
+}
+
+.feature-card.animate-visible {
+    opacity: 1;
+    transform: translateY(0);
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15)
+}
+
+/* How It Works - Steps */
+.step-icon-box {
+    position: relative;
+}
+
+.step-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-line {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    width: 80%;
+    height: 0.2rem;
+    background: #e9ecef
+}
+
+/* FAQ Section */
+.faq-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateY(10px);
+}
+
+.faq-card.animate-visible {
+    opacity: 1;
+    transform: translateY(0);
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+

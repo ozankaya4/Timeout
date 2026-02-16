@@ -1,7 +1,192 @@
-{% extends "base.html" %}
+{% extends 'base_landing.html' %}
+{% load static %}
 
-{% block title %}Welcome - Timeout{% endblock %}
+{% block title %}
+  Welcome - Timeout
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="{% static 'css/landing.css' %}" />
+{% endblock %}
 
 {% block content %}
-<!-- Landing page content placeholder -->
+  <!-- Hero Section -->
+  <section class="hero-section position-relative overflow-hidden">
+    <div class="container position-relative">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-10">
+          <h1 class="display-4 fw-bold text-white mb-4 text-nowrap">Smart Schedule Management for Students</h1>
+          <p class="lead text-white fs-3 mb-5">Create successful school life with AI-powered optimal schedules and share with friends</p>
+          <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-5">
+            <button class="btn btn-light btn-lg px-5 py-3">Sign In</button>
+            <button class="btn btn-outline-light btn-lg px-5 py-3">Sign Up</button>
+          </div>
+
+          <!-- Feature badges -->
+          <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
+            <div class="feature-badge">
+              <i class="bi bi-calendar3 me-2"></i>
+              <span>Smart Calendar</span>
+            </div>
+            <div class="feature-badge">
+              <i class="bi bi-stars me-2"></i>
+              <span>AI Recommendations</span>
+            </div>
+            <div class="feature-badge">
+              <i class="bi bi-people me-2"></i>
+              <span>Share with Friends</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-5">
+    <div class="container py-5">
+      <div class="row justify-content-center text-center mb-5">
+        <div class="col-lg-8">
+          <h2 class="display-4 fw-bold mb-3">Why Timeout is Special</h2>
+          <p class="lead text-muted">Powerful features designed for successful student life</p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(82, 90, 255, 0.1);">
+              <i class="bi bi-calendar3 fs-3" style="color: #525AFF;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">Intuitive Calendar</h3>
+            <p class="text-muted">Easily manage your classes, assignments, and exam schedules with a clean, intuitive calendar.</p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(109, 139, 192, 0.1);">
+              <i class="bi bi-stars fs-3" style="color: #6D8BC0;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">AI Schedule Recommendations</h3>
+            <p class="text-muted">AI analyzes your learning patterns to recommend optimal study and break times.</p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(74, 181, 181, 0.1);">
+              <i class="bi bi-people fs-3" style="color: #4AB5B5;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">Share Schedules with Friends</h3>
+            <p class="text-muted">Check your friends' schedules and find time to study together.</p>
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(143, 217, 251, 0.1);">
+              <i class="bi bi-lock fs-3" style="color: #8FD9FB;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">Public/Private Settings</h3>
+            <p class="text-muted">Selectively share only the schedules you want and keep your personal information safe.</p>
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(82, 90, 255, 0.1);">
+              <i class="bi bi-bell fs-3" style="color: #525AFF;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">Smart Notifications</h3>
+            <p class="text-muted">Receive personalized reminders so you never miss important events.</p>
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card h-100 p-4 rounded-4 shadow-sm hover-lift">
+            <div class="feature-icon mb-4" style="background-color: rgba(109, 139, 192, 0.1);">
+              <i class="bi bi-trophy fs-3" style="color: #6D8BC0;"></i>
+            </div>
+            <h3 class="h4 fw-bold mb-3">Goal Achievement Tracking</h3>
+            <p class="text-muted">Set learning goals, visualize your progress, and stay motivated.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="py-5 bg-light">
+    <div class="container py-5">
+      <div class="row justify-content-center text-center mb-5">
+        <div class="col-lg-8">
+          <h2 class="display-4 fw-bold mb-3">Get Started in 3 Simple Steps</h2>
+        </div>
+      </div>
+
+      <div class="row g-5 align-items-center">
+        <!-- Step 1 -->
+        <div class="col-lg-4 text-center">
+          <div class="step-icon-box mb-4 position-relative">
+            <div class="step-icon shadow-lg" style="background-color: #525AFF;">
+              <i class="bi bi-calendar-plus fs-3 text-white"></i>
+            </div>
+            <div class="step-line d-none d-lg-block"></div>
+          </div>
+          <h3 class="h3 fw-bold mb-3">1. Add Your Schedule</h3>
+          <p class="text-muted fs-5">Add all your events including classes, assignments, and exams to your calendar.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="col-lg-4 text-center">
+          <div class="step-icon-box mb-4 position-relative">
+            <div class="step-icon shadow-lg" style="background-color: #6D8BC0;">
+              <i class="bi bi-stars fs-3 text-white"></i>
+            </div>
+            <div class="step-line d-none d-lg-block"></div>
+          </div>
+          <h3 class="h3 fw-bold mb-3">2. Get AI Recommendations</h3>
+          <p class="text-muted fs-5">AI analyzes your patterns and suggests optimal learning plans.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="col-lg-4 text-center">
+          <div class="step-icon-box mb-4">
+            <div class="step-icon shadow-lg" style="background-color: #4AB5B5;">
+              <i class="bi bi-share fs-3 text-white"></i>
+            </div>
+          </div>
+          <h3 class="h3 fw-bold mb-3">3. Share with Friends</h3>
+          <p class="text-muted fs-5">Share your schedule with friends and find time to study together.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Qa section -->
+  <section id="qa" class="py-5">
+    <div class="container py-5">
+      <div class="row justify-content-center text-center mb-5">
+        <div class="col-lg-8">
+          <h2 class="display-4 fw-bold mb-3">Frequently Asked Questions</h2>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Question 1 -->
+        <div class="faq-card">
+          <h5 class="fw-bold">Is Timeout free to use?</h5>
+          <p class="text-muted">Yes, Timeout offers a free tier with essential features. We also have premium plans with additional features.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 {% endblock %}
