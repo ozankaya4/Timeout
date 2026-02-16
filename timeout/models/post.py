@@ -1,0 +1,79 @@
+from django.conf import settings
+from django.db import models
+
+
+class Post(models.Model):
+    """Social media post with privacy controls."""
+
+    class Privacy(models.TextChoices):
+        PUBLIC = 'public', 'Public'
+        FOLLOWERS_ONLY = 'followers_only', 'Followers Only'
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='posts',
+    )
+    content = models.TextField(max_length=5000)
+    image = models.ImageField(
+        upload_to='post_images/',
+        blank=True,
+        null=True,
+    )
+    link_url = models.URLField(blank=True)
+    link_title = models.CharField(max_length=200, blank=True)
+    privacy = models.CharField(
+        max_length=20,
+        choices=Privacy.choices,
+        default=Privacy.PUBLIC,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at', 'author']),
+        ]
+
+    def __str__(self):
+        preview = self.content[:50]
+        return f'{self.author.username}: {preview}...'
+
+    def get_like_count(self):
+        """Return the number of likes on this post."""
+        return self.likes.count()
+
+    def is_liked_by(self, user):
+        """Check if a user has liked this post."""
+        if not user.is_authenticated:
+            return False
+        return self.likes.filter(user=user).exists()
+
+    def is_bookmarked_by(self, user):
+        """Check if a user has bookmarked this post."""
+        if not user.is_authenticated:
+            return False
+        return self.bookmarks.filter(user=user).exists()
+
+    def get_comment_count(self):
+        """Return the number of comments on this post."""
+        return self.comments.count()
+
+    def can_view(self, user):
+        """Check if user can view this post based on privacy."""
+        if self.privacy == self.Privacy.PUBLIC:
+            return True
+        if not user.is_authenticated:
+            return False
+        if self.author == user:
+            return True
+        return self.author.followers.filter(
+            id=user.id
+        ).exists()
+
+    def can_delete(self, user):
+        """Check if user can delete this post."""
+        if not user.is_authenticated:
+            return False
+        return self.author == user or user.is_staff
