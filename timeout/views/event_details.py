@@ -12,4 +12,4 @@ def event_details(request, event_id):
         'is_ongoing': event.is_ongoing,
         'is_upcoming': event.is_upcoming
     }
-    return render(request, 'timeout/event_details.html', context)
+    return render(request, 'pages/event_details.html', {"event": event})
