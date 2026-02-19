@@ -2,240 +2,36 @@
 {% load socialaccount %}
 {% block title %}Login - Timeout{% endblock %}
 
-{% block extra_css %}
-<style>
-    .login-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #8FD9FB 0%, #4AB5B5 50%, #525AFF 100%);
-        padding: 20px;
-    }
-    
-    .login-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(82, 90, 255, 0.3);
-        overflow: hidden;
-        max-width: 440px;
-        width: 100%;
-    }
-    
-    .login-header {
-        background: linear-gradient(135deg, #6D8BC0 0%, #525AFF 100%);
-        padding: 2rem;
-        text-align: center;
-        color: white;
-    }
-    
-    .login-header h2 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.75rem;
-    }
-    
-    .login-header p {
-        margin: 0.5rem 0 0 0;
-        opacity: 0.95;
-        font-size: 0.95rem;
-    }
-    
-    .login-body {
-        padding: 2rem;
-    }
-    
-    .form-label {
-        font-weight: 500;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-    
-    .form-control {
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control:focus {
-        border-color: #525AFF;
-        box-shadow: 0 0 0 3px rgba(82, 90, 255, 0.1);
-    }
-    
-    .btn-login {
-        background: linear-gradient(135deg, #6D8BC0 0%, #525AFF 100%);
-        border: none;
-        border-radius: 8px;
-        padding: 0.875rem;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(82, 90, 255, 0.3);
-        background: linear-gradient(135deg, #5a75b0 0%, #4248dd 100%);
-    }
-    
-    .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 1.5rem 0;
-    }
-    
-    .divider::before,
-    .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .divider span {
-        padding: 0 1rem;
-        color: #718096;
-        font-size: 0.875rem;
-        font-weight: 500;
-    }
-    
-    .social-btn {
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0.75rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-    
-    .social-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .social-btn-google {
-        border-color: #ea4335;
-        color: #ea4335;
-    }
-    
-    .social-btn-google:hover {
-        background-color: #ea4335;
-        color: white;
-    }
-    
-    .social-btn-github {
-        border-color: #24292e;
-        color: #24292e;
-    }
-    
-    .social-btn-github:hover {
-        background-color: #24292e;
-        color: white;
-    }
-    
-    .social-btn-discord {
-        border-color: #5865f2;
-        color: #5865f2;
-    }
-    
-    .social-btn-discord:hover {
-        background-color: #5865f2;
-        color: white;
-    }
-    
-    .social-btn-linkedin {
-        border-color: #0a66c2;
-        color: #0a66c2;
-    }
-    
-    .social-btn-linkedin:hover {
-        background-color: #0a66c2;
-        color: white;
-    }
-    
-    .signup-link {
-        text-align: center;
-        margin-top: 1.5rem;
-        color: #718096;
-    }
-    
-    .signup-link a {
-        color: #525AFF;
-        font-weight: 600;
-        text-decoration: none;
-    }
-    
-    .signup-link a:hover {
-        text-decoration: underline;
-    }
-    
-    .alert {
-        border-radius: 8px;
-        border: none;
-    }
-    
-    .password-toggle {
-        position: relative;
-    }
-    
-    .password-toggle-btn {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #718096;
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .password-toggle-btn:hover {
-        color: #525AFF;
-    }
-    
-    .password-toggle-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .forgot-password-link {
-        font-size: 0.9rem;
-        color: #525AFF;
-        text-decoration: none;
-    }
-    
-    .forgot-password-link:hover {
-        text-decoration: underline;
-    }
-    
-    .form-check-input:checked {
-        background-color: #525AFF;
-        border-color: #525AFF;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
             <h2>Welcome Back</h2>
             <p>Sign in to continue to Timeout</p>
         </div>
-        
-        <div class="login-body">
+
+        <div class="auth-body">
+
+            <!-- Google Sign-In (shown first, per industry convention) -->
+            <a href="{% provider_login_url 'google' %}" class="btn-google w-100" rel="nofollow">
+                <!-- Official Google G logo — each path keeps its brand colour -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </a>
+
+            <div class="divider">
+                <span>or sign in with email</span>
+            </div>
+
             <form method="post" novalidate id="loginForm">
                 {% csrf_token %}
-                
+
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger" role="alert">
                     {% for error in form.non_field_errors %}
@@ -243,7 +39,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                
+
                 <!-- Username -->
                 <div class="mb-3">
                     <label for="id_username" class="form-label">Username</label>
@@ -254,7 +50,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <!-- Password -->
                 <div class="mb-3">
                     <label for="id_password" class="form-label">Password</label>
@@ -273,10 +69,10 @@
                     </div>
                     {% endif %}
                 </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
                         <label class="form-check-label" for="rememberMe" style="font-size: 0.9rem;">
                             Remember me
                         </label>
@@ -285,29 +81,13 @@
                         Forgot password?
                     </a>
                 </div>
-                
-                <button type="submit" class="btn btn-login btn-primary w-100">
-                    Log In
+
+                <button type="submit" class="btn btn-auth w-100">
+                    Sign In
                 </button>
             </form>
-            
-            <!-- Social Login Divider -->
-            <div class="divider">
-                <span>or continue with</span>
-            </div>
-            
-            <!-- Social Login Button -->
-            <a href="{% provider_login_url 'google' %}" class="social-btn social-btn-google w-100">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                    <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
-                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-                </svg>
-                Continue with Google
-            </a>
-            
-            <p class="signup-link">
+
+            <p class="auth-link">
                 Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
             </p>
         </div>
@@ -318,16 +98,14 @@
 function togglePassword() {
     const passwordInput = document.getElementById('id_password');
     const eyeIcon = document.getElementById('eyeIcon');
-    
+
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        // Eye with slash (hidden password)
         eyeIcon.innerHTML = `
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
         `;
     } else {
         passwordInput.type = 'password';
-        // Normal eye (visible password)
         eyeIcon.innerHTML = `
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
