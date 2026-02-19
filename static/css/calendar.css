@@ -219,3 +219,9 @@ td.cal-today .cal-day-num {
   .cal-table td { height: 56px; }
   .cal-chip { height: 5px; padding: 0; border-radius: 3px; font-size: 0; overflow: hidden; }
 }
+
+.cal-chip--conflict {
+    background-color: #e22f41 !important;
+    color: white !important;
+    border: 2px solid #8b0000;
+}

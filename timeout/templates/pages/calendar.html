@@ -49,10 +49,14 @@
             {% if day.in_month and day.events %}
             <div class="cal-events">
               {% for ev in day.events|slice:":3" %}
-              <div class="cal-chip cal-chip--{{ ev.event_type }}"
-                   title="{{ ev.title }} — {{ ev.start_datetime|date:'H:i' }}">
-                {{ ev.title }}
-              </div>
+              <a href="{% url 'event_details' ev.id %}"
+                class="cal-chip 
+                        cal-chip--{{ ev.event_type }}
+                        {% if ev.allow_conflict %} cal-chip--conflict {% endif %}"
+                title="{{ ev.title }} — {{ ev.start_datetime|date:'H:i' }}">
+                  {{ ev.title }}
+              </a>
+
               {% endfor %}
               {% with total=day.events|length %}
               {% if total > 3 %}
@@ -70,6 +74,17 @@
 
   </div>
 </div>
+
+<div class="form-check mb-3">
+  <input class="form-check-input"
+         type="checkbox"
+         id="overrideConflict"
+         name="allow_conflict">
+  <label class="form-check-label" for="overrideConflict">
+    Override conflict if overlapping
+  </label>
+</div>
+
 
 <!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">

@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from timeout.models import Event
+from django.core.exceptions import ValidationError
 
 
 @login_required
@@ -100,22 +101,31 @@ def event_create(request):
     Handle the Add Event model form submission.
     Uses the event model to add a function to add events to the calendar
     """
+
+    allow_conflict = request.POST.get("allow_conflict") == "on"
+    event = Event(
+        # Build an event from the added user input
+        creator=request.user,
+        title=request.POST["title"],
+        event_type=request.POST.get("event_type", "other"),
+        start_datetime=request.POST["start_datetime"],
+        end_datetime=request.POST["end_datetime"],
+        location=request.POST.get("location", ""),
+        description=request.POST.get("description", ""),
+        allow_conflict=allow_conflict,
+    )
+
+    event.full_clean() # Full validation for field type, length etc
+    event.save()
+    messages.success(request, f'"{event.title}" added to calendar.')
+    
     try:
-        event = Event(
-            # Build an event from the added user input
-            creator=request.user,
-            title=request.POST["title"],
-            event_type=request.POST.get("event_type", "other"),
-            start_datetime=request.POST["start_datetime"],
-            end_datetime=request.POST["end_datetime"],
-            location=request.POST.get("location", ""),
-            description=request.POST.get("description", ""),
-        )
-        event.full_clean() # Full validation for field type, length etc
+        event.full_clean()
         event.save()
         messages.success(request, f'"{event.title}" added to calendar.')
+    except ValidationError as e:
+        messages.error(request, e.message)
     except Exception as e:
-        # Catch any error
         messages.error(request, f"Could not create event: {e}")
 
     return redirect("calendar")

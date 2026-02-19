@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-
+from django.core.exceptions import ValidationError
 
 class Event(models.Model):
     """Calendar event model."""
@@ -60,6 +60,11 @@ class Event(models.Model):
         default=EventRecurrence.NONE
     )
 
+    allow_conflict = models.BooleanField(
+        default=False,
+        help_text='if true, event overlaps with others'
+    )
+
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     location = models.CharField(max_length=200, blank=True)
@@ -79,6 +84,48 @@ class Event(models.Model):
                 name='timeout_eve_start_idx'
             ),
         ]
+
+    def clean(self):
+        """
+        Prevent overlapping events for the same user unless allowed.
+        """
+
+        # 1️⃣ Validate time range
+        if self.start_datetime >= self.end_datetime:
+            raise ValidationError("End time must be after start time.")
+
+        # 2️⃣ Allow certain types to overlap automatically
+        overlap_allowed_types = [
+            self.EventType.DEADLINE,  # keep or change as you like
+        ]
+
+        if self.event_type in overlap_allowed_types:
+            return
+
+        # 3️⃣ Allow override checkbox
+        if self.allow_conflict:
+            return
+
+        # 4️⃣ Ignore cancelled events
+        if self.status == self.EventStatus.CANCELLED:
+            return
+
+        overlapping_events = Event.objects.filter(
+            creator=self.creator,
+            start_datetime__lt=self.end_datetime,
+            end_datetime__gt=self.start_datetime,
+        ).exclude(pk=self.pk)
+
+        if overlapping_events.exists():
+            conflict = overlapping_events.first()
+            raise ValidationError(
+                f'This event conflicts with "{conflict.title}" '
+                f'({conflict.start_datetime:%d %b %H:%M} - '
+                f'{conflict.end_datetime:%H:%M}). '
+                f'Tick "Override conflict" to allow it.'
+            )
+
+
 
     @property
     def is_past(self):

@@ -1,10 +1,7 @@
 from django.urls import path
 from timeout.views import pages
-<<<<<<< HEAD
 from timeout.views.event_details import event_details
-=======
 from timeout.views import calendar as cal_views
->>>>>>> main
 
 urlpatterns = [
     path('', pages.landing, name='landing'),
@@ -14,11 +11,8 @@ urlpatterns = [
     path('notes/', pages.notes, name='notes'),
     path('statistics/', pages.statistics, name='statistics'),
     path('social/', pages.social, name='social'),
-<<<<<<< HEAD
     path('event/<int:event_id>/', event_details, name='event_details'),
-=======
     
     #path('calendar/', cal_views.calendar_view, name='calendar'),
     #path('calendar/add/', cal_views.event_create, name='event_create'),
->>>>>>> main
 ]
