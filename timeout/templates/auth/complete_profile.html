@@ -1,87 +1,140 @@
 {% extends "base.html" %}
-
 {% block title %}Complete Your Profile - Timeout{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-2">Complete Your Profile</h2>
-                <p class="text-muted text-center mb-4">
-                    Please fill in a few details to finish setting up your account.
-                </p>
+<div class="auth-container">
+    <div class="auth-card auth-card--wide auth-card--animate">
+        <div class="auth-header">
+            <h2>Complete Your Profile</h2>
+            <p>Fill in a few details to finish setting up your account</p>
+        </div>
 
-                <form method="post" novalidate>
-                    {% csrf_token %}
+        <div class="auth-body">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
 
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                        <div>{{ error }}</div>
-                        {% endfor %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username <span class="text-danger">*</span></label>
+                    {% if has_temp_username %}
+                        <input type="text"
+                               class="form-control"
+                               id="id_username"
+                               name="username"
+                               placeholder="Choose a username"
+                               autocomplete="username"
+                               required>
+                    {% else %}
+                        {{ form.username }}
+                    {% endif %}
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.username.errors %}{{ error }}{% endfor %}
                     </div>
                     {% endif %}
+                    <div class="form-text">This will be your public @handle.</div>
+                </div>
 
-                    <!-- Username -->
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
+                <!-- First Name & Last Name -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                            {% for error in form.first_name.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- First Name & Last Name -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_first_name" class="form-label">First Name</label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.first_name.errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_last_name" class="form-label">Last Name</label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.last_name.errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- University -->
-                    <div class="mb-3">
-                        <label for="id_university" class="form-label">University</label>
-                        {{ form.university }}
-                        {% if form.university.errors %}
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.university.errors %}{{ error }}{% endfor %}
+                            {% for error in form.last_name.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
                     </div>
+                </div>
 
-                    <!-- Year of Study -->
-                    <div class="mb-3">
-                        <label for="id_year_of_study" class="form-label">Year of Study</label>
-                        {{ form.year_of_study }}
-                        {% if form.year_of_study.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.year_of_study.errors %}{{ error }}{% endfor %}
-                        </div>
-                        {% endif %}
+                <!-- University dropdown -->
+                <div class="mb-2">
+                    <label for="id_university_choice" class="form-label">
+                        University <span class="text-danger">*</span>
+                    </label>
+                    {{ form.university_choice }}
+                    {% if form.university_choice.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.university_choice.errors %}{{ error }}{% endfor %}
                     </div>
+                    {% endif %}
+                </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Save Profile</button>
-                </form>
-            </div>
+                <!-- "Other" free-text field (revealed by JS) -->
+                <div class="mb-3 uni-other-field" id="uni-other-wrapper">
+                    <label for="id_university_other" class="form-label">
+                        {{ form.university_other.label }}
+                    </label>
+                    {{ form.university_other }}
+                    {% if form.university_other.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.university_other.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Year of Study -->
+                <div class="mb-4">
+                    <label for="id_year_of_study" class="form-label">Year of Study <span class="text-danger">*</span></label>
+                    {{ form.year_of_study }}
+                    {% if form.year_of_study.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.year_of_study.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-auth w-100">
+                    Save Profile
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    const select  = document.getElementById('id_university_choice');
+    const wrapper = document.getElementById('uni-other-wrapper');
+    const input   = document.getElementById('id_university_other');
+
+    function syncVisibility() {
+        const isOther = select.value === '__other__';
+        wrapper.classList.toggle('uni-other-field--visible', isOther);
+        input.required = isOther;
+        // Clear the hidden field when switching away from "Other"
+        if (!isOther) input.value = '';
+    }
+
+    select.addEventListener('change', syncVisibility);
+
+    // Run immediately on page load so a re-submitted form with "Other"
+    // selected (e.g. after a validation error) keeps the field visible.
+    syncVisibility();
+}());
+</script>
 {% endblock %}

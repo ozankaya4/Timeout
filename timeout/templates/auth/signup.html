@@ -1,126 +1,126 @@
 {% extends "base.html" %}
 {% load socialaccount %}
-
 {% block title %}Sign Up - Timeout{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-4">Create Account</h2>
+<div class="auth-container">
+    <div class="auth-card auth-card--wide">
+        <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join Timeout today</p>
+        </div>
 
-                <form method="post" novalidate>
-                    {% csrf_token %}
+        <div class="auth-body">
 
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                        <div>{{ error }}</div>
-                        {% endfor %}
+            <!-- Google Sign-Up (shown first, per industry convention) -->
+            <a href="{% provider_login_url 'google' %}" class="btn-google w-100" rel="nofollow">
+                <!-- Official Google G logo — each path keeps its brand colour -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </a>
+
+            <div class="divider">
+                <span>or sign up with email</span>
+            </div>
+
+            <form method="post" novalidate id="signupForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.email.errors %}{{ error }}{% endfor %}
                     </div>
                     {% endif %}
+                </div>
 
-                    <!-- Username -->
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.username.errors %}{{ error }}{% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label for="id_email" class="form-label">Email</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.email.errors %}{{ error }}{% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- First Name & Last Name -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_first_name" class="form-label">First Name</label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.first_name.errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_last_name" class="form-label">Last Name</label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.last_name.errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="mb-3">
-                        <label for="id_password1" class="form-label">Password</label>
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <div class="password-toggle">
                         {{ form.password1 }}
-                        {% if form.password1.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.password1.errors %}{{ error }}{% endfor %}
-                        </div>
-                        {% endif %}
-                        <div class="form-text">
-                            Min 8 characters: 1 uppercase, 1 lowercase, 1 number, 1 symbol.
-                        </div>
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('id_password1', 'eyeIcon1')">
+                            <svg id="eyeIcon1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
                     </div>
+                    {% if form.password1.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Min 8 characters: 1 uppercase, 1 lowercase, 1 number, 1 symbol.
+                    </div>
+                </div>
 
-                    <!-- Confirm Password -->
-                    <div class="mb-3">
-                        <label for="id_password2" class="form-label">Confirm Password</label>
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <div class="password-toggle">
                         {{ form.password2 }}
-                        {% if form.password2.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.password2.errors %}{{ error }}{% endfor %}
-                        </div>
-                        {% endif %}
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('id_password2', 'eyeIcon2')">
+                            <svg id="eyeIcon2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
                     </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-                </form>
-
-                <!-- Social Registration Divider -->
-                <div class="d-flex align-items-center my-3">
-                    <hr class="flex-grow-1">
-                    <span class="px-3 text-muted small">or register with</span>
-                    <hr class="flex-grow-1">
+                    {% if form.password2.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
 
-                <!-- Social Registration Buttons -->
-                <div class="d-grid gap-2">
-                    <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger">
-                        Register with Google
-                    </a>
-                    <a href="{% provider_login_url 'github' %}" class="btn btn-outline-dark">
-                        Register with GitHub
-                    </a>
-                    <a href="{% provider_login_url 'discord' %}" class="btn btn-outline-primary">
-                        Register with Discord
-                    </a>
-                    <a href="{% provider_login_url 'linkedin_oauth2' %}" class="btn btn-outline-info">
-                        Register with LinkedIn
-                    </a>
-                </div>
+                <button type="submit" class="btn btn-auth w-100">
+                    Create Account
+                </button>
+            </form>
 
-                <p class="text-center mt-3 mb-0">
-                    Already have an account? <a href="{% url 'login' %}">Log in</a>
-                </p>
-            </div>
+            <p class="auth-link">
+                Already have an account? <a href="{% url 'login' %}">Sign in</a>
+            </p>
         </div>
     </div>
 </div>
+
+<script>
+function togglePassword(inputId, iconId) {
+    const passwordInput = document.getElementById(inputId);
+    const eyeIcon = document.getElementById(iconId);
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+        `;
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        `;
+    }
+}
+</script>
 {% endblock %}
