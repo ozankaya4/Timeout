@@ -1,11 +1,9 @@
 import calendar as cal
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
 from timeout.models import Event
 
 
@@ -17,27 +15,30 @@ def calendar_view(request):
     """
     today = timezone.now().date()
 
+    # Get todays date
     try:
         year = int(request.GET.get("year", today.year))
         month = int(request.GET.get("month", today.month))
     except (ValueError, TypeError):
         year, month = today.year, today.month
 
-    # Get months
+    # Get months from 1 to 12
     if month < 1:
         month, year = 12, year - 1
     elif month > 12:
         month, year = 1, year + 1
 
+    # Wrapper to make sure if the months go further than 12 so it skips to the next year
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
     next_month = month + 1 if month < 12 else 1
     next_year = year if month < 12 else year + 1
 
-    # Build weeks grid (Monday start)
+    # Build weeks grid starting from monday from python's calendar function
     cal_obj = cal.Calendar(firstweekday=0)
     weeks_raw = cal_obj.monthdatescalendar(year, month)
 
+    # Grabs the users events that are within the rage (like the month) __date tocompare datetime filed
     # Query events for visible date range
     first_visible = weeks_raw[0][0]
     last_visible = weeks_raw[-1][-1]
@@ -47,12 +48,13 @@ def calendar_view(request):
         start_datetime__date__lte=last_visible,
     ).order_by("start_datetime")
 
-    # Index by date for O(1) lookup in template
+    # Index by date lookup in template so it is more efficient and faster
+    # Build a dictionary to look up events like {date(2026,2,14): [event1, event2], date(2026,2,20): [event3]}
     events_by_date = {}
     for ev in events_qs:
         events_by_date.setdefault(ev.start_datetime.date(), []).append(ev)
 
-    # Structure for template
+    # Structure for template, wraps each date into a dict
     weeks = []
     for week in weeks_raw:
         days = []
@@ -88,7 +90,10 @@ def calendar_view(request):
 @login_required
 @require_POST
 def event_create(request):
-    """Handle the Add Event model form submission."""
+    """
+    Handle the Add Event model form submission.
+    Uses the event model to add a function to add events to the calendar
+    """
     try:
         event = Event(
             creator=request.user,
