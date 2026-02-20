@@ -8,70 +8,142 @@
 {% endblock %}
 
 {% block content %}
-<div class="cal-page">
-  <div class="cal-card">
+<div class="cal-page py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
 
-    <h1>Edit Event</h1>
+        <div class="cal-card p-4 rounded-4 shadow-sm">
 
-    <form method="post" action="{% url 'event_edit' event.id %}">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="eventTitle" class="form-label">Title</label>
-        <input type="text" class="form-control" id="eventTitle" name="title"
-               value="{{ event.title }}" required>
-      </div>
+          <!-- Header Section -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h2 class="fw-bold mb-1">Edit Event</h2>
+              <p class="text-muted mb-0">
+                Update details for this event
+              </p>
+            </div>
 
-      <div class="mb-3">
-        <label for="eventType" class="form-label">Type</label>
-        <select class="form-select" id="eventType" name="event_type">
-          <option value="deadline" {% if event.event_type == 'deadline' %}selected{% endif %}>Deadline</option>
-          <option value="exam" {% if event.event_type == 'exam' %}selected{% endif %}>Exam</option>
-          <option value="class" {% if event.event_type == 'class' %}selected{% endif %}>Class</option>
-          <option value="meeting" {% if event.event_type == 'meeting' %}selected{% endif %}>Meeting</option>
-          <option value="study_session" {% if event.event_type == 'study_session' %}selected{% endif %}>Study Session</option>
-          <option value="other" {% if event.event_type == 'other' %}selected{% endif %}>Other</option>
-        </select>
-      </div>
+            <!-- Event Type Badge -->
+            <span class="cal-chip cal-chip--{{ event.event_type }}">
+              {{ event.get_event_type_display }}
+            </span>
+          </div>
 
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label for="eventStart" class="form-label">Start</label>
-          <input type="datetime-local" class="form-control" id="eventStart" name="start_datetime"
-                 value="{{ event.start_datetime|date:'Y-m-d\\TH:i' }}" required>
+          {% if event.allow_conflict %}
+            <div class="mb-3">
+              <span class="badge bg-danger">
+                Conflict Override Enabled
+              </span>
+            </div>
+          {% endif %}
+
+          <hr class="mb-4">
+
+          <form method="post" action="{% url 'event_edit' event.id %}">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="mb-3">
+              <label for="eventTitle" class="form-label fw-semibold">Title</label>
+              <input type="text"
+                     class="form-control"
+                     id="eventTitle"
+                     name="title"
+                     value="{{ event.title }}"
+                     required>
+            </div>
+
+            <!-- Type -->
+            <div class="mb-3">
+              <label for="eventType" class="form-label fw-semibold">Type</label>
+              <select class="form-select"
+                      id="eventType"
+                      name="event_type">
+                <option value="deadline" {% if event.event_type == 'deadline' %}selected{% endif %}>Deadline</option>
+                <option value="exam" {% if event.event_type == 'exam' %}selected{% endif %}>Exam</option>
+                <option value="class" {% if event.event_type == 'class' %}selected{% endif %}>Class</option>
+                <option value="meeting" {% if event.event_type == 'meeting' %}selected{% endif %}>Meeting</option>
+                <option value="study_session" {% if event.event_type == 'study_session' %}selected{% endif %}>Study Session</option>
+                <option value="other" {% if event.event_type == 'other' %}selected{% endif %}>Other</option>
+              </select>
+            </div>
+
+            <!-- Date/Time -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="eventStart" class="form-label fw-semibold">Start</label>
+                <input type="datetime-local"
+                       class="form-control"
+                       id="eventStart"
+                       name="start_datetime"
+                       value="{{ event.start_datetime|date:'Y-m-d\\TH:i' }}"
+                       required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="eventEnd" class="form-label fw-semibold">End</label>
+                <input type="datetime-local"
+                       class="form-control"
+                       id="eventEnd"
+                       name="end_datetime"
+                       value="{{ event.end_datetime|date:'Y-m-d\\TH:i' }}"
+                       required>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="mb-3">
+              <label for="eventLocation" class="form-label fw-semibold">
+                Location <small class="text-muted">(optional)</small>
+              </label>
+              <input type="text"
+                     class="form-control"
+                     id="eventLocation"
+                     name="location"
+                     value="{{ event.location }}">
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="eventDesc" class="form-label fw-semibold">
+                Description <small class="text-muted">(optional)</small>
+              </label>
+              <textarea class="form-control"
+                        id="eventDesc"
+                        name="description"
+                        rows="3">{{ event.description }}</textarea>
+            </div>
+
+            <!-- Override -->
+            <div class="form-check mb-4">
+              <input class="form-check-input"
+                     type="checkbox"
+                     id="overrideConflict"
+                     name="allow_conflict"
+                     {% if event.allow_conflict %}checked{% endif %}>
+              <label class="form-check-label" for="overrideConflict">
+                Override conflict if overlapping
+              </label>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'calendar' %}" class="btn btn-outline-secondary rounded-3">
+                Cancel
+              </a>
+
+              <button type="submit"
+                      class="btn btn-nep text-white px-4 rounded-3">
+                Save Changes
+              </button>
+            </div>
+
+          </form>
+
         </div>
-        <div class="col-md-6 mb-3">
-          <label for="eventEnd" class="form-label">End</label>
-          <input type="datetime-local" class="form-control" id="eventEnd" name="end_datetime"
-                 value="{{ event.end_datetime|date:'Y-m-d\\TH:i' }}" required>
-        </div>
+
       </div>
-
-      <div class="mb-3">
-        <label for="eventLocation" class="form-label">Location <small class="text-muted">(optional)</small></label>
-        <input type="text" class="form-control" id="eventLocation" name="location"
-               value="{{ event.location }}">
-      </div>
-
-      <div class="mb-3">
-        <label for="eventDesc" class="form-label">Description <small class="text-muted">(optional)</small></label>
-        <textarea class="form-control" id="eventDesc" name="description" rows="2">{{ event.description }}</textarea>
-      </div>
-
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="overrideConflict" name="allow_conflict"
-               {% if event.allow_conflict %}checked{% endif %}>
-        <label class="form-check-label" for="overrideConflict">
-          Override conflict if overlapping
-        </label>
-      </div>
-
-      <div class="modal-footer">
-        <a href="{% url 'calendar' %}" class="btn btn-light">Cancel</a>
-        <button type="submit" class="btn btn-nep text-white">Save Changes</button>
-      </div>
-
-    </form>
-
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Calendar — Timeout{% endblock %}
 
 {% block extra_css %}
@@ -34,9 +35,7 @@
     <table class="cal-table">
       <thead>
         <tr>
-          {% for name in weekdays %}
-          <th>{{ name }}</th>
-          {% endfor %}
+          {% for name in weekdays %}<th>{{ name }}</th>{% endfor %}
         </tr>
       </thead>
       <tbody>
@@ -49,20 +48,31 @@
             {% if day.in_month and day.events %}
             <div class="cal-events">
               {% for ev in day.events|slice:":3" %}
-              <a href="{% url 'event_details' ev.id %}"
-                class="cal-chip 
-                        cal-chip--{{ ev.event_type }}
-                        {% if ev.allow_conflict %} cal-chip--conflict {% endif %}"
-                title="{{ ev.title }} — {{ ev.start_datetime|date:'H:i' }}">
-                  {{ ev.title }}
+              <a href="#"
+                 class="cal-chip cal-chip--{{ ev.event_type }} {% if ev.allow_conflict %}cal-chip--conflict{% endif %}"
+                 data-bs-toggle="modal"
+                 data-bs-target="#eventDetailsModal"
+                 data-event-id="{{ ev.id }}"
+                 data-event-title="{{ ev.title }}"
+                 data-event-type="{{ ev.get_event_type_display }}"
+                 data-event-color="{{ ev.color }}"
+                 data-event-start="{{ ev.start_datetime|date:'Y-m-d H:i' }}"
+                 data-event-end="{{ ev.end_datetime|date:'Y-m-d H:i' }}"
+                 data-event-location="{{ ev.location }}"
+                 data-event-description="{{ ev.description }}"
+                 data-event-status="{{ ev.get_status_display }}"
+                 data-event-recurrence="{{ ev.get_recurrence_display }}"
+                 data-event-all-day="{{ ev.is_all_day }}"
+                 data-event-duration="{{ ev.duration }}"
+                 data-event-ongoing="{{ ev.is_ongoing }}"
+                 data-event-past="{{ ev.is_past }}">
+                 {{ ev.title }}
               </a>
-
               {% endfor %}
-              {% with total=day.events|length %}
-              {% if total > 3 %}
-              <span class="cal-chip-overflow">+{{ total|add:"-3" }} more</span>
+
+              {% if day.events|length > 3 %}
+              <span class="cal-chip-overflow">+{{ day.events|length|add:"-3" }} more</span>
               {% endif %}
-              {% endwith %}
             </div>
             {% endif %}
           </td>
@@ -71,20 +81,46 @@
         {% endfor %}
       </tbody>
     </table>
-
   </div>
 </div>
 
-<div class="form-check mb-3">
-  <input class="form-check-input"
-         type="checkbox"
-         id="overrideConflict"
-         name="allow_conflict">
-  <label class="form-check-label" for="overrideConflict">
-    Override conflict if overlapping
-  </label>
-</div>
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="badge" id="eventBadge" style="font-size:0.9rem;"></span>
+        <h5 class="modal-title ms-2" id="eventDetailsModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3" id="eventTime"></p>
 
+        <div class="row mb-2">
+          <div class="col-md-6"><strong>Status:</strong> <span id="eventStatus"></span></div>
+          <div class="col-md-6"><strong>Recurrence:</strong> <span id="eventRecurrence"></span></div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-6"><strong>All Day Event:</strong> <span id="eventAllDay"></span></div>
+          <div class="col-md-6"><strong>Duration:</strong> <span id="eventDuration"></span></div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-md-6"><strong>Ongoing:</strong> <span id="eventOngoing"></span></div>
+          <div class="col-md-6"><strong>Past:</strong> <span id="eventPast"></span></div>
+        </div>
+
+        <p id="eventLocation"></p>
+        <p id="eventDescription"></p>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-nep text-white" id="editEventBtn">Edit Event</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
@@ -142,4 +178,26 @@
 
 <!-- Mobile FAB -->
 <a href="#" class="cal-fab" data-bs-toggle="modal" data-bs-target="#addEventModal" aria-label="Add event">+</a>
+
+<!-- JS to populate modal -->
+<script>
+  const eventDetailsModal = document.getElementById('eventDetailsModal')
+  eventDetailsModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget
+    document.getElementById('eventDetailsModalLabel').textContent = button.getAttribute('data-event-title')
+    document.getElementById('eventBadge').textContent = button.getAttribute('data-event-type')
+    document.getElementById('eventBadge').style.backgroundColor = button.getAttribute('data-event-color')
+    document.getElementById('eventTime').textContent = button.getAttribute('data-event-start') + ' – ' + button.getAttribute('data-event-end')
+    document.getElementById('eventStatus').textContent = button.getAttribute('data-event-status')
+    document.getElementById('eventRecurrence').textContent = button.getAttribute('data-event-recurrence')
+    document.getElementById('eventAllDay').textContent = button.getAttribute('data-event-all-day')
+    document.getElementById('eventDuration').textContent = button.getAttribute('data-event-duration')
+    document.getElementById('eventOngoing').textContent = button.getAttribute('data-event-ongoing')
+    document.getElementById('eventPast').textContent = button.getAttribute('data-event-past')
+    document.getElementById('eventLocation').textContent = button.getAttribute('data-event-location') ? 'Location: ' + button.getAttribute('data-event-location') : ''
+    document.getElementById('eventDescription').textContent = button.getAttribute('data-event-description') ? 'Description: ' + button.getAttribute('data-event-description') : ''
+    document.getElementById('editEventBtn').href ='/event/' + button.getAttribute('data-event-id') + '/edit/';
+  })
+</script>
+
 {% endblock %}

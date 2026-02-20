@@ -3,73 +3,99 @@
 {% block title %}{{ event.title }} - Timeout{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-4">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-3" style="color: '{{ event.color }}';">
-                    {{ event.title }}
-                </h2>
 
-                <div class="text-muted text-center mb-4">
-                    Event Details
-                </div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-                <!-- Event Info -->
-                <div class="mb-3">
-                    <strong>Type:</strong> {{ event.get_event_type_display }}
-                </div>
+      <!-- Event Card -->
+      <div class="feature-card p-4 rounded-4 shadow-sm">
 
-                <div class="mb-3">
-                    <strong>Status:</strong> {{ event.get_status_display }}
-                </div>
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h2 class="fw-bold mb-1" style="color: '{{ event.color }}';">
+              {{ event.title }}
+            </h2>
+            <p class="text-muted mb-0">
+              {{ event.start_datetime|date:"M d, Y H:i" }} – {{ event.end_datetime|date:"M d, Y H:i" }}
+            </p>
+          </div>
 
-                <div class="mb-3">
-                    <strong>Recurrence:</strong> {{ event.get_recurrence_display }}
-                </div>
-
-                <div class="mb-3">
-                    <strong>Start:</strong> {{ event.start_datetime }}
-                </div>
-
-                <div class="mb-3">
-                    <strong>End:</strong> {{ event.end_datetime }}
-                </div>
-
-                {% if event.location %}
-                <div class="mb-3">
-                    <strong>Location:</strong> {{ event.location }}
-                </div>
-                {% endif %}
-
-                {% if event.description %}
-                <div class="mb-3">
-                    <strong>Description:</strong> {{ event.description }}
-                </div>
-                {% endif %}
-
-                <div class="mb-3">
-                    <strong>All Day Event:</strong> {{ event.is_all_day }}
-                </div>
-
-                <div class="mb-3">
-                    <strong>Duration:</strong> {{ event.duration }}
-                </div>
-
-                <div class="mb-3">
-                    <strong>Ongoing:</strong> {{ event.is_ongoing }}
-                </div>
-
-                <div class="mb-3">
-                    <strong>Past:</strong> {{ event.is_past }}
-                </div>
-
-                <div class="d-grid gap-2 mt-4">
-                    <a href="{% url 'event_edit' event.pk %}" class="btn btn-outline-primary">Edit Event</a>
-                    <a href="{% url 'calendar' %}" class="btn btn-secondary">Back to Calendar</a>
-                </div>
-            </div>
+          <!-- Event Type Badge -->
+          {% if event.event_type == 'deadline' %}
+            <span class="badge bg-danger">{{ event.get_event_type_display }}</span>
+          {% elif event.event_type == 'exam' %}
+            <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+          {% elif event.event_type == 'class' %}
+            <span class="badge bg-success">{{ event.get_event_type_display }}</span>
+          {% elif event.event_type == 'meeting' %}
+            <span class="badge bg-warning text-dark">{{ event.get_event_type_display }}</span>
+          {% elif event.event_type == 'study_session' %}
+            <span class="badge bg-info text-dark">{{ event.get_event_type_display }}</span>
+          {% else %}
+            <span class="badge bg-secondary">{{ event.get_event_type_display }}</span>
+          {% endif %}
         </div>
+
+        <hr class="mb-4">
+
+        <!-- Event Details -->
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <strong>Status:</strong> {{ event.get_status_display }}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Recurrence:</strong> {{ event.get_recurrence_display }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <strong>All Day Event:</strong> {{ event.is_all_day }}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Duration:</strong> {{ event.duration }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <strong>Ongoing:</strong> {{ event.is_ongoing }}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Past:</strong> {{ event.is_past }}
+          </div>
+        </div>
+
+        {% if event.location %}
+        <div class="mb-3">
+          <strong>Location:</strong> {{ event.location }}
+        </div>
+        {% endif %}
+
+        {% if event.description %}
+        <div class="mb-3">
+          <strong>Description:</strong> {{ event.description }}
+        </div>
+        {% endif %}
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{% url 'calendar' %}" class="btn btn-outline-secondary rounded-3">
+            ← Back to Calendar
+          </a>
+
+          <div class="d-flex gap-2">
+            <a href="{% url 'event_edit' event.pk %}" class="btn btn-nep text-white px-4 rounded-3">
+              Edit Event
+            </a>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
 </div>
+
 {% endblock %}
