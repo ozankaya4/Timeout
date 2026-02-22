@@ -9,7 +9,7 @@ import os
 import random
 from datetime import timedelta
 
-from dotenv import load_dotenvgalatasaraycstimeout@gmail.com
+from dotenv import load_dotenv
 
 
 from django.contrib.auth import get_user_model

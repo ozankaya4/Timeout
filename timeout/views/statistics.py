@@ -26,12 +26,11 @@ def events_last_n_weeks(events, n=8):
     for i in range(n - 1, -1, -1):
         week_start = now - timezone.timedelta(weeks=i + 1)
         week_end = now - timezone.timedelta(weeks=i)
-        label = week_start.strftime('%d %b')
         count = events.filter(
             start_datetime__gte=week_start,
             start_datetime__lt=week_end,
         ).count()
-        weeks.append({'label': label, 'count': count})
+        weeks.append({'label': week_start.strftime('%d %b'), 'count': count})
     return weeks
 
 
@@ -42,17 +41,16 @@ def events_last_n_months(events, n=6):
     for i in range(n - 1, -1, -1):
         month = (now.month - i - 1) % 12 + 1
         year = now.year - ((now.month - i - 1) // 12)
-        label = timezone.datetime(year, month, 1).strftime('%b %Y')
         count = events.filter(
             start_datetime__year=year,
             start_datetime__month=month,
         ).count()
-        months.append({'label': label, 'count': count})
+        months.append({'label': timezone.datetime(year, month, 1).strftime('%b %Y'), 'count': count})
     return months
 
 
-def upcoming_urgent_count(events):
-    """Return the count of deadlines and exams in the next 7 days."""
+def get_urgent_events(events):
+    """Return deadline and exam events due within the next 7 days."""
     now = timezone.now()
     soon = now + timezone.timedelta(days=7)
     urgent_types = [Event.EventType.DEADLINE, Event.EventType.EXAM]
@@ -60,18 +58,22 @@ def upcoming_urgent_count(events):
         event_type__in=urgent_types,
         start_datetime__gte=now,
         start_datetime__lte=soon,
-    ).count()
+    ).order_by('start_datetime')
 
 
 def build_context(user):
     """Assemble all statistics data into a context dict."""
     events = get_user_events(user)
+    urgent = get_urgent_events(events)
+    weekly = events_last_n_weeks(events)
     return {
         'total_events': events.count(),
         'type_counts': count_by_type(events),
         'weekly_data': events_last_n_weeks(events),
+        'this_week_count': weekly[-1]['count'] if weekly else 0,
         'monthly_data': events_last_n_months(events),
-        'urgent_count': upcoming_urgent_count(events),
+        'urgent_events': urgent,
+        'urgent_count': urgent.count(),
     }
 
 
