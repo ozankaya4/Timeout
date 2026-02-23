@@ -1,6 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
+from timeout.views.statistics import build_context
+
+
 
 def landing(request):
     """Landing page view. Authenticated users go straight to the dashboard."""
@@ -36,7 +39,8 @@ def notes(request):
 @login_required
 def statistics(request):
     """Statistics page view."""
-    return render(request, 'pages/statistics.html')
+    context = build_context(request.user)
+    return render(request, 'pages/statistics.html', context)
 
 
 @login_required

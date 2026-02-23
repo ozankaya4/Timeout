@@ -1,6 +1,8 @@
 from django.urls import path
 from timeout.views import pages
 from timeout.views import calendar as cal_views
+from timeout.views import statistics as stat_views
+
 
 urlpatterns = [
     path('', pages.landing, name='landing'),

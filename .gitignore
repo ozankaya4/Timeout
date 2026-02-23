@@ -65,6 +65,7 @@ local_settings.py
 .tox/
 .nox/
 .coverage
+.coveragerc
 .coverage.*
 htmlcov/
 .cache/
@@ -75,6 +76,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 pytest_cache/
+
 
 # ===================
 # IDE / Editors
