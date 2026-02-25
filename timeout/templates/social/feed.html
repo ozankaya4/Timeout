@@ -1,103 +1,107 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Social Feed - Timeout{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
+<div class="feed-wrapper">
+  <div class="row g-4">
 
-        <!-- Feed (left/centre) -->
-        <div class="col-lg-8">
-            <!-- Create Post Card -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Create Post</h5>
-                    <form method="post" action="{% url 'create_post' %}">
-                        {% csrf_token %}
-                        {{ post_form.content }}
-                        <div class="row mt-3">
-                            <div class="col-md-6">{{ post_form.event }}</div>
-                            <div class="col-md-6">{{ post_form.privacy }}</div>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3">Post</button>
-                    </form>
-                </div>
-            </div>
+    <!-- ── Left: Feed ── -->
+    <div class="col-lg-8">
 
-            <!-- Feed Tabs -->
-            <ul class="nav nav-tabs mb-4">
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'following' %}active{% endif %}"
-                       href="?tab=following">Following</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'discover' %}active{% endif %}"
-                       href="?tab=discover">Discover</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'bookmarks' %}">Bookmarks</a>
-                </li>
-            </ul>
+      <!-- Create Post -->
+      <div class="glass-card create-post-card">
+        <div class="card-label">✏️ Create Post</div>
+        <form method="post" action="{% url 'create_post' %}">
+          {% csrf_token %}
+          {{ post_form.content }}
+          <div class="post-selects">
+            <div>{{ post_form.event }}</div>
+            <div>{{ post_form.privacy }}</div>
+          </div>
+          <div class="post-footer">
+            <button type="submit" class="btn-post">Post</button>
+          </div>
+        </form>
+      </div>
 
-            <!-- Posts -->
-            {% if posts %}
-                {% for post in posts %}
-                    {% include 'social/_post_card.html' with post=post %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-info">
-                    {% if active_tab == 'following' %}
-                        No posts yet. Follow some users to see their posts here!
-                    {% else %}
-                        No posts to discover yet.
-                    {% endif %}
-                </div>
-            {% endif %}
+      <!-- Feed Tabs -->
+      <div class="feed-tabs">
+        <a href="?tab=following"
+           class="feed-tab {% if active_tab == 'following' %}active{% endif %}">
+          Following
+        </a>
+        <a href="?tab=discover"
+           class="feed-tab {% if active_tab == 'discover' %}active{% endif %}">
+          Discover
+        </a>
+        <a href="{% url 'bookmarks' %}" class="feed-tab">
+          Bookmarks
+        </a>
+      </div>
+
+      <!-- Posts -->
+      {% if posts %}
+        {% for post in posts %}
+          {% include 'social/_post_card.html' with post=post %}
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="icon">🌱</div>
+          {% if active_tab == 'following' %}
+            No posts yet — follow some people to see their posts here!
+          {% else %}
+            Nothing to discover yet. Check back soon!
+          {% endif %}
         </div>
-
-        <!-- Messaging Sidebar (right) -->
-        <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 80px;">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">💬 Messages</h6>
-                    <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-primary">See All</a>
-                </div>
-                <div class="card-body p-0">
-                    {% if conversation_data %}
-                        {% for item in conversation_data %}
-                        <a href="{% url 'conversation' item.conv.id %}" class="text-decoration-none">
-                            <div class="d-flex align-items-center gap-2 p-3 border-bottom messaging-row">
-                                <!-- Avatar -->
-                                <div class="avatar-circle bg-primary text-white">
-                                    {{ item.other.username|first|upper }}
-                                </div>
-                                <!-- Info -->
-                                <div class="overflow-hidden">
-                                    <div class="d-flex align-items-center gap-1">
-                                        <strong class="small">{{ item.other.username }}</strong>
-                                        <span class="status-dot status-{{ item.other.status }}"></span>
-                                    </div>
-                                    <p class="text-muted mb-0 small text-truncate">
-                                        {% if item.last %}{{ item.last.content|truncatechars:35 }}{% else %}No messages yet{% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    {% else %}
-                        <div class="p-3 text-muted small">
-                            No conversations yet. Visit a user's profile to start one!
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+      {% endif %}
 
     </div>
+
+    <!-- ── Right: Messaging Sidebar ── -->
+    <div class="col-lg-4">
+      <div class="messages-sidebar">
+        <div class="glass-card">
+          <div class="messages-header">
+            <h6>💬 Messages</h6>
+            <a href="{% url 'inbox' %}" class="btn-see-all">See All</a>
+          </div>
+          <div>
+            {% if conversation_data %}
+              {% for item in conversation_data %}
+                <a href="{% url 'conversation' item.conv.id %}" class="msg-row">
+                  <div class="msg-avatar">{{ item.other.username|first|upper }}</div>
+                  <div class="msg-info">
+                    <div class="msg-name-row">
+                      <span class="msg-name">{{ item.other.username }}</span>
+                      <span class="status-dot status-{{ item.other.status }}"></span>
+                    </div>
+                    <div class="msg-preview">
+                      {% if item.last %}{{ item.last.content|truncatechars:38 }}{% else %}No messages yet{% endif %}
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
+            {% else %}
+              <div class="msg-empty">
+                <div class="icon">💌</div>
+                No conversations yet.<br>Visit a profile to start one!
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-{% load static %}
 <script src="{% static 'js/social.js' %}"></script>
 {% endblock %}

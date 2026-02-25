@@ -1,15 +1,18 @@
-/* =============================================================
-   Custom CSS for Timeout PWA
-   Consolidates styles from:
-     - auth/login.html
-     - auth/signup.html
-     - auth/complete_profile.html
-   ============================================================= */
+
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+/* -------------------------------------------------------------
+   Global Base
+   ------------------------------------------------------------- */
+
+body {
+    font-family: 'Nunito', sans-serif;
+}
 
 
 /* -------------------------------------------------------------
-   Shared Auth Page Layout
-   Used by: login, signup, complete_profile
+   Auth Page Layout
    ------------------------------------------------------------- */
 
 .auth-container {
@@ -30,26 +33,14 @@
     width: 100%;
 }
 
-/* Wider variant used by signup and complete_profile */
-.auth-card--wide {
-    max-width: 540px;
-}
+.auth-card--wide { max-width: 540px; }
 
-/* Slide-up entrance animation used by complete_profile */
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.auth-card--animate {
-    animation: slideUp 0.5s ease;
-}
+.auth-card--animate { animation: slideUp 0.5s ease; }
 
 .auth-header {
     background: linear-gradient(135deg, #6D8BC0 0%, #525AFF 100%);
@@ -58,32 +49,16 @@
     color: white;
 }
 
-.auth-header h2 {
-    margin: 0;
-    font-weight: 600;
-    font-size: 1.75rem;
-}
-
-.auth-header p {
-    margin: 0.5rem 0 0 0;
-    opacity: 0.95;
-    font-size: 0.95rem;
-}
-
-.auth-body {
-    padding: 2rem;
-}
+.auth-header h2 { margin: 0; font-weight: 600; font-size: 1.75rem; }
+.auth-header p  { margin: 0.5rem 0 0 0; opacity: 0.95; font-size: 0.95rem; }
+.auth-body      { padding: 2rem; }
 
 
 /* -------------------------------------------------------------
    Form Controls
    ------------------------------------------------------------- */
 
-.form-label {
-    font-weight: 500;
-    color: #2d3748;
-    margin-bottom: 0.5rem;
-}
+.form-label { font-weight: 500; color: #2d3748; margin-bottom: 0.5rem; }
 
 .form-control {
     border: 2px solid #e2e8f0;
@@ -114,25 +89,13 @@
     outline: none;
 }
 
-.form-text {
-    font-size: 0.875rem;
-    color: #718096;
-    margin-top: 0.25rem;
-}
-
-.form-check-input:checked {
-    background-color: #525AFF;
-    border-color: #525AFF;
-}
-
-.alert {
-    border-radius: 8px;
-    border: none;
-}
+.form-text          { font-size: 0.875rem; color: #718096; margin-top: 0.25rem; }
+.form-check-input:checked { background-color: #525AFF; border-color: #525AFF; }
+.alert              { border-radius: 8px; border: none; }
 
 
 /* -------------------------------------------------------------
-   Primary Auth Action Button
+   Auth Button
    ------------------------------------------------------------- */
 
 .btn-auth {
@@ -159,9 +122,7 @@
    Password Toggle
    ------------------------------------------------------------- */
 
-.password-toggle {
-    position: relative;
-}
+.password-toggle { position: relative; }
 
 .password-toggle-btn {
     position: absolute;
@@ -178,78 +139,43 @@
     justify-content: center;
 }
 
-.password-toggle-btn:hover {
-    color: #525AFF;
-}
-
-.password-toggle-btn svg {
-    width: 20px;
-    height: 20px;
-}
+.password-toggle-btn:hover { color: #525AFF; }
+.password-toggle-btn svg   { width: 20px; height: 20px; }
 
 
 /* -------------------------------------------------------------
-   Divider ( "or continue with" )
+   Divider
    ------------------------------------------------------------- */
 
-.divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-}
-
+.divider { display: flex; align-items: center; text-align: center; margin: 1.5rem 0; }
 .divider::before,
-.divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.divider span {
-    padding: 0 1rem;
-    color: #718096;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
+.divider::after { content: ''; flex: 1; border-bottom: 1px solid #e2e8f0; }
+.divider span   { padding: 0 1rem; color: #718096; font-size: 0.875rem; font-weight: 500; }
 
 
 /* -------------------------------------------------------------
-   Google Sign-In / Sign-Up Button
-   Follows Google's official identity branding guidelines:
-   https://developers.google.com/identity/branding-guidelines
+   Google Button
    ------------------------------------------------------------- */
 
 .btn-google {
-    /* Layout */
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     width: 100%;
-
-    /* Sizing & shape — Google specifies min-height 40 dp */
     height: 44px;
     padding: 0 16px;
     border-radius: 4px;
-
-    /* Google-mandated colours */
     background-color: #ffffff;
     border: 1px solid #dadce0;
-
-    /* Typography — Google Sans not available via CDN so fall back to Roboto */
     font-family: Roboto, 'Segoe UI', system-ui, sans-serif;
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.25px;
     color: #3c4043;
-
-    /* Behaviour */
     text-decoration: none;
     cursor: pointer;
     transition: background-color 0.15s ease, box-shadow 0.15s ease;
-
-    /* Prevent text wrapping */
     white-space: nowrap;
 }
 
@@ -260,68 +186,28 @@
     text-decoration: none;
 }
 
-.btn-google:focus-visible {
-    outline: 3px solid #4285F4;
-    outline-offset: 2px;
-}
-
-.btn-google:active {
-    background-color: #f1f3f4;
-    box-shadow: none;
-}
-
-/* Keep the SVG icon sharp at any DPI */
-.btn-google svg {
-    flex-shrink: 0;
-}
+.btn-google:focus-visible { outline: 3px solid #4285F4; outline-offset: 2px; }
+.btn-google:active        { background-color: #f1f3f4; box-shadow: none; }
+.btn-google svg           { flex-shrink: 0; }
 
 
 /* -------------------------------------------------------------
-   Bottom Link  ("Already have an account? Log in")
+   Auth Links
    ------------------------------------------------------------- */
 
-.auth-link {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #718096;
-}
+.auth-link { text-align: center; margin-top: 1.5rem; color: #718096; }
+.auth-link a { color: #525AFF; font-weight: 600; text-decoration: none; }
+.auth-link a:hover { text-decoration: underline; }
 
-.auth-link a {
-    color: #525AFF;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.auth-link a:hover {
-    text-decoration: underline;
-}
+.forgot-password-link { font-size: 0.9rem; color: #525AFF; text-decoration: none; }
+.forgot-password-link:hover { text-decoration: underline; }
 
 
 /* -------------------------------------------------------------
-   Login-specific extras
+   University "Other" field
    ------------------------------------------------------------- */
 
-.forgot-password-link {
-    font-size: 0.9rem;
-    color: #525AFF;
-    text-decoration: none;
-}
-
-.forgot-password-link:hover {
-    text-decoration: underline;
-}
-
-
-/* -------------------------------------------------------------
-   University "Other" reveal field
-   Used by: complete_profile
-   ------------------------------------------------------------- */
-
-.uni-other-field {
-    /* Hidden by default; JS adds --visible modifier to show it */
-    display: none;
-    overflow: hidden;
-}
+.uni-other-field { display: none; overflow: hidden; }
 
 .uni-other-field--visible {
     display: block;
@@ -329,53 +215,127 @@
 }
 
 @keyframes uniOtherReveal {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.avatar-circle {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    flex-shrink: 0;
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.messaging-row:hover {
-    background-color: #f5f6fa;
-}
 
 /* -------------------------------------------------------------
-   User Status Indicators
+   Navbar
+   ------------------------------------------------------------- */
+
+.timeout-nav {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(91, 115, 232, 0.12);
+    box-shadow: 0 2px 16px rgba(91, 115, 232, 0.09);
+    font-family: 'Nunito', sans-serif;
+}
+
+.timeout-nav .navbar-brand {
+    font-weight: 800;
+    font-size: 20px;
+    background: linear-gradient(135deg, #5B73E8, #4ECDC4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.3px;
+}
+
+.timeout-nav .nav-link {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: #8892B0 !important;
+    padding: 7px 13px !important;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s;
+}
+
+.timeout-nav .nav-link:hover {
+    color: #5B73E8 !important;
+    background: rgba(91, 115, 232, 0.08);
+}
+
+.nav-user-btn {
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    color: #5B73E8 !important;
+    background: rgba(91, 115, 232, 0.10);
+    border: 1.5px solid rgba(91, 115, 232, 0.20);
+    padding: 6px 16px !important;
+    border-radius: 50px !important;
+}
+
+.nav-user-btn:hover { background: rgba(91, 115, 232, 0.18) !important; }
+
+.nav-logout-btn {
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    color: #8892B0 !important;
+    padding: 6px 14px !important;
+    border-radius: 50px !important;
+}
+
+.nav-logout-btn:hover {
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.07) !important;
+}
+
+/* Status dot in navbar */
+.status-dot-nav {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid #fff;
+}
+
+/* Status pill — links to profile for changing status */
+.nav-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8892B0;
+    background: rgba(136, 146, 176, 0.08);
+    border: 1.5px solid rgba(136, 146, 176, 0.18);
+    border-radius: 50px;
+    padding: 5px 13px;
+    text-decoration: none;
+    transition: all 0.18s;
+}
+
+.nav-status-pill:hover {
+    color: #5B73E8;
+    border-color: rgba(91, 115, 232, 0.30);
+    background: rgba(91, 115, 232, 0.07);
+    text-decoration: none;
+}
+
+
+/* -------------------------------------------------------------
+   Status Dots & Badges (used app-wide)
    ------------------------------------------------------------- */
 
 .status-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
+    border: 2px solid #fff;
     flex-shrink: 0;
 }
 
-.status-dot.status-focus {
-    background-color: #e53e3e;
-}
+.status-dot.status-social,
+.status-dot-nav.status-social   { background: #22c55e; }
 
-.status-dot.status-social {
-    background-color: #38a169;
-}
+.status-dot.status-focus,
+.status-dot-nav.status-focus    { background: #ef4444; }
 
-.status-dot.status-inactive {
-    background-color: #a0aec0;
-}
+.status-dot.status-inactive,
+.status-dot-nav.status-inactive { background: #94a3b8; }
 
 .status-badge-focus,
 .status-badge-social,
@@ -387,20 +347,6 @@
     font-weight: 500;
 }
 
-.status-badge-focus {
-    background-color: #fff5f5;
-    color: #c53030;
-    border: 1px solid #feb2b2;
-}
-
-.status-badge-social {
-    background-color: #f0fff4;
-    color: #276749;
-    border: 1px solid #9ae6b4;
-}
-
-.status-badge-inactive {
-    background-color: #f7fafc;
-    color: #718096;
-    border: 1px solid #e2e8f0;
-}
+.status-badge-focus    { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+.status-badge-social   { background-color: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+.status-badge-inactive { background-color: #f7fafc; color: #718096; border: 1px solid #e2e8f0; }

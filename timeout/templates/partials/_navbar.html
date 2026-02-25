@@ -1,28 +1,42 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'landing' %}">Timeout</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'calendar' %}">Calendar</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'notes' %}">Notes</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'statistics' %}">Statistics</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'social_feed' %}">Social</a></li>
-                {% endif %}
-            </ul>
-            <ul class="navbar-nav">
-                {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">{{ user.username }}</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
-                {% endif %}
-            </ul>
-        </div>
+{% load static %}
+<nav class="navbar navbar-expand-lg sticky-top timeout-nav">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'landing' %}">Timeout</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto gap-1">
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'calendar' %}">Calendar</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'notes' %}">Notes</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'statistics' %}">Statistics</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'social_feed' %}">Social</a></li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav align-items-center gap-2">
+        {% if user.is_authenticated %}
+
+          <!-- Status indicator — click goes to profile to change -->
+          <li class="nav-item">
+            <a class="nav-status-pill" href="{% url 'profile' %}">
+              <span class="status-dot-nav status-{{ user.status }}"></span>
+              {{ user.get_status_display }}
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link nav-user-btn" href="{% url 'profile' %}">{{ user.username }}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-logout-btn" href="{% url 'logout' %}">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link nav-user-btn" href="{% url 'login' %}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
+        {% endif %}
+      </ul>
     </div>
+  </div>
 </nav>
