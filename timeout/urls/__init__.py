@@ -5,4 +5,5 @@ urlpatterns = [
     path('', include('timeout.urls.pages')),
     path('social/', include('timeout.urls.social')),
     path('', include('timeout.urls.calendar')),
+    path('messaging/', include('timeout.urls.messaging')),
 ]
