@@ -26,7 +26,8 @@ jobs:
 
             source /srv/timeout/.venv/bin/activate
             pip install -r requirements.txt
-
+            
+            python manage.py makemigrations --check --dry-run
             python manage.py migrate --noinput
             python manage.py collectstatic --noinput
 
