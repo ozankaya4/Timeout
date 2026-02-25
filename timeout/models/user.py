@@ -9,6 +9,16 @@ class User(AbstractUser):
         EARLY_BIRD = 'early_bird', 'Early Bird'
         NIGHT_OWL = 'night_owl', 'Night Owl'
 
+    class Status(models.TextChoices):
+        FOCUS    = 'focus',    '🎯 Focus Mode'
+        SOCIAL   = 'social',   '💬 Social'
+        INACTIVE = 'inactive', '😶 Inactive'
+
+    status = models.CharField(  
+        max_length=10,
+        choices=Status.choices,
+        default=Status.INACTIVE,
+)
     # Profile fields
     middle_name = models.CharField(max_length=50, blank=True)
     bio = models.TextField(max_length=500, blank=True)
