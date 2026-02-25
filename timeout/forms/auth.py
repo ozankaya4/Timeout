@@ -254,3 +254,8 @@ class LoginForm(AuthenticationForm):
             'placeholder': 'Password',
         }),
     )
+
+
+class SettingsProfileForm(CompleteProfileForm):
+    """Re-use the CompleteProfileForm fields and logic for the Settings page."""
+    pass
