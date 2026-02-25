@@ -5,5 +5,6 @@ from .comment import Comment
 from .like import Like
 from .bookmark import Bookmark
 from .note import Note
+from .message import Message, Conversation
 
-__all__ = ['User', 'Event', 'Post', 'Comment', 'Like', 'Bookmark', 'Note']
+__all__ = ['User', 'Event', 'Post', 'Comment', 'Like', 'Bookmark', 'Conversation', 'Message', 'Note']
