@@ -352,3 +352,55 @@
 .messaging-row:hover {
     background-color: #f5f6fa;
 }
+
+/* -------------------------------------------------------------
+   User Status Indicators
+   ------------------------------------------------------------- */
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot.status-focus {
+    background-color: #e53e3e;
+}
+
+.status-dot.status-social {
+    background-color: #38a169;
+}
+
+.status-dot.status-inactive {
+    background-color: #a0aec0;
+}
+
+.status-badge-focus,
+.status-badge-social,
+.status-badge-inactive {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge-focus {
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #feb2b2;
+}
+
+.status-badge-social {
+    background-color: #f0fff4;
+    color: #276749;
+    border: 1px solid #9ae6b4;
+}
+
+.status-badge-inactive {
+    background-color: #f7fafc;
+    color: #718096;
+    border: 1px solid #e2e8f0;
+}

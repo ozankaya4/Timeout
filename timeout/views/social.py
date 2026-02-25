@@ -203,3 +203,17 @@ def follow_user(request, username):
 
     messages.success(request, message)
     return JsonResponse({'following': following})
+
+@login_required
+@require_POST
+def update_status(request):
+    """Update the logged-in user's status via AJAX."""
+    status = request.POST.get('status')
+    if status not in [s[0] for s in User.Status.choices]:
+        return JsonResponse({'error': 'Invalid status'}, status=400)
+    request.user.status = status
+    request.user.save()
+    return JsonResponse({
+        'status': status,
+        'status_display': request.user.get_status_display()
+    })

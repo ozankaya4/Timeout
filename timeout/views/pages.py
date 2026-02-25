@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-
+from timeout.models import User
+from timeout.services import FeedService
 from timeout.views.statistics import build_context
 
 
@@ -21,8 +22,12 @@ def dashboard(request):
 @login_required
 def profile(request):
     """Profile page view."""
-    return render(request, 'pages/profile.html')
-
+    posts = FeedService.get_user_posts(request.user, request.user)
+    context = {
+        'posts': posts,
+        'status_choices': User.Status.choices,
+    }
+    return render(request, 'pages/profile.html', context)
 
 @login_required
 def calendar(request):
