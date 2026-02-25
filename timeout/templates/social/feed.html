@@ -5,7 +5,9 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
+
+        <!-- Feed (left/centre) -->
+        <div class="col-lg-8">
             <!-- Create Post Card -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -14,12 +16,8 @@
                         {% csrf_token %}
                         {{ post_form.content }}
                         <div class="row mt-3">
-                            <div class="col-md-6">
-                                {{ post_form.event }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ post_form.privacy }}
-                            </div>
+                            <div class="col-md-6">{{ post_form.event }}</div>
+                            <div class="col-md-6">{{ post_form.privacy }}</div>
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Post</button>
                     </form>
@@ -41,7 +39,7 @@
                 </li>
             </ul>
 
-            <!-- Posts Feed -->
+            <!-- Posts -->
             {% if posts %}
                 {% for post in posts %}
                     {% include 'social/_post_card.html' with post=post %}
@@ -56,6 +54,45 @@
                 </div>
             {% endif %}
         </div>
+
+        <!-- Messaging Sidebar (right) -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 80px;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">💬 Messages</h6>
+                    <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-primary">See All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if conversation_data %}
+                        {% for item in conversation_data %}
+                        <a href="{% url 'conversation' item.conv.id %}" class="text-decoration-none">
+                            <div class="d-flex align-items-center gap-2 p-3 border-bottom messaging-row">
+                                <!-- Avatar -->
+                                <div class="avatar-circle bg-primary text-white">
+                                    {{ item.other.username|first|upper }}
+                                </div>
+                                <!-- Info -->
+                                <div class="overflow-hidden">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <strong class="small">{{ item.other.username }}</strong>
+                                        <span class="status-dot status-{{ item.other.status }}"></span>
+                                    </div>
+                                    <p class="text-muted mb-0 small text-truncate">
+                                        {% if item.last %}{{ item.last.content|truncatechars:35 }}{% else %}No messages yet{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-3 text-muted small">
+                            No conversations yet. Visit a user's profile to start one!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}

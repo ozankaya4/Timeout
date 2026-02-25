@@ -5,13 +5,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from timeout.forms import PostForm, CommentForm
-from timeout.models import Post, Comment, Like, Bookmark, User
+from timeout.models import Post, Comment, Like, Bookmark, User, Conversation
 from timeout.services import FeedService
+
 
 
 @login_required
 def feed(request):
-    """Social feed view with Following and Discover tabs."""
     tab = request.GET.get('tab', 'following')
 
     if tab == 'discover':
@@ -19,13 +19,25 @@ def feed(request):
     else:
         posts = FeedService.get_following_feed(request.user)
 
+    conversations = Conversation.objects.filter(
+        participants=request.user
+    ).prefetch_related('participants', 'messages').order_by('-updated_at')[:5]
+
+    conversation_data = []
+    for conv in conversations:
+        conversation_data.append({
+            'conv': conv,
+            'other': conv.get_other_participant(request.user),
+            'last': conv.get_last_message(),
+        })
+
     context = {
         'posts': posts,
         'active_tab': tab,
         'post_form': PostForm(user=request.user),
+        'conversation_data': conversation_data,
     }
     return render(request, 'social/feed.html', context)
-
 
 @login_required
 def create_post(request):
