@@ -13,7 +13,7 @@ jobs:
 
       - name: Debug secrets presence
         run: |
-          if [ -z "${{ secrets.EC2_HOST }}" ]; then echo "EC2_HOST is EMPTY"; else echo "EC2_HOST is set"; fi
+          if [ -z "${{ secrets.EC2_HOST }}" ]; then echo "EC2_HOST is EMPTY"; else echo "EC2_HOST is set1"; fi
           if [ -z "${{ secrets.EC2_USER }}" ]; then echo "EC2_USER is EMPTY"; else echo "EC2_USER is set"; fi
           if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then echo "EC2_SSH_KEY is EMPTY"; else echo "EC2_SSH_KEY is set"; fi
       - name: Deploy over SSH
