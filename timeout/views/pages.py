@@ -31,12 +31,6 @@ def calendar(request):
 
 
 @login_required
-def notes(request):
-    """Notes page view."""
-    return render(request, 'pages/notes.html')
-
-
-@login_required
 def statistics(request):
     """Statistics page view."""
     context = build_context(request.user)
