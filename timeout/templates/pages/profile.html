@@ -16,7 +16,7 @@
         <!-- Profile Header -->
         <div class="card mb-4">
           <div class="card-body">
-            <div class="d-flex align-items-start gap-3">
+            <div class="d-flex align-items-center gap-3">
               <!-- Profile picture -->
               <div>
                 {% if user.profile_picture %}
@@ -26,27 +26,30 @@
                 {% endif %}
               </div>
               <div>
-                <h3>@{{ user.username }}</h3>
-                {% if user.get_full_name %}
-                  <p class="text-muted mb-1">{{ user.get_full_name }}</p>
-                {% endif %}
+                <h3 class="m-0">@{{ user.username }}</h3>
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-md-3">
+                  {% if user.get_full_name %}
+                    <p class="text-muted mb-0">{{ user.get_full_name }}</p>
+                  {% endif %}
+
+                  <div class="text-muted small">
+                    {% if user.university %}
+                      <span>🎓 {{ user.university }}</span>
+                    {% endif %}
+                    {% if user.year_of_study %}
+                      <span class="ms-0 ms-md-2">Year {{ user.year_of_study }}</span>
+                    {% endif %}
+                  </div>
+                </div>
                 {% if user.bio %}
-                  <p class="mt-2">{{ user.bio }}</p>
+                  <p class="my-2">{{ user.bio }}</p>
                 {% endif %}
-                <div class="text-muted small">
-                  {% if user.university %}
-                    <span>🎓 {{ user.university }}</span>
-                  {% endif %}
-                  {% if user.year_of_study %}
-                    <span class="ms-2">Year {{ user.year_of_study }}</span>
-                  {% endif %}
+                <div class="mt-3">
+                  <span class="badge bg-light text-dark me-2">{{ posts|length }} Posts</span>
+                  <span class="badge bg-light text-dark me-2">{{ user.follower_count }} Followers</span>
+                  <span class="badge bg-light text-dark">{{ user.following_count }} Following</span>
                 </div>
               </div>
-            </div>
-            <div class="mt-3">
-              <span class="badge bg-light text-dark me-2">{{ posts|length }} Posts</span>
-              <span class="badge bg-light text-dark me-2">{{ user.follower_count }} Followers</span>
-              <span class="badge bg-light text-dark">{{ user.following_count }} Following</span>
             </div>
           </div>
         </div>
@@ -80,6 +83,51 @@
             </div>
           </div>
         </div>
+        <!-- Schedule -->
+        <div class="post-card mb-4">
+          <div class="post-card-body">
+            <div class="post-header">
+              <div>
+                <h4 class="m-0">Schedule</h4>
+              </div>
+            </div>
+            {% if event %}
+              <div class="schedule-row">
+                <div class="schedule-status-bar bar-{{ event_status }}"></div>
+                <div class="schedule-content">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    {% if event_status == 'active' %}
+                      <span class="schedule-badge badge-active">🟢 In Progress</span>
+                    {% elif event_status == 'upcoming' %}
+                      <span class="schedule-badge badge-upcoming">🔵 Up Next</span>
+                    {% else %}
+                      <span class="schedule-badge badge-recent">⚪ Just Ended</span>
+                    {% endif %}
+                    <span class="cal-chip cal-chip--{{ event.event_type }}">{{ event.get_event_type_display }}</span>
+                  </div>
+
+                  <p class="post-content mb-1">{{ event.title }}</p>
+
+                  {% if event.is_all_day %}
+                    <p class="post-time">📅 All Day</p>
+                  {% else %}
+                    <p class="post-time">🕐 {{ event.start_datetime|date:'H:i' }} – {{ event.end_datetime|date:'H:i' }}</p>
+                  {% endif %}
+
+                  {% if event.location %}
+                    <p class="post-time">📍 {{ event.location }}</p>
+                  {% endif %}
+
+                  {% if event.description %}
+                    <p class="post-time">💬 {{ event.description|truncatechars:50 }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% else %}
+              <p class="post-content" style="color: var(--to-muted);">No upcoming schedule</p>
+            {% endif %}
+          </div>
+        </div>
 
         <!-- My Posts -->
         <h4 class="mb-3">My Posts</h4>
@@ -99,5 +147,4 @@
   <script src="{% static 'js/social.js' %}"></script>
   <div id="profile-status-config" data-update-url="{% url 'update_status' %}" data-csrf-token="{{ csrf_token }}"></div>
   <script src="{% static 'js/profile.js' %}"></script>
-
 {% endblock %}
