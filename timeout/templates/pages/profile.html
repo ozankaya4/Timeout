@@ -61,9 +61,17 @@
             <div class="d-flex gap-2 flex-wrap">
               {% for value, label in status_choices %}
                 <button class="btn status-btn {% if user.status == value %}
+                    
+                    
                     btn-primary
+
+
                   {% else %}
+                    
+                    
                     btn-outline-secondary
+
+
                   {% endif %}"
                   data-status="{{ value }}">
                   {{ label }}
@@ -88,33 +96,8 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% load static %}
   <script src="{% static 'js/social.js' %}"></script>
-  <script>
-    document.querySelectorAll('.status-btn').forEach((btn) => {
-      btn.addEventListener('click', function () {
-        const status = this.dataset.status
-        fetch("{% url 'update_status' %}", {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: `status=${status}`
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data.status) {
-              document.getElementById('current-status-display').textContent = data.status_display
-              document.querySelectorAll('.status-btn').forEach((b) => {
-                b.classList.remove('btn-primary')
-                b.classList.add('btn-outline-secondary')
-              })
-              this.classList.remove('btn-outline-secondary')
-              this.classList.add('btn-primary')
-            }
-          })
-      })
-    })
-  </script>
+  <div id="profile-status-config" data-update-url="{% url 'update_status' %}" data-csrf-token="{{ csrf_token }}"></div>
+  <script src="{% static 'js/profile.js' %}"></script>
+
 {% endblock %}
