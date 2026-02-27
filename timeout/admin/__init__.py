@@ -6,6 +6,7 @@ from .social_admin import (
     LikeAdmin,
     BookmarkAdmin,
 )
+from .note_admin import NoteAdmin
 
 __all__ = [
     'UserAdmin',
@@ -14,4 +15,5 @@ __all__ = [
     'CommentAdmin',
     'LikeAdmin',
     'BookmarkAdmin',
+    'NoteAdmin',
 ]

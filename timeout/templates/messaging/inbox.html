@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inbox - Timeout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="feed-wrapper" style="max-width: 680px;">
+
+  <div class="inbox-header">
+    <h4 class="inbox-title">💬 Inbox</h4>
+    <a href="{% url 'social_feed' %}" class="btn-back">← Feed</a>
+  </div>
+
+  {% if conversations %}
+    {% for item in conversations %}
+      <a href="{% url 'conversation' item.conv.id %}" class="inbox-row glass-card">
+        <div class="msg-avatar">{{ item.other.username|first|upper }}</div>
+        <div class="msg-info">
+          <div class="msg-name-row">
+            <span class="msg-name">{{ item.other.username }}</span>
+            <span class="status-dot status-{{ item.other.status }}"></span>
+          </div>
+          <div class="msg-preview">
+            {% if item.last %}{{ item.last.content|truncatechars:55 }}{% else %}No messages yet{% endif %}
+          </div>
+        </div>
+        {% if item.last %}
+          <div class="inbox-time">{{ item.last.created_at|timesince }} ago</div>
+        {% endif %}
+      </a>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">💌</div>
+      No conversations yet. Visit a profile to start one!
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/social.js' %}"></script>
+{% endblock %}

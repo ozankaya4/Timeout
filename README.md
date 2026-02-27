@@ -133,7 +133,7 @@ This project is configured for deployment on **PythonAnywhere**.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request .
 
 ---
 

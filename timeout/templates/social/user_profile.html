@@ -12,8 +12,11 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h3>{{ profile_user.username }}</h3>
+                            <span class="status-badge-{{ profile_user.status }} mb-2">
+                                {{ profile_user.get_status_display }}
+                            </span>
                             {% if profile_user.bio %}
-                                <p class="text-muted">{{ profile_user.bio }}</p>
+                                <p class="text-muted mt-2">{{ profile_user.bio }}</p>
                             {% endif %}
                             <div class="text-muted small">
                                 {% if profile_user.university %}
@@ -26,11 +29,17 @@
                         </div>
 
                         {% if user != profile_user %}
-                            <button class="btn btn-primary follow-btn"
-                                    data-username="{{ profile_user.username }}"
-                                    data-following="{{ is_following|yesno:'true,false' }}">
-                                {{ is_following|yesno:'Unfollow,Follow' }}
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary follow-btn"
+                                        data-username="{{ profile_user.username }}"
+                                        data-following="{{ is_following|yesno:'true,false' }}">
+                                    {{ is_following|yesno:'Unfollow,Follow' }}
+                                </button>
+                                <a href="{% url 'start_conversation' profile_user.username %}"
+                                   class="btn btn-outline-primary">
+                                    💬 Message
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
 

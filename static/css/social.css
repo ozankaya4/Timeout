@@ -1,0 +1,707 @@
+:root {
+    --to-blue:      #5B73E8;
+    --to-blue-dark: #4A5FD4;
+    --to-teal:      #4ECDC4;
+    --to-teal-dark: #38B2AA;
+    --to-gradient:  linear-gradient(135deg, #5B73E8 0%, #4ECDC4 100%);
+    --to-bg:        #F0F4FF;
+    --to-surface:   rgba(255, 255, 255, 0.85);
+    --to-border:    rgba(91, 115, 232, 0.12);
+    --to-text:      #1A1F36;
+    --to-muted:     #8892B0;
+    --to-shadow-sm: 0 2px 12px rgba(91, 115, 232, 0.10);
+    --to-shadow-md: 0 6px 24px rgba(91, 115, 232, 0.14);
+    --to-radius:    16px;
+    --to-radius-sm: 10px;
+}
+
+
+/* -------------------------------------------------------------
+   Page Background
+   ------------------------------------------------------------- */
+
+.social-bg {
+    background: var(--to-bg);
+    min-height: 100vh;
+}
+
+.feed-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+}
+
+
+/* -------------------------------------------------------------
+   Glass Card (base for all social cards)
+   ------------------------------------------------------------- */
+
+.glass-card {
+    background: var(--to-surface);
+    border: 1px solid var(--to-border);
+    border-radius: var(--to-radius);
+    box-shadow: var(--to-shadow-sm);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-card:hover { box-shadow: var(--to-shadow-md); }
+
+
+/* -------------------------------------------------------------
+   Create Post Card
+   ------------------------------------------------------------- */
+
+.create-post-card {
+    margin-bottom: 22px;
+    padding: 22px 24px;
+}
+
+.create-post-card .card-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--to-blue);
+    margin-bottom: 12px;
+}
+
+.create-post-card textarea {
+    width: 100%;
+    border: 1.5px solid var(--to-border);
+    border-radius: var(--to-radius-sm);
+    padding: 12px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--to-text);
+    background: rgba(240, 244, 255, 0.6);
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.create-post-card textarea:focus {
+    border-color: var(--to-blue);
+    background: #fff;
+}
+
+.create-post-card select {
+    border: 1.5px solid var(--to-border);
+    border-radius: var(--to-radius-sm);
+    padding: 9px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--to-text);
+    background: rgba(240, 244, 255, 0.6);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+    cursor: pointer;
+}
+
+.create-post-card select:focus {
+    border-color: var(--to-blue);
+    background: #fff;
+}
+
+.post-selects           { display: flex; gap: 12px; margin-top: 12px; }
+.post-selects > div     { flex: 1; }
+.post-footer            { display: flex; justify-content: flex-end; margin-top: 14px; }
+
+.btn-post {
+    background: var(--to-gradient);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 3px 14px rgba(91, 115, 232, 0.30);
+}
+
+.btn-post:hover { opacity: 0.9; transform: translateY(-1px); }
+
+
+/* -------------------------------------------------------------
+   Feed Tabs
+   ------------------------------------------------------------- */
+
+.feed-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--to-surface);
+    border: 1px solid var(--to-border);
+    border-radius: 50px;
+    padding: 5px;
+    box-shadow: var(--to-shadow-sm);
+    width: fit-content;
+}
+
+.feed-tab {
+    padding: 8px 22px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--to-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.feed-tab:hover { color: var(--to-blue); text-decoration: none; }
+
+.feed-tab.active {
+    background: var(--to-gradient);
+    color: #fff !important;
+    box-shadow: 0 2px 10px rgba(91, 115, 232, 0.28);
+    text-decoration: none;
+}
+
+
+/* -------------------------------------------------------------
+   Empty State
+   ------------------------------------------------------------- */
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--to-muted);
+    background: var(--to-surface);
+    border: 1px solid var(--to-border);
+    border-radius: var(--to-radius);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+
+
+/* -------------------------------------------------------------
+   Messaging Sidebar
+   ------------------------------------------------------------- */
+
+.messages-sidebar { position: sticky; top: 84px; }
+
+.messages-header {
+    padding: 16px 18px;
+    background: var(--to-gradient);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.messages-header h6 {
+    margin: 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.btn-see-all {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.20);
+    padding: 5px 14px;
+    border-radius: 50px;
+    transition: background 0.2s;
+}
+
+.btn-see-all:hover {
+    background: rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-decoration: none;
+}
+
+.msg-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--to-border);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.msg-row:hover { background: rgba(91, 115, 232, 0.05); text-decoration: none; }
+.msg-row:last-child { border-bottom: none; }
+
+.msg-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--to-gradient);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.msg-info       { overflow: hidden; flex: 1; }
+
+.msg-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.msg-name    { font-weight: 700; font-size: 13px; color: var(--to-text); }
+
+.msg-preview {
+    font-size: 12px;
+    color: var(--to-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.msg-empty {
+    padding: 28px 18px;
+    color: var(--to-muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.msg-empty .icon { font-size: 28px; margin-bottom: 8px; }
+
+
+/* -------------------------------------------------------------
+   Post Card
+   ------------------------------------------------------------- */
+
+.post-card {
+    background: var(--to-surface);
+    border: 1px solid var(--to-border);
+    border-radius: var(--to-radius);
+    box-shadow: 0 2px 12px rgba(91, 115, 232, 0.08);
+    backdrop-filter: blur(12px);
+    margin-bottom: 18px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    overflow: hidden;
+}
+
+.post-card:hover { box-shadow: var(--to-shadow-md); transform: translateY(-1px); }
+
+.post-card-body { padding: 20px 22px; }
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.post-author-link {
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--to-blue);
+    text-decoration: none;
+}
+
+.post-author-link:hover { text-decoration: underline; }
+
+.post-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+
+.post-time { font-size: 12px; color: var(--to-muted); font-weight: 500; }
+
+.badge-followers {
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(91, 115, 232, 0.10);
+    color: var(--to-blue);
+    padding: 3px 9px;
+    border-radius: 50px;
+    border: 1px solid rgba(91, 115, 232, 0.20);
+}
+
+.btn-delete-post {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.20);
+    border-radius: 50px;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-delete-post:hover { background: rgba(239, 68, 68, 0.16); }
+
+.post-content {
+    font-size: 14.5px;
+    color: var(--to-text);
+    line-height: 1.65;
+    margin-bottom: 0;
+}
+
+.post-event-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, rgba(91,115,232,0.08), rgba(78,205,196,0.10));
+    border: 1px solid rgba(91, 115, 232, 0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--to-text);
+    font-weight: 600;
+}
+
+.post-event-tag .event-date { font-size: 12px; color: var(--to-muted); font-weight: 500; }
+
+.post-divider { height: 1px; background: rgba(91, 115, 232, 0.10); margin: 14px 0; }
+
+/* Action Buttons */
+.post-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    border: 1.5px solid;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: transparent;
+}
+
+.action-btn-like { color: var(--to-blue); border-color: rgba(91, 115, 232, 0.25); }
+.action-btn-like:hover,
+.action-btn-like.liked { background: rgba(91, 115, 232, 0.10); border-color: var(--to-blue); }
+
+.action-btn-comment { color: var(--to-muted); border-color: rgba(136, 146, 176, 0.25); }
+.action-btn-comment:hover {
+    color: var(--to-blue);
+    border-color: rgba(91, 115, 232, 0.25);
+    background: rgba(91, 115, 232, 0.06);
+}
+
+.action-btn-bookmark { color: var(--to-teal); border-color: rgba(78, 205, 196, 0.25); }
+.action-btn-bookmark:hover,
+.action-btn-bookmark.bookmarked { background: rgba(78, 205, 196, 0.10); border-color: var(--to-teal); }
+
+
+/* -------------------------------------------------------------
+   Comments
+   ------------------------------------------------------------- */
+
+.comments-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(91, 115, 232, 0.10);
+}
+
+.comment-form { display: flex; gap: 10px; margin-bottom: 16px; align-items: flex-end; }
+
+.comment-form textarea {
+    flex: 1;
+    border: 1.5px solid rgba(91, 115, 232, 0.15);
+    border-radius: 10px;
+    padding: 10px 13px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--to-text);
+    background: rgba(240, 244, 255, 0.6);
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comment-form textarea:focus { border-color: var(--to-blue); background: #fff; }
+
+.btn-comment-submit {
+    background: var(--to-gradient);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.btn-comment-submit:hover { opacity: 0.88; }
+
+.comment-item { display: flex; gap: 10px; margin-bottom: 12px; }
+.comment-item.reply { margin-left: 28px; }
+
+.comment-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--to-gradient);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.comment-bubble { background: rgba(240, 244, 255, 0.7); border-radius: 10px; padding: 8px 12px; flex: 1; }
+
+.comment-author { font-weight: 700; font-size: 12px; color: var(--to-blue); text-decoration: none; }
+.comment-author:hover { text-decoration: underline; }
+.comment-time  { font-size: 11px; color: var(--to-muted); margin-left: 6px; }
+.comment-text  { font-size: 13px; color: var(--to-text); margin-top: 2px; }
+
+
+/* -------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .post-selects     { flex-direction: column; gap: 8px; }
+    .messages-sidebar { position: static; margin-top: 24px; }
+    .feed-tabs        { flex-wrap: wrap; border-radius: var(--to-radius); }
+}
+
+
+/* -------------------------------------------------------------
+   Inbox Page
+   ------------------------------------------------------------- */
+
+.inbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.inbox-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--to-text);
+    margin: 0;
+}
+
+.inbox-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.inbox-row:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--to-shadow-md);
+    text-decoration: none;
+}
+
+.inbox-time {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--to-muted);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+
+/* -------------------------------------------------------------
+   Conversation Page
+   ------------------------------------------------------------- */
+
+.convo-wrapper {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.convo-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+}
+
+.convo-header-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.convo-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--to-gradient);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.convo-username {
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--to-text);
+}
+
+.convo-status-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+}
+
+.convo-status-label {
+    font-size: 12px;
+    color: var(--to-muted);
+    font-weight: 500;
+}
+
+/* Back button (shared by convo + inbox) */
+.btn-back {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--to-muted);
+    background: rgba(136, 146, 176, 0.10);
+    border: 1.5px solid rgba(136, 146, 176, 0.20);
+    border-radius: 50px;
+    padding: 7px 16px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.18s;
+    flex-shrink: 0;
+}
+
+.btn-back:hover {
+    color: var(--to-blue);
+    border-color: rgba(91, 115, 232, 0.30);
+    background: rgba(91, 115, 232, 0.07);
+    text-decoration: none;
+}
+
+/* Message thread area */
+.convo-messages {
+    height: 480px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scroll-behavior: smooth;
+}
+
+.convo-empty {
+    margin: auto;
+    text-align: center;
+    color: var(--to-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.convo-empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+/* Bubbles */
+.msg-bubble-row {
+    display: flex;
+}
+
+.msg-mine  { justify-content: flex-end; }
+.msg-theirs { justify-content: flex-start; }
+
+.msg-bubble {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.msg-mine .msg-bubble {
+    background: var(--to-gradient);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.msg-theirs .msg-bubble {
+    background: rgba(240, 244, 255, 0.9);
+    color: var(--to-text);
+    border: 1px solid var(--to-border);
+    border-bottom-left-radius: 4px;
+}
+
+.msg-text { margin-bottom: 3px; }
+
+.msg-mine .msg-time  { font-size: 11px; color: rgba(255,255,255,0.65); text-align: right; }
+.msg-theirs .msg-time { font-size: 11px; color: var(--to-muted); }
+
+/* Input bar */
+.convo-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+}
+
+.convo-input {
+    flex: 1;
+    border: 1.5px solid var(--to-border);
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--to-text);
+    background: rgba(240, 244, 255, 0.6);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.convo-input:focus {
+    border-color: var(--to-blue);
+    background: #fff;
+}
+
+.btn-send {
+    background: var(--to-gradient);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 3px 12px rgba(91, 115, 232, 0.28);
+    white-space: nowrap;
+}
+
+.btn-send:hover { opacity: 0.9; transform: translateY(-1px); }

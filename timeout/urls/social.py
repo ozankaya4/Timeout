@@ -20,4 +20,5 @@ urlpatterns = [
     # User profiles and following
     path('user/<str:username>/', social.user_profile, name='user_profile'),
     path('user/<str:username>/follow/', social.follow_user, name='follow_user'),
+    path('status/update/', social.update_status, name='update_status'),
 ]
