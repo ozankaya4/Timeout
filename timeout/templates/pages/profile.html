@@ -44,10 +44,15 @@
                 {% if user.bio %}
                   <p class="my-2">{{ user.bio }}</p>
                 {% endif %}
-                <div class="mt-3">
+                {% comment %} <div class="mt-3">
                   <span class="badge bg-light text-dark me-2">{{ posts|length }} Posts</span>
                   <span class="badge bg-light text-dark me-2">{{ user.follower_count }} Followers</span>
                   <span class="badge bg-light text-dark">{{ user.following_count }} Following</span>
+                </div> {% endcomment %}
+                <div class="mt-3">
+                  <span class="badge bg-light text-dark me-2">{{ posts|length }} Posts</span>
+                  <span class="badge bg-light text-dark me-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followersModal">{{ user.follower_count }} Followers</span>
+                  <span class="badge bg-light text-dark" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followingModal">{{ user.following_count }} Following</span>
                 </div>
               </div>
             </div>
@@ -66,13 +71,29 @@
                 <button class="btn status-btn {% if user.status == value %}
                     
                     
+                    
+                    
+                    
+                    
                     btn-primary
+
+
+
+
 
 
                   {% else %}
                     
                     
+                    
+                    
+                    
+                    
                     btn-outline-secondary
+
+
+
+
 
 
                   {% endif %}"
@@ -141,9 +162,16 @@
       </div>
     </div>
   </div>
+
+  {% include 'partials/modals/followers_modal.html' %}
+  {% include 'partials/modals/following_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}
+  <script>
+    const FOLLOWERS_URL = "{% url 'followers_api' %}"
+    const FOLLOWING_URL = "{% url 'following_api' %}"
+  </script>
   <script src="{% static 'js/social.js' %}"></script>
   <div id="profile-status-config" data-update-url="{% url 'update_status' %}" data-csrf-token="{{ csrf_token }}"></div>
   <script src="{% static 'js/profile.js' %}"></script>
