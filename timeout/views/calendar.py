@@ -23,7 +23,7 @@ def calendar_view(request):
     except (ValueError, TypeError):
         year, month = today.year, today.month
 
-    # Get months from 1 to 12
+    # Get months from 1 to 12 
     # Handle navigating backwards or forwards when going before january of after december
     if month < 1:
         month, year = 12, year - 1
