@@ -1,6 +1,10 @@
 from django.utils import timezone
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from datetime import timedelta
 from timeout.models import Event
+from timeout.forms import ProfileEditForm
 
 
 def get_profile_event(user):
@@ -8,7 +12,6 @@ def get_profile_event(user):
     now = timezone.now()
     two_hours = timedelta(hours=2)
 
-    # on-going
     event = Event.objects.filter(
         creator=user,
         start_datetime__lte=now,
@@ -17,7 +20,6 @@ def get_profile_event(user):
     if event:
         return event, 'active'
 
-    # will start soon
     event = Event.objects.filter(
         creator=user,
         start_datetime__gt=now,
@@ -26,7 +28,6 @@ def get_profile_event(user):
     if event:
         return event, 'upcoming'
 
-    # just ended
     event = Event.objects.filter(
         creator=user,
         end_datetime__lt=now,
@@ -36,3 +37,19 @@ def get_profile_event(user):
         return event, 'recent'
 
     return None, None
+
+
+@login_required
+def profile_edit(request):
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Please fix the errors below.')
+    else:
+        form = ProfileEditForm(instance=request.user)
+
+    return render(request, 'pages/profile_edit.html', {'form': form})
