@@ -40,6 +40,7 @@ class DeadlineService:
             else: # else normal
                 urgency_status = 'normal'
 
+            # Retirn the event as a dict with calculated values
             results.append({
                 'event': event,
                 'urgency_status': urgency_status,
