@@ -113,6 +113,7 @@ def event_create(request):
         location=request.POST.get("location", ""),
         description=request.POST.get("description", ""),
         allow_conflict=allow_conflict,
+        visibility=request.POST.get("visibility", "public"),
     )
 
     event.full_clean() # Full validation for field type, length etc

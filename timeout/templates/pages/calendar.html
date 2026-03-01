@@ -4,9 +4,6 @@
 {% block title %}Calendar — Timeout{% endblock %}
 
 {% block extra_css %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
 {% endblock %}
 
@@ -65,7 +62,8 @@
                  data-event-all-day="{{ ev.is_all_day }}"
                  data-event-duration="{{ ev.duration }}"
                  data-event-ongoing="{{ ev.is_ongoing }}"
-                 data-event-past="{{ ev.is_past }}">
+                 data-event-past="{{ ev.is_past }}"
+                 data-event-visibility="{{ ev.visibility }}">
                  {{ ev.title }}
               </a>
               {% endfor %}
@@ -84,45 +82,10 @@
   </div>
 </div>
 
-<!-- Event Details Modal -->
-<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="badge" id="eventBadge" style="font-size:0.9rem;"></span>
-        <h5 class="modal-title ms-2" id="eventDetailsModalLabel"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p class="text-muted mb-3" id="eventTime"></p>
+<!-- Include the Event Details Modal -->
+{% include "pages/_event_details_modal.html" %}
 
-        <div class="row mb-2">
-          <div class="col-md-6"><strong>Status:</strong> <span id="eventStatus"></span></div>
-          <div class="col-md-6"><strong>Recurrence:</strong> <span id="eventRecurrence"></span></div>
-        </div>
-
-        <div class="row mb-2">
-          <div class="col-md-6"><strong>All Day Event:</strong> <span id="eventAllDay"></span></div>
-          <div class="col-md-6"><strong>Duration:</strong> <span id="eventDuration"></span></div>
-        </div>
-
-        <div class="row mb-2">
-          <div class="col-md-6"><strong>Ongoing:</strong> <span id="eventOngoing"></span></div>
-          <div class="col-md-6"><strong>Past:</strong> <span id="eventPast"></span></div>
-        </div>
-
-        <p id="eventLocation"></p>
-        <p id="eventDescription"></p>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn btn-nep text-white" id="editEventBtn">Edit Event</a>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Add Event Modal -->
+<!-- Add Event Modal (existing) -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -146,6 +109,13 @@
               <option value="meeting">Meeting</option>
               <option value="study_session">Study Session</option>
               <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="eventVisibility" class="form-label">Visibility</label>
+            <select class="form-select" id="eventVisibility" name="visibility">
+              <option value="public" selected>Public</option>
+              <option value="private">Private</option>
             </select>
           </div>
           <div class="row">
@@ -175,29 +145,5 @@
     </div>
   </div>
 </div>
-
-<!-- Mobile FAB -->
-<a href="#" class="cal-fab" data-bs-toggle="modal" data-bs-target="#addEventModal" aria-label="Add event">+</a>
-
-<!-- JS to populate modal -->
-<script>
-  const eventDetailsModal = document.getElementById('eventDetailsModal')
-  eventDetailsModal.addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget
-    document.getElementById('eventDetailsModalLabel').textContent = button.getAttribute('data-event-title')
-    document.getElementById('eventBadge').textContent = button.getAttribute('data-event-type')
-    document.getElementById('eventBadge').style.backgroundColor = button.getAttribute('data-event-color')
-    document.getElementById('eventTime').textContent = button.getAttribute('data-event-start') + ' – ' + button.getAttribute('data-event-end')
-    document.getElementById('eventStatus').textContent = button.getAttribute('data-event-status')
-    document.getElementById('eventRecurrence').textContent = button.getAttribute('data-event-recurrence')
-    document.getElementById('eventAllDay').textContent = button.getAttribute('data-event-all-day')
-    document.getElementById('eventDuration').textContent = button.getAttribute('data-event-duration')
-    document.getElementById('eventOngoing').textContent = button.getAttribute('data-event-ongoing')
-    document.getElementById('eventPast').textContent = button.getAttribute('data-event-past')
-    document.getElementById('eventLocation').textContent = button.getAttribute('data-event-location') ? 'Location: ' + button.getAttribute('data-event-location') : ''
-    document.getElementById('eventDescription').textContent = button.getAttribute('data-event-description') ? 'Description: ' + button.getAttribute('data-event-description') : ''
-    document.getElementById('editEventBtn').href ='/event/' + button.getAttribute('data-event-id') + '/edit/';
-  })
-</script>
 
 {% endblock %}

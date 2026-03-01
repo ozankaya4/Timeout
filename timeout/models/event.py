@@ -6,6 +6,11 @@ from django.core.exceptions import ValidationError
 class Event(models.Model):
     """Calendar event model."""
 
+    class Visibility(models.TextChoices):
+        """Event visibility choices."""
+        PUBLIC = 'public', 'Public'
+        PRIVATE = 'private', 'Private'
+
     class EventType(models.TextChoices):
         """Event type choices."""
         DEADLINE = 'deadline', 'Deadline'
@@ -63,6 +68,12 @@ class Event(models.Model):
     allow_conflict = models.BooleanField(
         default=False,
         help_text='if true, event overlaps with others'
+    )
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=Visibility.choices,
+        default=Visibility.PRIVATE
     )
 
     start_datetime = models.DateTimeField()
@@ -125,7 +136,44 @@ class Event(models.Model):
                 f'Tick "Override conflict" to allow it.'
             )
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
 
+        super().save(*args, **kwargs)
+
+        from .post import Post  # adjust if needed
+
+        # If event is PUBLIC → ensure post exists
+        if self.visibility == self.Visibility.PUBLIC:
+
+            existing_post = self.posts.first()
+
+            post_content = (
+                f"📅 {self.title}\n\n"
+                f"{self.description}\n\n"
+                f"🕒 {self.start_datetime:%d %b %Y %H:%M}"
+            )
+
+            if existing_post:
+                # Update existing post
+                existing_post.content = post_content
+                existing_post.save()
+            else:
+                # Create new post
+                Post.objects.create(
+                    author=self.creator,
+                    content=post_content,
+                    event=self,
+                    privacy=Post.Privacy.PUBLIC,
+                )
+
+        # If event is PRIVATE → delete any linked post
+        else:
+            self.posts.all().delete()
+
+    def delete(self, *args, **kwargs):
+        self.posts.all().delete()
+        super().delete(*args, **kwargs)
 
     @property
     def is_past(self):
