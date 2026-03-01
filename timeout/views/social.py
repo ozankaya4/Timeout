@@ -5,13 +5,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from timeout.forms import PostForm, CommentForm
-from timeout.models import Post, Comment, Like, Bookmark, User
+from timeout.models import Post, Comment, Like, Bookmark, User, Conversation
 from timeout.services import FeedService
+
 
 
 @login_required
 def feed(request):
-    """Social feed view with Following and Discover tabs."""
     tab = request.GET.get('tab', 'following')
 
     if tab == 'discover':
@@ -19,13 +19,25 @@ def feed(request):
     else:
         posts = FeedService.get_following_feed(request.user)
 
+    conversations = Conversation.objects.filter(
+        participants=request.user
+    ).prefetch_related('participants', 'messages').order_by('-updated_at')[:5]
+
+    conversation_data = []
+    for conv in conversations:
+        conversation_data.append({
+            'conv': conv,
+            'other': conv.get_other_participant(request.user),
+            'last': conv.get_last_message(),
+        })
+
     context = {
         'posts': posts,
         'active_tab': tab,
         'post_form': PostForm(user=request.user),
+        'conversation_data': conversation_data,
     }
     return render(request, 'social/feed.html', context)
-
 
 @login_required
 def create_post(request):
@@ -191,3 +203,37 @@ def follow_user(request, username):
 
     messages.success(request, message)
     return JsonResponse({'following': following})
+
+@login_required
+@require_POST
+def update_status(request):
+    """Update the logged-in user's status via AJAX."""
+    status = request.POST.get('status')
+    if status not in [s[0] for s in User.Status.choices]:
+        return JsonResponse({'error': 'Invalid status'}, status=400)
+    request.user.status = status
+    request.user.save()
+    return JsonResponse({
+        'status': status,
+        'status_display': request.user.get_status_display()
+    })
+
+@login_required
+def followers_api(request):
+    users = request.user.followers.all()
+    return JsonResponse({'users': _serialize_users(users)})
+
+@login_required
+def following_api(request):
+    users = request.user.following.all()
+    return JsonResponse({'users': _serialize_users(users)})
+
+def _serialize_users(users):
+    return [
+        {
+            'username': u.username,
+            'full_name': u.get_full_name(),
+            'profile_picture': u.profile_picture.url if u.profile_picture else None,
+        }
+        for u in users
+    ]

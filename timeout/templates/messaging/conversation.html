@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ other_user.username }} - Timeout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="convo-wrapper">
+
+  <!-- Header -->
+  <div class="convo-header glass-card">
+    <a href="{% url 'inbox' %}" class="btn-back">← Back</a>
+    <div class="convo-header-user">
+      <div class="convo-avatar">{{ other_user.username|first|upper }}</div>
+      <div>
+        <div class="convo-username">{{ other_user.username }}</div>
+        <div class="convo-status-row">
+          <span class="status-dot status-{{ other_user.status }}"></span>
+          <span class="convo-status-label">{{ other_user.get_status_display }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Thread -->
+  <div class="convo-messages glass-card" id="message-container">
+    {% for message in messages %}
+      <div class="msg-bubble-row {% if message.sender == user %}msg-mine{% else %}msg-theirs{% endif %}"
+           data-message-id="{{ message.id }}">
+        <div class="msg-bubble">
+          <div class="msg-text">{{ message.content }}</div>
+          <div class="msg-time">{{ message.created_at|date:"H:i" }}</div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="convo-empty">
+        <div class="icon">👋</div>
+        Say hello to {{ other_user.username }}!
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Input Bar -->
+  <div class="convo-input-bar glass-card">
+    <input type="text" id="message-input"
+           class="convo-input" placeholder="Type a message…" autocomplete="off">
+    <button class="btn-send" id="send-btn">Send</button>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/social.js' %}"></script>
+<script>
+  window.CONVO_CONFIG = {
+    conversationId: {{ conversation.id }},
+    currentUser:    "{{ user.username }}",
+    sendUrl:        "{% url 'send_message' conversation.id %}",
+    pollUrl:        "{% url 'poll_messages' conversation.id %}",
+    csrfToken:      "{{ csrf_token }}"
+  };
+</script>
+{% endblock %}

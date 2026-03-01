@@ -1,7 +1,165 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Statistics - Timeout{% endblock %}
+{% block title %}
+  Statistics – Timeout
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/statistics.css' %}" />
+{% endblock %}
 
 {% block content %}
-<!-- Statistics page content placeholder -->
+  <!-- Page Header -->
+  <div class="mb-4">
+    <h1 class="mb-1">Statistics Overview</h1>
+    <p class="text-muted mb-0">Track your productivity and event management</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stats-card">
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <div class="stats-card-icon" style="background-color: #c5eaf6ff;">🗓️</div>
+          <p class="stats-card-title m-0">Total Events</p>
+        </div>
+        <h3 class="stats-card-value">{{ total_events }}</h3>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stats-card">
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <div class="stats-card-icon" style="background-color: #cef3f3ff">⏰</div>
+          <p class="stats-card-title m-0">This Week</p>
+        </div>
+        <h3 class="stats-card-value">{{ this_week_count }}</h3>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stats-card">
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <div class="stats-card-icon" style="background-color: rgba(77,171,247,0.12);">📚</div>
+          <p class="stats-card-title m-0">Exams</p>
+        </div>
+        <h3 class="stats-card-value">{{ type_counts.Exam }}</h3>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="stats-card">
+        <div class="d-flex align-items-center mb-3 gap-2">
+          <div class="stats-card-icon" style="background-color: rgba(255,107,157,0.12);">⚠️</div>
+          <p class="stats-card-title m-0">Urgent This Week</p>
+        </div>
+        <h3 class="stats-card-value">{{ urgent_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-3">
+    <!-- Event Type Breakdown -->
+    <div class="col-12 col-lg-5">
+      <div class="chart-card h-100">
+        <h3>Event Type Breakdown</h3>
+        <div class="chart-wrapper">
+          <canvas id="typeChart"></canvas>
+        </div>
+        <div class="row g-2 mt-3">
+          {% for label, count in type_counts.items %}
+            <div class="col-6">
+              <div class="legend-item">
+                <div class="legend-dot" style="background-color: var(--palette-{{ forloop.counter }});"></div>
+                <span>{{ label }}</span>
+                <span class="fw-medium ms-auto">{{ count }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Activity -->
+    <div class="col-12 col-lg-7">
+      <div class="chart-card h-100">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h3 class="mb-0">Weekly Activity</h3>
+          <span class="text-success small fw-medium">Last 8 weeks</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Activity -->
+  <div class="chart-card mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h3 class="mb-1">Monthly Activity</h3>
+        <p class="text-muted small mb-0">Last 6 months performance</p>
+      </div>
+      <div class="d-flex gap-3">
+        <div class="legend-item">
+          <div class="legend-dot" style="background-color: #6c63ff;"></div>
+          <span>Total Events</span>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Urgent Events -->
+  {% if urgent_events %}
+    <div class="chart-card">
+      <h3 class="mb-3">Upcoming Urgent Events</h3>
+      <div class="d-flex flex-column gap-2">
+        {% for event in urgent_events %}
+          <div class="urgent-event-item">
+            <div class="d-flex align-items-center gap-3">
+              <div class="urgent-dot"></div>
+              <div>
+                <p class="mb-0 fw-medium">{{ event.title }}</p>
+                <p class="text-muted small mb-0">{{ event.get_event_type_display }}</p>
+              </div>
+            </div>
+            <div class="text-end">
+              <p class="mb-0 fw-medium small">{{ event.start_datetime|date:'M d' }}</p>
+              <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ event.start_datetime|date:'Y' }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script id="stats-data"
+    data-type-labels="{% for label, count in type_counts.items %}
+      {{ label }},
+    {% endfor %}"
+    data-type-counts="{% for label, count in type_counts.items %}
+      {{ count }},
+    {% endfor %}"
+    data-weekly-labels="{% for w in weekly_data %}
+      {{ w.label }},
+    {% endfor %}"
+    data-weekly-counts="{% for w in weekly_data %}
+      {{ w.count }},
+    {% endfor %}"
+    data-monthly-labels="{% for m in monthly_data %}
+      {{ m.label }},
+    {% endfor %}"
+    data-monthly-counts="{% for m in monthly_data %}
+      {{ m.count }},
+    {% endfor %}"></script>
+  <script src="{% static 'js/statistics.js' %}"></script>
 {% endblock %}

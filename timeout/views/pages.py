@@ -1,5 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from timeout.models import User
+from timeout.services import FeedService
+from timeout.views.statistics import build_context
+from timeout.views.profile import get_profile_event
+
 
 
 def landing(request):
@@ -17,9 +22,15 @@ def dashboard(request):
 
 @login_required
 def profile(request):
-    """Profile page view."""
-    return render(request, 'pages/profile.html')
-
+    posts = FeedService.get_user_posts(request.user, request.user)
+    event, event_status = get_profile_event(request.user)
+    context = {
+        'posts': posts,
+        'status_choices': User.Status.choices,
+        'event': event,
+        'event_status': event_status,
+    }
+    return render(request, 'pages/profile.html', context)
 
 @login_required
 def calendar(request):
@@ -28,15 +39,10 @@ def calendar(request):
 
 
 @login_required
-def notes(request):
-    """Notes page view."""
-    return render(request, 'pages/notes.html')
-
-
-@login_required
 def statistics(request):
     """Statistics page view."""
-    return render(request, 'pages/statistics.html')
+    context = build_context(request.user)
+    return render(request, 'pages/statistics.html', context)
 
 
 @login_required
