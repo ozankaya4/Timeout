@@ -57,13 +57,13 @@
                  data-event-end="{{ ev.end_datetime|date:'Y-m-d H:i' }}"
                  data-event-location="{{ ev.location }}"
                  data-event-description="{{ ev.description }}"
-                 data-event-status="{{ ev.get_status_display }}"
                  data-event-recurrence="{{ ev.get_recurrence_display }}"
                  data-event-all-day="{{ ev.is_all_day }}"
-                 data-event-duration="{{ ev.duration }}"
-                 data-event-ongoing="{{ ev.is_ongoing }}"
-                 data-event-past="{{ ev.is_past }}"
-                 data-event-visibility="{{ ev.visibility }}">
+                 data-event-visibility="{{ ev.visibility }}"
+                 data-event-status="{% if day.date < now.date %}Past{% elif day.date > now.date %}Upcoming{% else %}Ongoing{% endif %}"
+                 data-event-duration="{{ ev.end_datetime|timesince:ev.start_datetime }}"
+                 data-event-ongoing="{% if day.date == now.date %}Yes{% else %}No{% endif %}"
+                 data-event-past="{% if day.date < now.date %}Yes{% else %}No{% endif %}">
                  {{ ev.title }}
               </a>
               {% endfor %}

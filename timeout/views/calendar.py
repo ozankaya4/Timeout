@@ -14,6 +14,7 @@ from datetime import timedelta
 def calendar_view(request):
     """Renders a monthly calendar grid with events in day cells, including recurring events."""
     today = timezone.now().date()
+    weeks = []
 
     # Get today's date from the URL query string if nothing is provided
     try:
@@ -40,6 +41,14 @@ def calendar_view(request):
     # Determine visible range
     first_visible = weeks_raw[0][0]
     last_visible = weeks_raw[-1][-1]
+
+    context = {
+        "weeks": weeks,
+        "month": month,
+        "year": year,
+        "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "now": timezone.now(),
+    }
 
     # Fetch events for visible date range
     lookahead_days = 365  # how far in the future you want to show recurring events
