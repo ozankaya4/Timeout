@@ -23,16 +23,27 @@ def calendar_view(request):
     except (ValueError, TypeError):
         year, month = today.year, today.month
 
-    # Handle month overflow/underflow
+    # Get months from 1 to 12 
     if month < 1:
         month, year = 12, year - 1
+    # Handle navigating backwards or forwards when going before january of after december
     elif month > 12:
         month, year = 1, year + 1
 
-    prev_month = month - 1 if month > 1 else 12
-    prev_year = year if month > 1 else year - 1
-    next_month = month + 1 if month < 12 else 1
-    next_year = year if month < 12 else year + 1
+    # Wrapper to make sure if the months go further than 12 so it skips to the next year
+    # Creates links for before or after the current month and year 
+    if month > 1:
+        prev_month = month - 1
+        prev_year = year
+    else:
+        prev_month = 12
+        prev_year = year - 1
+    if month < 12:
+        next_month = month + 1
+        next_year = year
+    else:
+        next_month = 1
+        next_year = year + 1
 
     # Build weeks grid starting from Monday
     cal_obj = cal.Calendar(firstweekday=0)
