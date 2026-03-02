@@ -18,6 +18,85 @@ function getCookie(name) {
 
 const csrftoken = getCookie('csrftoken');
 
+// User search
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('userSearchInput');
+    const results = document.getElementById('userSearchResults');
+    if (!input) return;
+
+    // Move results to <body> so it's never clipped by parent overflow/stacking contexts
+    document.body.appendChild(results);
+
+    function positionDropdown() {
+        const rect = input.getBoundingClientRect();
+        results.style.position = 'fixed';
+        results.style.top = (rect.bottom + 4) + 'px';
+        results.style.left = rect.left + 'px';
+        results.style.width = rect.width + 'px';
+        results.style.zIndex = '9999';
+    }
+
+    let debounceTimer;
+
+    input.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+
+        if (!query) {
+            results.hidden = true;
+            results.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(function() {
+            fetch(`/social/search/?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    if (!data.users.length) {
+                        results.innerHTML = '<div class="search-no-results">No users found</div>';
+                    } else {
+                        data.users.forEach(u => {
+                            const avatar = u.profile_picture
+                                ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
+                                : `<div class="search-avatar search-avatar--initial">${u.username[0].toUpperCase()}</div>`;
+                            results.innerHTML += `
+                                <a href="${u.profile_url}" class="search-result-row">
+                                    ${avatar}
+                                    <div class="search-result-info">
+                                        <span class="search-result-name">${u.full_name}</span>
+                                        <span class="search-result-username">@${u.username}</span>
+                                    </div>
+                                    <span class="status-dot status-${u.status}"></span>
+                                </a>`;
+                        });
+                    }
+                    positionDropdown();
+                    results.hidden = false;
+                })
+                .catch(() => { results.hidden = true; });
+        }, 300);
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.hidden = true;
+        }
+    });
+
+    input.addEventListener('focus', function() {
+        if (results.innerHTML) {
+            positionDropdown();
+            results.hidden = false;
+        }
+    });
+
+    // Reposition if window scrolls or resizes
+    window.addEventListener('scroll', positionDropdown, { passive: true });
+    window.addEventListener('resize', positionDropdown, { passive: true });
+});
+
 // Like button functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Like buttons

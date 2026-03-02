@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
@@ -227,6 +228,32 @@ def followers_api(request):
 def following_api(request):
     users = request.user.following.all()
     return JsonResponse({'users': _serialize_users(users)})
+
+@login_required
+def search_users(request):
+    """Search users by username or name (GET ?q=...)."""
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'users': []})
+
+    users = User.objects.filter(
+        Q(username__icontains=query) |
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    ).exclude(id=request.user.id)[:10]
+
+    results = [
+        {
+            'username': u.username,
+            'full_name': u.get_full_name() or u.username,
+            'profile_picture': u.profile_picture.url if u.profile_picture else None,
+            'status': u.status,
+            'profile_url': f'/social/user/{u.username}/',
+        }
+        for u in users
+    ]
+    return JsonResponse({'users': results})
+
 
 def _serialize_users(users):
     return [

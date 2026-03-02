@@ -25,4 +25,7 @@ urlpatterns = [
     # Follow lists
     path('followers/', social.followers_api, name='followers_api'),
     path('following/', social.following_api, name='following_api'),
+
+    # User search
+    path('search/', social.search_users, name='search_users'),
 ]

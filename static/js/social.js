@@ -114,12 +114,83 @@ function initFollowButtons() {
 }
 
 
+// ── User Search ───────────────────────────────────────────────
+
+function initUserSearch() {
+  const input = document.getElementById('userSearchInput');
+  const results = document.getElementById('userSearchResults');
+  if (!input) return;
+
+  // Attach to body so it's never clipped by parent overflow/stacking contexts
+  document.body.appendChild(results);
+
+  function positionDropdown() {
+    const rect = input.getBoundingClientRect();
+    results.style.position = 'fixed';
+    results.style.top  = (rect.bottom + 4) + 'px';
+    results.style.left = rect.left + 'px';
+    results.style.width = rect.width + 'px';
+    results.style.zIndex = '9999';
+  }
+
+  let timer;
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    const q = this.value.trim();
+    if (!q) { results.hidden = true; results.innerHTML = ''; return; }
+
+    timer = setTimeout(() => {
+      fetch(`/social/search/?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+          results.innerHTML = '';
+          if (!data.users.length) {
+            results.innerHTML = '<div class="search-no-results">No users found</div>';
+          } else {
+            data.users.forEach(u => {
+              const avatar = u.profile_picture
+                ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
+                : `<div class="search-avatar search-avatar--initial">${u.username[0].toUpperCase()}</div>`;
+              results.innerHTML += `
+                <a href="${u.profile_url}" class="search-result-row">
+                  ${avatar}
+                  <div class="search-result-info">
+                    <span class="search-result-name">${u.full_name}</span>
+                    <span class="search-result-username">@${u.username}</span>
+                  </div>
+                  <span class="status-dot status-${u.status}"></span>
+                </a>`;
+            });
+          }
+          positionDropdown();
+          results.hidden = false;
+        })
+        .catch(err => console.error('Search error:', err));
+    }, 300);
+  });
+
+  document.addEventListener('click', e => {
+    if (!input.contains(e.target) && !results.contains(e.target)) {
+      results.hidden = true;
+    }
+  });
+
+  input.addEventListener('focus', () => {
+    if (results.innerHTML) { positionDropdown(); results.hidden = false; }
+  });
+
+  window.addEventListener('scroll', positionDropdown, { passive: true });
+  window.addEventListener('resize', positionDropdown, { passive: true });
+}
+
+
 // ── Init ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   initLikes();
   initBookmarks();
   initFollowButtons();
+  initUserSearch();
   initConversation();
 });
 
