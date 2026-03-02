@@ -118,14 +118,46 @@
               <option value="private">Private</option>
             </select>
           </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="eventStart" class="form-label">Start</label>
-              <input type="datetime-local" class="form-control" id="eventStart" name="start_datetime" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="eventEnd" class="form-label">End</label>
-              <input type="datetime-local" class="form-control" id="eventEnd" name="end_datetime" required>
+          <!-- Recurrence -->
+          <div class="mb-3">
+            <label for="eventRecurrence" class="form-label">Recurrence</label>
+            <select class="form-select" id="eventRecurrence" name="recurrence">
+              <option value="">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <!-- All Day -->
+          <div class="form-check mb-3">
+            <input class="form-check-input"
+                  type="checkbox"
+                  id="eventAllDay"
+                  name="is_all_day">
+            <label class="form-check-label" for="eventAllDay">
+              All Day Event
+            </label>
+          </div>
+
+          <!-- Date/Time -->
+          <div id="timeFields">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="eventStart" class="form-label">Start</label>
+                <input type="datetime-local"
+                      class="form-control"
+                      id="eventStart"
+                      name="start_datetime">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="eventEnd" class="form-label">End</label>
+                <input type="datetime-local"
+                      class="form-control"
+                      id="eventEnd"
+                      name="end_datetime"
+                      required>
+              </div>
             </div>
           </div>
           <div class="mb-3">

@@ -60,9 +60,10 @@ class Event(models.Model):
     )
 
     recurrence = models.CharField(
-        max_length=20,
+        max_length=10,
         choices=EventRecurrence.choices,
-        default=EventRecurrence.NONE
+        blank=True,
+        default=EventRecurrence.NONE,
     )
 
     allow_conflict = models.BooleanField(

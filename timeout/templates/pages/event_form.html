@@ -74,6 +74,18 @@
               </select>
             </div>
 
+            <!-- Recurrence -->
+            <div class="mb-3">
+              <label for="eventRecurrence" class="form-label fw-semibold">Recurrence</label>
+              <select class="form-select" id="eventRecurrence" name="recurrence">
+                <option value="" {% if not event.recurrence %}selected{% endif %}>None</option>
+                <option value="daily" {% if event.recurrence == 'daily' %}selected{% endif %}>Daily</option>
+                <option value="weekly" {% if event.recurrence == 'weekly' %}selected{% endif %}>Weekly</option>
+                <option value="monthly" {% if event.recurrence == 'monthly' %}selected{% endif %}>Monthly</option>
+                <option value="yearly" {% if event.recurrence == 'yearly' %}selected{% endif %}>Yearly</option>
+              </select>
+            </div>
+
             <!-- Date/Time -->
             <div class="row">
               <div class="col-md-6 mb-3">

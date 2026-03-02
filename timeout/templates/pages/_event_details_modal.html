@@ -3,20 +3,21 @@
 <!-- Event Details Modal -->
 <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content" style="border-radius: 16px; overflow: hidden; box-shadow: 0 6px 24px rgba(91,115,232,0.14);">
 
       <!-- Modal Header -->
-      <div class="modal-header">
-        <span class="badge" id="eventBadge" style="font-size:0.9rem;"></span>
-        <span class="badge" id="eventVisibilityBadge" style="font-size:0.9rem; margin-left: 0.5rem;"></span>
-        <h5 class="modal-title ms-2" id="eventDetailsModalLabel"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header" style="flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+          <span class="badge" id="eventBadge" style="font-size:0.85rem; font-weight: 600;"></span>
+          <span class="badge" id="eventVisibilityBadge" style="font-size:0.85rem; font-weight: 600;"></span>
+          <h5 class="modal-title ms-2" id="eventDetailsModalLabel" style="margin: 0; font-weight: 700; font-size: 1.25rem;"></h5>
+          <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <p class="text-muted mb-0" id="eventTime" style="font-size: 0.85rem;"></p>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body">
-        <p class="text-muted mb-3" id="eventTime"></p>
-
+      <div class="modal-body" style="padding: 20px 22px; font-family: 'Nunito', sans-serif; color: #1A1F36;">
         <div class="row mb-2">
           <div class="col-md-6"><strong>Status:</strong> <span id="eventStatus"></span></div>
           <div class="col-md-6"><strong>Recurrence:</strong> <span id="eventRecurrence"></span></div>
@@ -32,18 +33,36 @@
           <div class="col-md-6"><strong>Past:</strong> <span id="eventPast"></span></div>
         </div>
 
-        <p id="eventLocation"></p>
-        <p id="eventDescription"></p>
+        <p id="eventLocation" style="margin-top: 12px; font-size: 0.9rem;"></p>
+        <p id="eventDescription" style="margin-top: 8px; font-size: 0.9rem;"></p>
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer">
-        <a href="#" class="btn btn-nep text-white" id="editEventBtn">Edit Event</a>
-        <a href="#" class="btn btn-danger text-white" id="deleteEventBtn" 
-           onclick="return confirm('Are you sure you want to delete this event?');">
+      <div class="modal-footer" style="padding: 16px 22px; gap: 10px; flex-wrap: wrap;">
+
+        <!-- Edit Button -->
+        <a href="#" id="editEventBtn"
+          class="btn-auth text-center text-decoration-none"
+          style="flex: 1;">
+          Edit Event
+        </a>
+
+        <!-- Delete Button -->
+        <a href="#" id="deleteEventBtn"
+          onclick="return confirm('Are you sure you want to delete this event?');"
+          class="btn-auth text-center text-decoration-none"
+          style="flex: 1; background: #dc3545; border-color: #dc3545;">
           Delete Event
         </a>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+        <!-- Close Button -->
+        <button type="button"
+                data-bs-dismiss="modal"
+                class="btn-auth text-center"
+                style="flex: 1; background: #6c757d; border-color: #6c757d;">
+          Close
+        </button>
+
       </div>
 
     </div>
@@ -59,6 +78,7 @@
 
     // Title & Badges
     document.getElementById('eventDetailsModalLabel').textContent = button.getAttribute('data-event-title');
+
     const typeBadge = document.getElementById('eventBadge');
     typeBadge.textContent = button.getAttribute('data-event-type');
     typeBadge.style.backgroundColor = button.getAttribute('data-event-color');
