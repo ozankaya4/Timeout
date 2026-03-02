@@ -37,15 +37,15 @@
               </div>
 
               <!-- Name -->
-              <div class="row mb-3">
-                <div class="col">
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm">
                   <label class="form-label fw-semibold">First Name</label>
                   {{ form.first_name }}
                   {% if form.first_name.errors %}
                     <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
                   {% endif %}
                 </div>
-                <div class="col">
+                <div class="col-12 col-sm">
                   <label class="form-label fw-semibold">Last Name</label>
                   {{ form.last_name }}
                   {% if form.last_name.errors %}
@@ -123,7 +123,7 @@
                   {{ form.privacy_private }}
                   <label class="form-check-label fw-semibold" for="id_privacy_private">Private Account</label>
                 </div>
-                <div class="text-muted small mt-1">비공개 계정으로 설정하면 팔로워 외 다른 사람에게 게시글이 보이지 않습니다.</div>
+                <div class="text-muted small mt-1">Private accounts hide posts from non-followers.</div>
                 {% if form.privacy_private.errors %}
                   <div class="text-danger small mt-1">{{ form.privacy_private.errors }}</div>
                 {% endif %}

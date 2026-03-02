@@ -16,7 +16,7 @@
         <!-- Profile Header -->
         <div class="post-card mb-4">
           <div class="post-card-body">
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-3">
               <!-- Profile picture -->
               <div>
                 {% if user.profile_picture %}
@@ -26,7 +26,7 @@
                 {% endif %}
               </div>
               <div class="w-100">
-                <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
                   <div class="d-flex align-items-center gap-2 flex-wrap">
                     <h3 class="m-0">@{{ user.username }}</h3>
                     {% if user.privacy_private %}
@@ -38,7 +38,7 @@
                       <span class="badge bg-light text-dark">{% if user.management_style == 'early_bird' %}🌅{% else %}🦉{% endif %} {{ user.get_management_style_display }}</span>
                     {% endif %}
                   </div>
-                  <a href="{% url 'profile_edit' %}" class="btn btn-sm">⚙️ Edit Profile</a>
+                  <a href="{% url 'profile_edit' %}" class="btn btn-sm flex-shrink-0">⚙️ Edit Profile</a>
                 </div>
 
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-md-3">
@@ -60,13 +60,8 @@
                 {% endif %}
                 <div class="mt-3">
                   <span class="badge bg-light text-dark me-2">{{ posts|length }} Posts</span>
-                  {% if user.privacy_private %}
-                    <span class="badge bg-light text-dark me-2">{{ user.follower_count }} Followers</span>
-                    <span class="badge bg-light text-dark me-2">{{ user.following_count }} Following</span>
-                  {% else %}
-                    <span class="badge bg-light text-dark me-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followersModal">{{ user.follower_count }} Followers</span>
-                    <span class="badge bg-light text-dark me-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followingModal">{{ user.following_count }} Following</span>
-                  {% endif %}
+                  <span class="badge bg-light text-dark me-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followersModal">{{ user.follower_count }} Followers</span>
+                  <span class="badge bg-light text-dark me-2" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#followingModal">{{ user.following_count }} Following</span>
                 </div>
               </div>
             </div>
@@ -89,7 +84,6 @@
         </div>
 
         <!-- Schedule -->
-        {% if not user.privacy_private %}
         <div class="post-card mb-4">
           <div class="post-card-body">
             <div class="post-header">
@@ -134,7 +128,6 @@
             {% endif %}
           </div>
         </div>
-        {% endif %}
 
         <!-- My Posts -->
         <h4 class="mb-3">My Posts</h4>
@@ -149,10 +142,8 @@
     </div>
   </div>
 
-  {% if not user.privacy_private %}
-    {% include 'partials/modals/followers_modal.html' %}
-    {% include 'partials/modals/following_modal.html' %}
-  {% endif %}
+  {% include 'partials/modals/followers_modal.html' %}
+  {% include 'partials/modals/following_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}

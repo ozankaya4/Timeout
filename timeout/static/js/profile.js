@@ -51,10 +51,9 @@
   });
 })();
 
+
 function renderUserList(users) {
-  if (users.length === 0) {
-    return '<p class="text-center text-muted py-3">No users yet.</p>';
-  }
+  if (users.length === 0) return '<p class="text-center text-muted py-3">No users yet.</p>';
   return users.map(u => `
     <div class="user-item">
       <a href="/social/user/${u.username}/" class="d-flex align-items-center gap-3 mb-3 text-decoration-none text-dark">
