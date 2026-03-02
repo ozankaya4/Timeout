@@ -148,7 +148,7 @@ class Event(models.Model):
         from .post import Post  # adjust if needed
 
         # If event is PUBLIC → ensure post exists
-        if self.visibility == self.Visibility.PUBLIC:
+        if self.visibility == self.Visibility.PUBLIC and self.creator:
 
             existing_post = self.posts.first()
 
