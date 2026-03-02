@@ -21,7 +21,6 @@
         <h1 class="cal-month">{{ month_name }} {{ year }}</h1>
       </div>
       <div class="cal-toolbar__right">
-        <!-- View Switcher -->
         <div class="cal-view-switcher">
           <a href="{% url 'calendar' %}" class="cal-view-btn cal-view-btn--active">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,14 +37,12 @@
             List
           </a>
         </div>
-
         <a href="{% url 'calendar' %}" class="cal-today-btn">Today</a>
         <a href="#" class="cal-add-btn" data-bs-toggle="modal" data-bs-target="#addEventModal">
           + <span class="cal-add-label">Add Event</span>
         </a>
       </div>
     </div>
-
 
     <!-- Calendar table -->
     <table class="cal-table">
@@ -91,7 +88,6 @@
                  {{ ev.title }}
               </a>
               {% endfor %}
-
               {% if day.events|length > 3 %}
               <span class="cal-chip-overflow">+{{ day.events|length|add:"-3" }} more</span>
               {% endif %}
@@ -106,10 +102,9 @@
   </div>
 </div>
 
-<!-- Include the Event Details Modal -->
 {% include "pages/_event_details_modal.html" %}
 
-<!-- Add Event Modal (existing) -->
+<!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -142,7 +137,6 @@
               <option value="private">Private</option>
             </select>
           </div>
-          <!-- Recurrence -->
           <div class="mb-3">
             <label for="eventRecurrence" class="form-label">Recurrence</label>
             <select class="form-select" id="eventRecurrence" name="recurrence">
@@ -153,34 +147,19 @@
               <option value="yearly">Yearly</option>
             </select>
           </div>
-          <!-- All Day -->
           <div class="form-check mb-3">
-            <input class="form-check-input"
-                  type="checkbox"
-                  id="eventAllDay"
-                  name="is_all_day">
-            <label class="form-check-label" for="eventAllDay">
-              All Day Event
-            </label>
+            <input class="form-check-input" type="checkbox" id="eventAllDay" name="is_all_day">
+            <label class="form-check-label" for="eventAllDay">All Day Event</label>
           </div>
-
-          <!-- Date/Time -->
           <div id="timeFields">
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="eventStart" class="form-label">Start</label>
-                <input type="datetime-local"
-                      class="form-control"
-                      id="eventStart"
-                      name="start_datetime">
+                <input type="datetime-local" class="form-control" id="eventStart" name="start_datetime">
               </div>
               <div class="col-md-6 mb-3">
                 <label for="eventEnd" class="form-label">End</label>
-                <input type="datetime-local"
-                      class="form-control"
-                      id="eventEnd"
-                      name="end_datetime"
-                      required>
+                <input type="datetime-local" class="form-control" id="eventEnd" name="end_datetime" required>
               </div>
             </div>
           </div>
@@ -202,7 +181,6 @@
   </div>
 </div>
 
-<!-- Mobile FAB -->
 <a href="#" class="cal-fab" data-bs-toggle="modal" data-bs-target="#addEventModal" aria-label="Add event">+</a>
 {% endblock %}
 
@@ -211,9 +189,22 @@
 function openAddEvent(dateStr) {
   document.getElementById('eventStart').value = dateStr + 'T09:00';
   document.getElementById('eventEnd').value = dateStr + 'T10:00';
-
   var modal = new bootstrap.Modal(document.getElementById('addEventModal'));
   modal.show();
 }
+
+// Auto-open event modal if redirected from dashboard
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const openId = params.get('open_event');
+  if (!openId) return;
+
+  window.addEventListener('load', function () {
+    const chip = document.querySelector(`[data-event-id="${openId}"]`);
+    if (chip) {
+      chip.click();
+    }
+  });
+})();
 </script>
 {% endblock %}
