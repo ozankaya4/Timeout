@@ -43,7 +43,9 @@ class Event(models.Model):
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='created_events'
+        related_name='created_events',  # ← now you can use user.created_events
+        null=True,
+        blank=True
     )
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000, blank=True)
@@ -83,6 +85,7 @@ class Event(models.Model):
     is_all_day = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_global = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-start_datetime']

@@ -1,5 +1,5 @@
 import calendar as cal
-from datetime import timedelta, date, datetime
+from datetime import timedelta, date, datetime, time
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from timeout.models import Event
 from django.core.exceptions import ValidationError
-from datetime import timedelta
+from django.db.models import Q
 
 
 @login_required
@@ -52,10 +52,30 @@ def calendar_view(request):
 
     # Fetch events for visible date range
     lookahead_days = 365  # how far in the future you want to show recurring events
+    last_visible_datetime = timezone.make_aware(
+        datetime.combine(last_visible, time.max)
+    )
     events_qs = Event.objects.filter(
-        creator=request.user,
-        start_datetime__date__lte=last_visible + timedelta(days=lookahead_days),
+        Q(creator=request.user) | Q(is_global=True),
+        start_datetime__lte=last_visible_datetime,
     ).order_by("start_datetime")
+
+    calendar_events = []
+    for event in events_qs:
+        if event.recurrence == "yearly" and event.is_global:
+            # Create a display instance for this year
+            event_start = event.start_datetime.replace(year=last_visible.year)
+            event_end = event.end_datetime.replace(year=last_visible.year)
+            calendar_events.append({
+                "title": event.title,
+                "description": event.description,
+                "start_datetime": event_start,
+                "end_datetime": event_end,
+                "is_global": True,
+                "visibility": event.visibility,
+            })
+        else:
+            calendar_events.append(event)
 
     # Index events by date, including recurrence expansion
     events_by_date = {}
