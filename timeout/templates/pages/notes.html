@@ -1,126 +1,364 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - Timeout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neptune-blue: #525AFF;
+            --neptune-steel: #6D8BC0;
+            --neptune-dark: #1a1a2e;
+            --neptune-muted: #8a8fa8;
+            --neptune-border: #ebebef;
+            --hover-bg: #f5f5ff;
+        }
 
-{% block title %}Notes - Timeout{% endblock %}
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #fff;
+            color: var(--neptune-dark);
+        }
 
-{% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h2 class="mb-4">My Notes</h2>
+        /* Fake navbar */
+        .fake-navbar {
+            background: linear-gradient(135deg, #6D8BC0 0%, #525AFF 100%);
+            padding: 0.85rem 2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fake-navbar .brand { font-weight: 700; font-size: 1rem; letter-spacing: 0.04em; }
+        .fake-navbar .nav-links { display: flex; gap: 1.5rem; font-size: 0.88rem; opacity: 0.9; }
 
-            <!-- Create Note -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Create Note</h5>
-                    <form method="post" action="{% url 'note_create' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            {{ form.title }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form.content }}
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Category</label>
-                                {{ form.category }}
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Link to Event</label>
-                                {{ form.event }}
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Create Note</button>
-                    </form>
-                </div>
-            </div>
+        /* Page */
+        .page-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
 
-            <!-- Search and Filter -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" action="{% url 'notes' %}" class="row g-2">
-                        <div class="col-md-6">
-                            <input type="text" name="q" class="form-control"
-                                   placeholder="Search notes..."
-                                   value="{{ search_query }}">
-                        </div>
-                        <div class="col-md-4">
-                            <select name="category" class="form-select">
-                                <option value="">All Categories</option>
-                                {% for value, label in categories %}
-                                    <option value="{{ value }}"
-                                        {% if active_category == value %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        /* Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neptune-dark);
+            margin-bottom: 0.25rem;
+        }
+        .page-header p {
+            color: var(--neptune-muted);
+            font-size: 0.9rem;
+        }
 
-            <!-- Notes List -->
-            {% if notes %}
-                {% for note in notes %}
-                <div class="card mb-3 {% if note.is_pinned %}border-warning{% endif %}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                {% if note.is_pinned %}
-                                    <span class="badge bg-warning text-dark me-1">Pinned</span>
-                                {% endif %}
-                                <span class="badge bg-{{ note.get_color }}">
-                                    {{ note.get_category_display }}
-                                </span>
-                                <h5 class="card-title mt-1 mb-0">{{ note.title }}</h5>
-                                <small class="text-muted">{{ note.created_at|timesince }} ago</small>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <form method="post" action="{% url 'note_toggle_pin' note.id %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-warning">
-                                        {% if note.is_pinned %}Unpin{% else %}Pin{% endif %}
-                                    </button>
-                                </form>
-                                <a href="{% url 'note_edit' note.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <form method="post" action="{% url 'note_share' note.id %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-success">Share</button>
-                                </form>
-                                <form method="post" action="{% url 'note_delete' note.id %}"
-                                      onsubmit="return confirm('Delete this note?');" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                </form>
-                            </div>
-                        </div>
+        /* Create note */
+        .create-box {
+            border: 1.5px solid var(--neptune-border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #fafafa;
+        }
+        .create-box .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--neptune-muted);
+            margin-bottom: 1rem;
+        }
+        .create-box .form-control,
+        .create-box .form-select {
+            border: 1.5px solid var(--neptune-border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--neptune-dark);
+            background: white;
+        }
+        .create-box .form-control:focus,
+        .create-box .form-select:focus {
+            border-color: var(--neptune-blue);
+            box-shadow: 0 0 0 3px rgba(82,90,255,0.08);
+        }
+        .create-box textarea { min-height: 80px; resize: vertical; }
 
-                        <p class="card-text">{{ note.content|linebreaksbr }}</p>
+        /* Search/filter */
+        .filter-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .search-input {
+            flex: 1;
+            border: 1.5px solid var(--neptune-border);
+            border-radius: 8px;
+            padding: 0.55rem 1rem;
+            font-size: 0.88rem;
+            font-family: inherit;
+            color: var(--neptune-dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--neptune-blue); }
+        .search-input::placeholder { color: var(--neptune-muted); }
+        .filter-select {
+            border: 1.5px solid var(--neptune-border);
+            border-radius: 8px;
+            padding: 0.55rem 1rem;
+            font-size: 0.88rem;
+            font-family: inherit;
+            color: var(--neptune-dark);
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
 
-                        {% if note.event %}
-                        <div class="alert alert-info mb-0 py-2">
-                            <strong>Event:</strong> {{ note.event.title }}
-                            <small>({{ note.event.start_datetime|date:"F j, Y g:i A" }})</small>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-info">
-                    {% if search_query %}
-                        No notes found matching "{{ search_query }}".
-                    {% elif active_category %}
-                        No notes in this category yet.
-                    {% else %}
-                        No notes yet. Create your first note above!
-                    {% endif %}
-                </div>
-            {% endif %}
+        /* Buttons */
+        .btn-neptune {
+            background: linear-gradient(135deg, var(--neptune-steel), var(--neptune-blue));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 0.55rem 1.2rem;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-neptune:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Note items */
+        .notes-list { display: flex; flex-direction: column; gap: 0; }
+
+        .note-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--neptune-border);
+            gap: 1rem;
+            transition: background 0.15s;
+            border-radius: 0;
+        }
+        .note-item:first-child { border-top: 1px solid var(--neptune-border); }
+        .note-item:hover { background: var(--hover-bg); padding-left: 0.75rem; padding-right: 0.75rem; margin: 0 -0.75rem; border-radius: 8px; border-color: transparent; }
+
+        .note-item.pinned .note-title::before {
+            content: '📌 ';
+            font-size: 0.85em;
+        }
+
+        .note-left { flex: 1; min-width: 0; }
+        .note-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--neptune-dark);
+            margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .note-preview {
+            font-size: 0.82rem;
+            color: var(--neptune-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.4rem;
+        }
+        .note-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .note-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+        }
+        .tag-assignment { background: #fff3e0; color: #e65100; }
+        .tag-lecture { background: #e3f2fd; color: #1565c0; }
+        .tag-personal { background: #e8f5e9; color: #2e7d32; }
+        .tag-general { background: #f3e5f5; color: #6a1b9a; }
+        .note-time { font-size: 0.72rem; color: var(--neptune-muted); }
+
+        .note-actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .note-item:hover .note-actions { opacity: 1; }
+
+        .action-btn {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1.5px solid var(--neptune-border);
+            background: white;
+            color: #4a4a6a;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .action-btn:hover { border-color: var(--neptune-blue); color: var(--neptune-blue); }
+        .action-btn.danger:hover { border-color: #e53e3e; color: #e53e3e; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--neptune-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fake-navbar">
+        <div class="brand">Timeout</div>
+        <div class="nav-links">
+            <span>Dashboard</span>
+            <span>Notes</span>
+            <span>Calendar</span>
+            <span>Social</span>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <div class="page-container">
+
+        <!-- Header -->
+        <div class="page-header">
+            <h1>My Notes</h1>
+            <p>Keep track of your thoughts, lectures, and tasks.</p>
+        </div>
+
+        <!-- Create note -->
+        <div class="create-box">
+            <div class="section-label">New Note</div>
+            <div class="mb-2">
+                <input type="text" class="form-control mb-2" placeholder="Title">
+                <textarea class="form-control mb-2" placeholder="Write something..."></textarea>
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <select class="form-select">
+                            <option>General</option>
+                            <option>Lecture</option>
+                            <option>Assignment</option>
+                            <option>Personal</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <select class="form-select">
+                            <option>Link to event...</option>
+                            <option>INS Lecture - Mar 1</option>
+                            <option>Team Meeting - Feb 28</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn-neptune w-100">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & filter -->
+        <div class="filter-row">
+            <input type="text" class="search-input" placeholder="🔍  Search notes...">
+            <select class="filter-select">
+                <option>All categories</option>
+                <option>Lecture</option>
+                <option>Assignment</option>
+                <option>Personal</option>
+                <option>General</option>
+            </select>
+        </div>
+
+        <!-- Notes list -->
+        <div class="notes-list">
+
+            <div class="note-item pinned">
+                <div class="note-left">
+                    <div class="note-title">Internet Systems Coursework</div>
+                    <div class="note-preview">Need to review TCP/IP protocols and finish the HTTP mechanics section...</div>
+                    <div class="note-meta">
+                        <span class="note-tag tag-assignment">Assignment</span>
+                        <span class="note-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="note-actions">
+                    <button class="action-btn">Unpin</button>
+                    <button class="action-btn">Edit</button>
+                    <button class="action-btn">Share</button>
+                    <button class="action-btn danger">Delete</button>
+                </div>
+            </div>
+
+            <div class="note-item">
+                <div class="note-left">
+                    <div class="note-title">FC2 - Turing Machines</div>
+                    <div class="note-preview">A Turing machine consists of an infinite tape, a read/write head...</div>
+                    <div class="note-meta">
+                        <span class="note-tag tag-lecture">Lecture</span>
+                        <span class="note-time">1 day ago</span>
+                    </div>
+                </div>
+                <div class="note-actions">
+                    <button class="action-btn">Pin</button>
+                    <button class="action-btn">Edit</button>
+                    <button class="action-btn">Share</button>
+                    <button class="action-btn danger">Delete</button>
+                </div>
+            </div>
+
+            <div class="note-item">
+                <div class="note-left">
+                    <div class="note-title">Timeout project ideas</div>
+                    <div class="note-preview">Add dark mode toggle, improve the notes page styling, fix merge conflicts...</div>
+                    <div class="note-meta">
+                        <span class="note-tag tag-personal">Personal</span>
+                        <span class="note-time">3 days ago</span>
+                    </div>
+                </div>
+                <div class="note-actions">
+                    <button class="action-btn">Pin</button>
+                    <button class="action-btn">Edit</button>
+                    <button class="action-btn">Share</button>
+                    <button class="action-btn danger">Delete</button>
+                </div>
+            </div>
+
+            <div class="note-item">
+                <div class="note-left">
+                    <div class="note-title">PEP - Haskell Notes</div>
+                    <div class="note-preview">Functional programming concepts, type classes, monads...</div>
+                    <div class="note-meta">
+                        <span class="note-tag tag-lecture">Lecture</span>
+                        <span class="note-time">5 days ago</span>
+                    </div>
+                </div>
+                <div class="note-actions">
+                    <button class="action-btn">Pin</button>
+                    <button class="action-btn">Edit</button>
+                    <button class="action-btn">Share</button>
+                    <button class="action-btn danger">Delete</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
