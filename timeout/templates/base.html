@@ -20,13 +20,14 @@
 
     {% endblock %}
   </head>
-  <body class="d-flex flex-column min-vh-100">
+  <body class="d-flex flex-column min-vh-100" data-user-status="{{ request.user.status }}">
     <!-- Navigation Bar -->
     {% include 'partials/_navbar.html' %}
 
     <!-- Messages -->
-    {% include 'partials/_messages.html' %}
-
+    {% block flash_messages %}
+      {% include 'partials/_messages.html' %}
+    {% endblock %}
     <!-- Main Content Area -->
     <main class="container mt-4 flex-grow-1">
       {% block content %}
