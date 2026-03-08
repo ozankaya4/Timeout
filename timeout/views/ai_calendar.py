@@ -55,7 +55,7 @@ Parse the user's message and return ONLY valid JSON with no extra text or markdo
   "visibility": "private"
 }}
 
-Interpret relative dates like "tomorrow", "next Monday", "내일", "다음 주" based on today's date.
+Interpret relative dates like "tomorrow", "next Monday" based on today's date.
 Default duration is 1 hour if not specified."""
 
     try:
