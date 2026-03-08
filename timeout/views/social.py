@@ -19,7 +19,10 @@ def feed(request):
 
     if tab == 'discover':
         posts = FeedService.get_discover_feed(request.user)
+    elif tab == 'bookmarks':
+        posts = FeedService.get_bookmarked_posts(request.user)
     else:
+        tab = 'following'
         posts = FeedService.get_following_feed(request.user)
 
     conversations = Conversation.objects.filter(
@@ -33,12 +36,16 @@ def feed(request):
             'other': conv.get_other_participant(request.user),
             'last': conv.get_last_message(),
         })
+    bookmarked_ids = set(
+        Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True)
+    )
 
     context = {
         'posts': posts,
         'active_tab': tab,
         'post_form': PostForm(user=request.user),
         'conversation_data': conversation_data,
+        'bookmarked_ids' : bookmarked_ids,
     }
     return render(request, 'social/feed.html', context)
 
