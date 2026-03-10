@@ -1,209 +1,285 @@
-/* =============================================================
-   social.js — Timeout Social Features
-   Handles: likes, bookmarks, status switching
-   ============================================================= */
-
-// ── Utility: get CSRF token from cookie ──────────────────────
-
-function getCsrfToken() {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
-function postJSON(url, data) {
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    body: JSON.stringify(data),
-  }).then(r => r.json());
-}
+const csrftoken = getCookie('csrftoken');
 
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('userSearchInput');
+    const results = document.getElementById('userSearchResults');
+    if (!input) return;
 
-// ── Likes ─────────────────────────────────────────────────────
+    document.body.appendChild(results);
 
-function initLikes() {
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    const postId = btn.dataset.postId;
+    function positionDropdown() {
+        const rect = input.getBoundingClientRect();
+        results.style.position = 'fixed';
+        results.style.top = (rect.bottom + 4) + 'px';
+        results.style.left = rect.left + 'px';
+        results.style.width = rect.width + 'px';
+        results.style.zIndex = '9999';
+    }
 
-    // Fetch initial like state
-    fetch(`/social/post/${postId}/like-status/`)
-      .then(r => r.json())
-      .then(data => {
-        btn.dataset.liked = data.liked ? 'true' : 'false';
-        btn.querySelector('.like-icon').textContent = data.liked ? '❤️' : '🤍';
-        btn.querySelector('.like-count').textContent = data.count;
-        btn.classList.toggle('liked', data.liked);
-      })
-      .catch(() => {});
+    let debounceTimer;
 
-    btn.addEventListener('click', function () {
-      const liked = this.dataset.liked === 'true';
+    input.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
 
-      postJSON(`/social/post/${postId}/like/`, {})
-        .then(data => {
-          if (data.success !== undefined ? data.success : true) {
-            const nowLiked = !liked;
-            this.dataset.liked = nowLiked ? 'true' : 'false';
-            this.querySelector('.like-icon').textContent = nowLiked ? '❤️' : '🤍';
-            this.querySelector('.like-count').textContent = data.count;
-            this.classList.toggle('liked', nowLiked);
-          }
-        })
-        .catch(err => console.error('Like error:', err));
+        if (!query) {
+            results.hidden = true;
+            results.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(function() {
+            fetch(`/social/search/?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    if (!data.users.length) {
+                        results.innerHTML = '<div class="search-no-results">No users found</div>';
+                    } else {
+                        data.users.forEach(u => {
+                            const avatar = u.profile_picture
+                                ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
+                                : `<div class="search-avatar search-avatar--initial">${u.username[0].toUpperCase()}</div>`;
+                            results.innerHTML += `
+                                <a href="${u.profile_url}" class="search-result-row">
+                                    ${avatar}
+                                    <div class="search-result-info">
+                                        <span class="search-result-name">${u.full_name}</span>
+                                        <span class="search-result-username">@${u.username}</span>
+                                    </div>
+                                    <span class="status-dot status-${u.status}"></span>
+                                </a>`;
+                        });
+                    }
+                    positionDropdown();
+                    results.hidden = false;
+                })
+                .catch(() => { results.hidden = true; });
+        }, 300);
     });
-  });
-}
 
-
-// ── Bookmarks ─────────────────────────────────────────────────
-
-function initBookmarks() {
-  document.querySelectorAll('.bookmark-btn').forEach(btn => {
-    const postId = btn.dataset.postId;
-
-    // Fetch initial bookmark state
-    fetch(`/social/post/${postId}/bookmark-status/`)
-      .then(r => r.json())
-      .then(data => {
-        btn.dataset.bookmarked = data.bookmarked ? 'true' : 'false';
-        btn.querySelector('.bookmark-icon').textContent = data.bookmarked ? '🔖' : '🏷️';
-        btn.classList.toggle('bookmarked', data.bookmarked);
-      })
-      .catch(() => {});
-
-    btn.addEventListener('click', function () {
-      const bookmarked = this.dataset.bookmarked === 'true';
-
-      postJSON(`/social/post/${postId}/bookmark/`, {})
-        .then(data => {
-          if (data.success !== undefined ? data.success : true) {
-            const nowBookmarked = !bookmarked;
-            this.dataset.bookmarked = nowBookmarked ? 'true' : 'false';
-            this.querySelector('.bookmark-icon').textContent = nowBookmarked ? '🔖' : '🏷️';
-            this.classList.toggle('bookmarked', nowBookmarked);
-          }
-        })
-        .catch(err => console.error('Bookmark error:', err));
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.hidden = true;
+        }
     });
-  });
-}
 
-
-// ── Follow Button ─────────────────────────────────────────────
-
-function initFollowButtons() {
-  document.querySelectorAll('.follow-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const username  = this.dataset.username;
-      const following = this.dataset.following === 'true';
-
-      postJSON(`/social/follow/${username}/`, {})
-        .then(data => {
-          if (data.success !== undefined ? data.success : true) {
-            const nowFollowing = !following;
-            this.dataset.following = nowFollowing ? 'true' : 'false';
-            this.textContent = nowFollowing ? 'Unfollow' : 'Follow';
-          }
-        })
-        .catch(err => console.error('Follow error:', err));
+    input.addEventListener('focus', function() {
+        if (results.innerHTML) {
+            positionDropdown();
+            results.hidden = false;
+        }
     });
-  });
-}
 
-
-// ── Init ──────────────────────────────────────────────────────
-
-document.addEventListener('DOMContentLoaded', () => {
-  initLikes();
-  initBookmarks();
-  initFollowButtons();
-  initConversation();
+    window.addEventListener('scroll', positionDropdown, { passive: true });
+    window.addEventListener('resize', positionDropdown, { passive: true });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const config = window.CONVO_CONFIG;
+    if (!config) return;
 
-// ── Conversation (chat page) ──────────────────────────────────
+    const input     = document.getElementById('message-input');
+    const sendBtn   = document.getElementById('send-btn');
+    const container = document.getElementById('message-container');
 
-function initConversation() {
-  const config = window.CONVO_CONFIG;
-  if (!config) return; // only runs on conversation page
+    let lastMessageId = 0;
 
-  const container = document.getElementById('message-container');
-  const input     = document.getElementById('message-input');
-  const sendBtn   = document.getElementById('send-btn');
-  if (!container || !input || !sendBtn) return;
+    document.querySelectorAll('[data-message-id]').forEach(el => {
+        const id = parseInt(el.dataset.messageId, 10);
+        if (id > lastMessageId) lastMessageId = id;
+    });
 
-  // Track last message ID for polling
-  let lastMessageId = 0;
-  const existing = container.querySelectorAll('[data-message-id]');
-  if (existing.length > 0) {
-    lastMessageId = existing[existing.length - 1].dataset.messageId;
-  }
+    function scrollToBottom() {
+        container.scrollTop = container.scrollHeight;
+    }
 
-  function scrollToBottom() {
-    container.scrollTop = container.scrollHeight;
-  }
+    function appendMessage(msg) {
+        const empty = container.querySelector('.convo-empty');
+        if (empty) empty.remove();
 
-  function appendMessage(msg) {
-    // Remove empty state if present
-    const empty = container.querySelector('.convo-empty');
-    if (empty) empty.remove();
+        const row = document.createElement('div');
+        row.className = `msg-bubble-row ${msg.is_me ? 'msg-mine' : 'msg-theirs'}`;
+        row.dataset.messageId = msg.id;
+        row.innerHTML = `
+            <div class="msg-bubble">
+                <div class="msg-text">${msg.content}</div>
+                <div class="msg-time">${msg.created_at}</div>
+            </div>`;
+        container.appendChild(row);
+        scrollToBottom();
+    }
 
-    const isMe = msg.is_me;
-    const row  = document.createElement('div');
-    row.className = `msg-bubble-row ${isMe ? 'msg-mine' : 'msg-theirs'}`;
-    row.dataset.messageId = msg.id;
-    row.innerHTML = `
-      <div class="msg-bubble">
-        <div class="msg-text">${msg.content}</div>
-        <div class="msg-time">${msg.created_at}</div>
-      </div>
-    `;
-    container.appendChild(row);
-    lastMessageId = msg.id;
+    function sendMessage() {
+        const content = input.value.trim();
+        if (!content) return;
+
+        sendBtn.disabled = true;
+
+        fetch(config.sendUrl, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': config.csrfToken },
+            body: new URLSearchParams({ content }),
+        })
+        .then(r => r.json())
+        .then(msg => {
+            if (msg.error) { console.error(msg.error); return; }
+            appendMessage(msg);
+            lastMessageId = msg.id;
+            input.value = '';
+        })
+        .catch(err => console.error('Send error:', err))
+        .finally(() => { sendBtn.disabled = false; input.focus(); });
+    }
+
+    function pollMessages() {
+        fetch(`${config.pollUrl}?last_id=${lastMessageId}`)
+            .then(r => r.json())
+            .then(data => {
+                data.messages.forEach(msg => {
+                    appendMessage(msg);
+                    lastMessageId = msg.id;
+                });
+            })
+            .catch(err => console.error('Poll error:', err));
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    setInterval(pollMessages, 3000);
     scrollToBottom();
-  }
+});
 
-  function sendMessage() {
-    const content = input.value.trim();
-    if (!content) return;
+document.addEventListener('DOMContentLoaded', function() {
 
-    fetch(config.sendUrl, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': config.csrfToken },
-      body: new URLSearchParams({ content })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.id) {
-        appendMessage(data);
-        input.value = '';
-      }
-    })
-    .catch(err => console.error('Send error:', err));
-  }
+    document.querySelectorAll('.like-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const url = `/social/post/${postId}/like/`;
 
-  sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendMessage();
-  });
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const icon = this.querySelector('.like-icon');
+                const count = this.querySelector('.like-count');
+                icon.textContent = data.liked ? '❤️' : '🤍';
+                count.textContent = data.like_count;
+                this.dataset.liked = data.liked;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
 
-  // Poll for new messages every 3 seconds
-  function pollMessages() {
-    fetch(`${config.pollUrl}?last_id=${lastMessageId}`, {
-      headers: { 'X-CSRFToken': config.csrfToken }
-    })
-    .then(r => r.json())
-    .then(data => {
-      data.messages.forEach(msg => {
-        if (!msg.is_me) appendMessage(msg);
-      });
-    })
-    .catch(err => console.error('Poll error:', err));
-  }
+    document.querySelectorAll('.bookmark-btn').forEach(button => {
+        const icon = button.querySelector('.bookmark-icon');
+        if (button.dataset.bookmarked === 'true') {
+            icon.textContent = '🔖';
+        }
 
-  setInterval(pollMessages, 3000);
-  scrollToBottom();
-}
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const url = `/social/post/${postId}/bookmark/`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const icon = this.querySelector('.bookmark-icon');
+                icon.textContent = data.bookmarked ? '🔖' : '🏷️';
+                this.dataset.bookmarked = data.bookmarked;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    document.querySelectorAll('.follow-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const username = this.dataset.username;
+            const url = `/social/user/${username}/follow/`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.textContent = data.following ? 'Unfollow' : 'Follow';
+                this.dataset.following = data.following;
+
+                if (data.following) {
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-secondary');
+                } else {
+                    this.classList.remove('btn-secondary');
+                    this.classList.add('btn-primary');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    function setStatus(status) {
+        fetch('/social/status/update/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `status=${status}`
+        }).then(r => r.json()).then(data => {
+            document.body.dataset.userStatus = data.status;
+        });
+    }
+
+    document.addEventListener('visibilitychange', function () {
+        const currentStatus = document.body.dataset.userStatus;
+        if (currentStatus === 'focus') return;
+
+        if (document.hidden) {
+            setStatus('inactive');
+        } else {
+            setStatus('social');
+        }
+    });
+});

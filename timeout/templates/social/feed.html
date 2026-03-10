@@ -40,7 +40,8 @@
            class="feed-tab {% if active_tab == 'discover' %}active{% endif %}">
           Discover
         </a>
-        <a href="{% url 'bookmarks' %}" class="feed-tab">
+        <a href="?tab=bookmarks"
+          class="feed-tab {% if active_tab == 'bookmarks' %}active{% endif %}">
           Bookmarks
         </a>
       </div>
@@ -55,6 +56,8 @@
           <div class="icon">🌱</div>
           {% if active_tab == 'following' %}
             No posts yet — follow some people to see their posts here!
+          {% elif active_tab == 'bookmarks' %}
+            You haven't bookmarked any posts yet. 
           {% else %}
             Nothing to discover yet. Check back soon!
           {% endif %}
@@ -63,8 +66,18 @@
 
     </div>
 
-    <!-- ── Right: Messaging Sidebar ── -->
+    <!-- ── Right: Sidebar ── -->
     <div class="col-lg-4">
+
+      <!-- User Search -->
+      <div class="glass-card user-search-card">
+        <div class="card-label">🔍 Find People</div>
+        <div class="search-input-wrap">
+          <input type="text" id="userSearchInput" class="search-input" placeholder="Search by name or username…" autocomplete="off">
+          <div id="userSearchResults" class="search-results" hidden></div>
+        </div>
+      </div>
+
       <div class="messages-sidebar">
         <div class="glass-card">
           <div class="messages-header">
@@ -95,8 +108,8 @@
             {% endif %}
           </div>
         </div>
-      </div>
-    </div>
+      </div><!-- /.messages-sidebar -->
+    </div><!-- /.col-lg-4 -->
 
   </div>
 </div>
