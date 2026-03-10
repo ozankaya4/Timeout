@@ -30,7 +30,6 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.claude/
 .eggs/
 lib/
 lib64/
