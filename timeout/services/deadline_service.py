@@ -50,7 +50,7 @@ class DeadlineService:
             })
 
         return results
-    
+
     @staticmethod
     def get_filtered_deadlines(user, status_filter='active', sort_order='asc', event_type=None):
         """
@@ -114,10 +114,11 @@ class DeadlineService:
             event = Event.objects.get(
                 pk=event_id,
                 creator=user,
-                event_type=Event.EventType.DEADLINE,
+                #event_type=Event.EventType.DEADLINE,
                 is_completed=False,
             )
-            event.mark_completed()
+            event.is_completed = True
+            event.save(update_fields=['is_completed', 'updated_at'])
             return event
         except Event.DoesNotExist:
             return None
@@ -170,4 +171,4 @@ def _format_elapsed(td):
     if minutes > 0:
         return f"Added {minutes} min ago"
 
-    return "Added just now" 
+    return "Added just now"
