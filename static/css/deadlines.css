@@ -116,6 +116,149 @@
   box-shadow: 0 3px 12px rgba(91,93,223,0.3);
 }
 
+/* ── Filter & Sort Controls ── */
+.dl-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 24px;
+  border-bottom: 1px solid #eef1f6;
+}
+.dl-filter-tabs { display: flex; gap: 4px; }
+.dl-filter-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #5a6a85;
+  background: #f8f9fc;
+  border: 1px solid #e5eaf2;
+  transition: 0.18s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.dl-filter-tab:hover { background: #f0f2f8; color: #5b5ddf; }
+.dl-filter-tab--active {
+  background: #5b5ddf;
+  color: #fff;
+  border-color: #5b5ddf;
+}
+.dl-filter-tab--active:hover { background: #3f54ba; color: #fff; }
+
+.dl-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #5a6a85;
+  background: #f8f9fc;
+  border: 1px solid #e5eaf2;
+  transition: 0.18s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.dl-sort-btn:hover { background: #f0f2f8; color: #5b5ddf; }
+.dl-sort-icon { font-size: 0.85rem; }
+
+/* ── Event Type Filter Pills ── */
+.dl-type-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 24px 12px;
+  border-bottom: 1px solid #eef1f6;
+}
+.dl-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #5a6a85;
+  background: #f8f9fc;
+  border: 1px solid #e5eaf2;
+  transition: 0.18s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.dl-type-pill:hover { background: #f0f2f8; color: #5b5ddf; }
+.dl-type-pill--active {
+  background: #5b5ddf;
+  color: #fff;
+  border-color: #5b5ddf;
+}
+.dl-type-pill--active:hover { background: #3f54ba; color: #fff; }
+.dl-type-pill--active .dl-type-dot { border-color: #fff; }
+
+.dl-type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #8c9ab5;
+}
+.dl-type-dot--deadline      { background: #5b5ddf; }
+.dl-type-dot--exam          { background: #e53935; }
+.dl-type-dot--class         { background: #43a047; }
+.dl-type-dot--meeting       { background: #8e24aa; }
+.dl-type-dot--study_session { background: #00acc1; }
+.dl-type-dot--other         { background: #78909c; }
+
+/* ── Completed item styling ── */
+.dl-item--completed {
+  opacity: 0.6;
+}
+.dl-item--completed .dl-item__title {
+  text-decoration: line-through;
+  color: #8c9ab5;
+}
+.dl-urgency-tag--completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* ── Clickable title ── */
+.dl-item__title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+.dl-item__title-link:hover { color: #5b5ddf; }
+
+/* ── Item actions ── */
+.dl-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding-left: 12px;
+  flex-shrink: 0;
+}
+.dl-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  color: #8c9ab5;
+  text-decoration: none;
+  transition: 0.18s ease;
+  border: 1px solid transparent;
+}
+.dl-action-btn:hover { background: #f0f2f8; color: #5b5ddf; border-color: #e5eaf2; }
+.dl-action-btn--delete:hover { color: #e53935; }
+
+/* ── Stats: add completed stat ── */
+.dl-stat--done .dl-stat__num { color: #43a047; }
+
 /* ── Deadline List ──────────────────────────────────────────────────────── */
 .dl-list {
   padding: 8px 0;
@@ -309,6 +452,12 @@
   .dl-add-btn .dl-add-label { display: none; }
   .dl-add-btn { padding: 8px 12px; }
   .dl-fab { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .dl-controls { padding: 10px 16px; }
+  .dl-filter-tab, .dl-sort-btn { padding: 5px 10px; font-size: 0.7rem; }
+  .dl-item__actions { display: none; }
 }
 
 @media (max-width: 480px) {

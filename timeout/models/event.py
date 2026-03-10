@@ -41,15 +41,6 @@ class Event(models.Model):
         MONTHLY = 'monthly', 'Monthly'
 
 
-    DEFAULT_ESTIMATED_HOURS = {
-        'deadline': 2.0,
-        'exam': 3.0,
-        'class': 1.0,
-        'meeting': 1.0,
-        'study_session': 2.0,
-        'other': 1.0,
-    }
-
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -98,27 +89,6 @@ class Event(models.Model):
     is_global = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False) # Added to track event
 
-    estimated_hours = models.FloatField(
-        default=1.0,
-        help_text='Estimated hours to complete this event/task.',
-    )
-
-    completed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text='When the event was marked as completed.',
-    )
-
-    actual_duration_hours = models.FloatField(
-        null=True,
-        blank=True,
-        help_text='Actual hours taken (completed_at - created_at).',
-    )
-
-    is_suggestion = models.BooleanField(
-        default=False,
-        help_text='True if this is an AI-suggested block, not a fixed event.',
-    )
 
     class Meta:
         ordering = ['-start_datetime']
