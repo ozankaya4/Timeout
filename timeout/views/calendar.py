@@ -12,6 +12,7 @@ from django.conf import settings
 from timeout.models import Event
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from timeout.views.ai_workload import get_ai_workload_warning
 
 
 @login_required
@@ -19,6 +20,7 @@ def calendar_view(request):
     """Renders a monthly calendar grid with events in day cells, including recurring events."""
     today = timezone.now().date()
     weeks = []
+    workload_warning = None
 
     # Get today's date from the URL query string if nothing is provided
     try:
@@ -142,6 +144,7 @@ def calendar_view(request):
 
     # Build weeks structure for template
     weeks = []
+    
     for week in weeks_raw:
         days = []
         for day in week:
@@ -159,6 +162,10 @@ def calendar_view(request):
         "July", "August", "September", "October", "November", "December",
     ]
 
+    # Get today's events for AI workload warning
+    today_events = events_by_date.get(timezone.now().date(), [])
+    workload_warning = get_ai_workload_warning(today_events)
+
     context = {
         "weeks": weeks,
         "year": year,
@@ -169,7 +176,9 @@ def calendar_view(request):
         "next_year": next_year,
         "next_month": next_month,
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "workload_warning": workload_warning,
     }
+
     return render(request, "pages/calendar.html", context)
 
 
