@@ -7,9 +7,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/deadlines.css' %}">
+<link rel="stylesheet" href="{% static 'css/information.css' %}"> 
+
 {% endblock %}
 
 {% block content %}
+
 <div class="dl-page">
   <div class="dl-card">
 
@@ -24,9 +27,20 @@
         <span class="dl-badge dl-badge--urgent">{{ urgent_count }} urgent</span>
         {% endif %}
       </div>
+
+      
       <div class="dl-toolbar__right">
+         <!-- Floating page info button -->
+          <div class="page-info-button">
+            <div class="page-info-tooltip">
+              This shows your upcoming deadlines for the week.<br>
+              You can mark them complete by checking the box.
+            </div>
+          </div>
         <!-- View Switcher -->
         <div class="dl-view-switcher">
+
+          
           <a href="{% url 'calendar' %}" class="dl-view-btn">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
@@ -42,9 +56,14 @@
             List
           </a>
         </div>
+
+        
+
         <a href="#" class="dl-add-btn" data-bs-toggle="modal" data-bs-target="#addEventModal">
           + <span class="dl-add-label">Add Deadline</span>
         </a>
+
+        
       </div>
     </div>
 
@@ -125,6 +144,7 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'deadline_list' %}">
         <div class="modal-body">
+          <!-- Form fields (title, type, datetime, location, description) -->
           <div class="mb-3">
             <label for="eventTitle" class="form-label">Title</label>
             <input type="text" class="form-control" id="eventTitle" name="title" placeholder="e.g. Algorithms Problem Set 3" required>
@@ -168,8 +188,10 @@
   </div>
 </div>
 
+
 <!-- Mobile FAB -->
 <a href="#" class="dl-fab" data-bs-toggle="modal" data-bs-target="#addEventModal" aria-label="Add deadline">+</a>
+
 {% endblock %}
 
 {% block extra_js %}
