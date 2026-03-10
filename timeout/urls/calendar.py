@@ -3,6 +3,7 @@ from timeout.views import calendar as cal_views
 from timeout.views import deadlines as deadline_views
 from timeout.views.notifications import notifications_view, mark_notification_read
 from timeout.views import ai_calendar as ai_cal_views
+from timeout.views.notifications import poll_notifications
 
 urlpatterns = [
     path('calendar/', cal_views.calendar_view, name='calendar'),
@@ -19,4 +20,5 @@ urlpatterns = [
          mark_notification_read,
          name="mark_notification_read"),
     #path('deadlines/<int:event_id>/complete/', deadline_views.deadline_mark_complete, name='deadline_mark_complete',),
+    path('notifications/poll/', poll_notifications, name='poll_notifications'),
 ]
