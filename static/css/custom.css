@@ -993,6 +993,13 @@ body {
 
 .nav-dropdown-item--danger:hover {
     background: rgba(239, 68, 68, 0.06) !important;
+.nav-dropdown-item:hover {
+    background: rgba(91, 115, 232, 0.06) !important;
+    color: #5B73E8 !important;
+}
+
+.nav-dropdown-item--danger:hover {
+    background: rgba(239, 68, 68, 0.06) !important;
     color: #ef4444 !important;
 }
 

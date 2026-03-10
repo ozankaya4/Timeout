@@ -276,5 +276,16 @@
     sounds: {{ request.user.notification_sounds|yesno:"true,false" }},
   };
 </script>
+<script>
+  window.NOTES_CONFIG = {
+    csrfToken: '{{ csrf_token }}',
+    pomodoroCompleteUrl: '{% url "pomodoro_complete" %}',
+    statsUrl: '{% url "notes_stats" %}',
+    pomoWork: {{ request.user.pomo_work_minutes }},
+    pomoShort: {{ request.user.pomo_short_break }},
+    pomoLong: {{ request.user.pomo_long_break }},
+    sounds: {{ request.user.notification_sounds|yesno:"true,false" }},
+  };
+</script>
 <script src="{% static 'js/notes.js' %}"></script>
 {% endblock %}
