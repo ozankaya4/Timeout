@@ -12,7 +12,7 @@
   function setNavDot(status) {
     if (!navDot) return;
     [...navDot.classList].forEach((cls) => {
-      if (cls.startsWith('status-') && cls !== 'status-dot-nav') {
+      if (cls.startsWith('status-')) {
         navDot.classList.remove(cls);
       }
     });
@@ -46,6 +46,7 @@
           setActiveStatusButton(data.status);
           if (navText) navText.textContent = data.status_display;
           setNavDot(data.status);
+          document.body.dataset.userStatus = data.status;
 
           const navTimer = document.getElementById('nav-focus-timer');
           const profileTimer = document.getElementById('profile-focus-timer');

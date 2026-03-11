@@ -5,83 +5,230 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/notes.css' %}">
+<link rel="stylesheet" href="{% static 'css/information.css' %}">  
 {% endblock %}
 
 {% block content %}
-<div class="notes-page">
-  <div class="notes-card">
+<div class="nt-page" id="notesPage">
 
-    <div class="notes-toolbar">
-      <div class="d-flex align-items-center gap-2">
-        <h1 class="notes-title">Notes</h1>
-        {% if notes %}<span class="notes-count">{{ notes|length }}</span>{% endif %}
+  <!-- ══ Study Stats Bar ══ -->
+  <div class="nt-stats-bar">
+    <div class="nt-stat-item nt-stat-streak">
+      <span class="nt-stat-icon" id="streakIcon">&#128293;</span>
+      <div class="nt-stat-text">
+        <span class="nt-stat-value" id="streakValue">{{ note_streak }}</span>
+        <span class="nt-stat-label">day streak</span>
       </div>
-      <button class="add-btn" data-bs-toggle="modal" data-bs-target="#newNoteModal">
-        + <span class="add-label">New Note</span>
+    </div>
+    <div class="nt-stat-divider"></div>
+    <div class="nt-stat-item nt-stat-level">
+      <span class="nt-stat-badge" id="levelBadge">Lv {{ level }}</span>
+      <div class="nt-stat-xp-wrap">
+        <div class="nt-stat-xp-bar">
+          <div class="nt-stat-xp-fill" id="xpFill" style="width: {{ xp_progress_pct }}%"></div>
+        </div>
+        <span class="nt-stat-xp-text" id="xpText">{{ xp }} / {{ xp_for_next_level }} XP</span>
+      </div>
+    </div>
+    <div class="nt-stat-divider"></div>
+    <div class="nt-stat-item nt-stat-pomodoro">
+      <span class="nt-stat-icon">&#127813;</span>
+      <div class="nt-stat-text">
+        <span class="nt-stat-value" id="pomodoroCount">0</span>
+        <span class="nt-stat-label">pomodoros today</span>
+      </div>
+    </div>
+  
+    <div class="nt-stat-actions">
+      <button class="nt-focus-toggle" id="focusModeBtn" title="Enter Focus Mode">
+        &#127919; Focus Mode
       </button>
     </div>
-
-    <form method="get" action="{% url 'notes' %}" class="notes-filter">
-      <input type="text" name="q" class="search-input" placeholder="Search notes..." value="{{ search_query }}">
-      <select name="category" class="filter-select" onchange="this.form.submit()">
-        <option value="">All categories</option>
-        {% for value, label in categories %}
-          <option value="{{ value }}" {% if active_category == value %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-      {% if search_query %}
-        <button type="submit" class="search-btn">Search</button>
-      {% endif %}
-    </form>
-
-    <div>
-      {% if notes %}
-        {% for note in notes %}
-          <div class="note-row note-row-{{ note.category }}" id="note-{{ note.id }}">
-
-            <div class="flex-grow-1">
-              <div class="note-header d-flex align-items-center gap-2 mb-1">
-                {% if note.is_pinned %}<span class="pin-icon" title="Pinned">&#128204;</span>{% endif %}
-                <span class="note-title">{{ note.title }}</span>
-                <span class="note-tag note-tag-{{ note.category }}">{{ note.get_category_display }}</span>
-              </div>
-              <p class="note-preview">{{ note.content|truncatewords:20 }}</p>
-              <div class="d-flex align-items-center gap-3">
-                <span class="note-meta">{{ note.updated_at|timesince }} ago</span>
-                {% if note.event %}
-                  <span class="note-meta note-meta-event">&#128197; {{ note.event.title }}</span>
-                {% endif %}
-              </div>
+    <!-- Floating page info button -->
+          <div class="page-info-button">
+            <div class="page-info-tooltip" >
+              Use the pomodoro timer to stay focused.<br>
+              Add new notes using the 'New Note' button.<br>
+              Pin important notes to keep them at the top for quick access. <br>
+              Keep a streak of daily note-taking to level up and earn XP.
             </div>
-
-            <div class="note-actions">
-              <button class="note-btn" onclick="togglePin({{ note.id }}, this)" data-pinned="{{ note.is_pinned|yesno:'true,false' }}">
-                {{ note.is_pinned|yesno:"Unpin,Pin" }}
-              </button>
-              <a href="{% url 'note_edit' note.id %}" class="note-btn">Edit</a>
-              <form method="post" action="{% url 'note_delete' note.id %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="note-btn note-btn-delete" onclick="return confirm('Delete this note?')">Delete</button>
-              </form>
-            </div>
-
           </div>
-        {% endfor %}
-      {% else %}
-        <div class="d-flex flex-column align-items-center py-5 gap-3">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <rect x="8" y="4" width="32" height="40" rx="4" stroke="#c8cfe0" stroke-width="2"/>
-            <path d="M16 16h16M16 22h16M16 28h10" stroke="#c8cfe0" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <p class="text-secondary small mb-0">No notes yet &mdash; create your first one!</p>
-          <button class="add-btn" data-bs-toggle="modal" data-bs-target="#newNoteModal">+ New Note</button>
+  </div>
+
+  <div class="nt-main-layout">
+
+    <!-- ══ Left: Notes List ══ -->
+    <div class="nt-content-area">
+      <div class="nt-card">
+
+        <!-- Toolbar -->
+        <div class="nt-toolbar">
+          <div class="nt-toolbar__left">
+            <h1 class="nt-title">Notes</h1>
+            {% if notes %}
+              <span class="nt-count">{{ notes|length }}</span>
+            {% endif %}
+          </div>
+          <div>
+            <button class="nt-add-btn" data-bs-toggle="modal" data-bs-target="#newNoteModal">
+              + <span class="nt-add-label">New Note</span>
+            </button>
+          </div>
         </div>
-      {% endif %}
+
+        <!-- Search & Filter -->
+        <form method="get" action="{% url 'notes' %}" class="nt-filter">
+          <input
+            type="text"
+            name="q"
+            class="nt-search"
+            placeholder="Search notes..."
+            value="{{ search_query }}"
+          >
+          <select name="category" class="nt-select" onchange="this.form.submit()">
+            <option value="">All categories</option>
+            {% for value, label in categories %}
+              <option value="{{ value }}" {% if active_category == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+          {% if search_query %}
+            <button type="submit" class="nt-search-btn">Search</button>
+          {% endif %}
+        </form>
+
+        <!-- Notes List -->
+        <div class="nt-list">
+          {% if notes %}
+            {% for note in notes %}
+              <div class="nt-item nt-item--{{ note.category }}" id="note-{{ note.id }}">
+
+                <div class="nt-item__body">
+                  <div class="nt-item__header">
+                    {% if note.is_pinned %}
+                      <span class="nt-pin-icon" title="Pinned">&#128204;</span>
+                    {% endif %}
+                    <span class="nt-item__title">{{ note.title }}</span>
+                    <span class="nt-cat-tag nt-cat-tag--{{ note.category }}">
+                      {{ note.get_category_display }}
+                    </span>
+                  </div>
+
+                  <p class="nt-item__preview">{{ note.content|truncatewords:20 }}</p>
+
+                  <div class="nt-item__meta">
+                    <span class="nt-meta">{{ note.updated_at|timesince }} ago</span>
+                    {% if note.event %}
+                      <span class="nt-meta nt-meta--event">&#128197; {{ note.event.title }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="nt-item__actions">
+                  <button
+                    class="nt-action-btn"
+                    onclick="togglePin({{ note.id }}, this)"
+                    data-pinned="{{ note.is_pinned|yesno:'true,false' }}"
+                  >
+                    {{ note.is_pinned|yesno:"Unpin,Pin" }}
+                  </button>
+                  <a href="{% url 'note_edit' note.id %}" class="nt-action-btn">Edit</a>
+                  <form method="post" action="{% url 'note_delete' note.id %}" class="nt-delete-form">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      class="nt-action-btn nt-action-btn--danger"
+                      onclick="return confirm('Delete this note?')"
+                    >Delete</button>
+                  </form>
+                </div>
+
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="nt-empty">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect x="8" y="4" width="32" height="40" rx="4" stroke="#c8cfe0" stroke-width="2"/>
+                <path d="M16 16h16M16 22h16M16 28h10" stroke="#c8cfe0" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <p class="nt-empty__text">No notes yet &mdash; create your first one!</p>
+              <button class="nt-add-btn" data-bs-toggle="modal" data-bs-target="#newNoteModal">
+                + New Note
+              </button>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ Right: Pomodoro Timer Panel ══ -->
+    <div class="nt-pomo-panel" id="pomoPanel">
+      <div class="nt-pomo-header">
+        <span class="nt-pomo-tomato">&#127813;</span>
+        <h3 class="nt-pomo-title">Pomodoro</h3>
+      </div>
+
+      <!-- Timer Ring -->
+      <div class="nt-pomo-ring-wrap">
+        <svg class="nt-pomo-ring" viewBox="0 0 120 120">
+          <circle class="nt-pomo-ring-bg" cx="60" cy="60" r="54" />
+          <circle class="nt-pomo-ring-progress" id="pomoRing" cx="60" cy="60" r="54"
+                  stroke-dasharray="339.292" stroke-dashoffset="0" />
+        </svg>
+        <div class="nt-pomo-time" id="pomoTime">25:00</div>
+      </div>
+
+      <div class="nt-pomo-phase" id="pomoPhase">Work Session</div>
+      <div class="nt-pomo-session-dots" id="pomoDots">
+        <span class="nt-pomo-dot"></span>
+        <span class="nt-pomo-dot"></span>
+        <span class="nt-pomo-dot"></span>
+        <span class="nt-pomo-dot"></span>
+      </div>
+
+      <div class="nt-pomo-controls">
+        <button class="nt-pomo-btn nt-pomo-btn--start" id="pomoStartBtn">Start</button>
+        <button class="nt-pomo-btn nt-pomo-btn--pause" id="pomoPauseBtn" style="display:none">Pause</button>
+        <button class="nt-pomo-btn nt-pomo-btn--skip" id="pomoSkipBtn" title="Skip to next phase">Skip</button>
+        <button class="nt-pomo-btn nt-pomo-btn--reset" id="pomoResetBtn" title="Reset timer">Reset</button>
+      </div>
+
+      <div class="nt-pomo-info">
+        <p>{{ request.user.pomo_work_minutes }} min work &middot; {{ request.user.pomo_short_break }} min break</p>
+        <p>Long break ({{ request.user.pomo_long_break }} min) after 4 sessions</p>
+      </div>
     </div>
 
   </div>
 </div>
 
+<!-- ══ Focus Mode Overlay ══ -->
+<div class="nt-focus-overlay" id="focusOverlay" style="display:none">
+  <div class="nt-focus-bar">
+    <span class="nt-focus-bar-label">&#127919; Focus Mode Active</span>
+    <span class="nt-focus-bar-timer" id="focusElapsed">00:00</span>
+    <button class="nt-focus-exit-btn" id="focusExitBtn">Exit Focus Mode</button>
+  </div>
+</div>
+
+<!-- ══ Inactivity Warning Overlay ══ -->
+<div class="nt-warn-overlay" id="warnOverlay" style="display:none">
+  <div class="nt-warn-card">
+    <div class="nt-warn-icon">&#9888;&#65039;</div>
+    <h2 class="nt-warn-title">You've been inactive!</h2>
+    <p class="nt-warn-text">It's been 2 minutes since your last activity.<br>Get back to your notes!</p>
+    <button class="nt-warn-dismiss" id="warnDismissBtn">I'm Back!</button>
+  </div>
+</div>
+
+<!-- ══ XP Gain Toast ══ -->
+<div class="nt-xp-toast" id="xpToast" style="display:none">
+  <span class="nt-xp-toast-text" id="xpToastText">+25 XP</span>
+</div>
+
+<!-- New Note Modal -->
 <div class="modal fade" id="newNoteModal" tabindex="-1" aria-labelledby="newNoteLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -124,10 +271,32 @@
   </div>
 </div>
 
-<button class="fab" data-bs-toggle="modal" data-bs-target="#newNoteModal" aria-label="New note">+</button>
+<button class="nt-fab" data-bs-toggle="modal" data-bs-target="#newNoteModal" aria-label="New note">+</button>
 
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  window.NOTES_CONFIG = {
+    csrfToken: '{{ csrf_token }}',
+    pomodoroCompleteUrl: '{% url "pomodoro_complete" %}',
+    statsUrl: '{% url "notes_stats" %}',
+    pomoWork: {{ request.user.pomo_work_minutes }},
+    pomoShort: {{ request.user.pomo_short_break }},
+    pomoLong: {{ request.user.pomo_long_break }},
+    sounds: {{ request.user.notification_sounds|yesno:"true,false" }},
+  };
+</script>
+<script>
+  window.NOTES_CONFIG = {
+    csrfToken: '{{ csrf_token }}',
+    pomodoroCompleteUrl: '{% url "pomodoro_complete" %}',
+    statsUrl: '{% url "notes_stats" %}',
+    pomoWork: {{ request.user.pomo_work_minutes }},
+    pomoShort: {{ request.user.pomo_short_break }},
+    pomoLong: {{ request.user.pomo_long_break }},
+    sounds: {{ request.user.notification_sounds|yesno:"true,false" }},
+  };
+</script>
 <script src="{% static 'js/notes.js' %}"></script>
 {% endblock %}

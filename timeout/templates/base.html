@@ -1,6 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      {% if request.user.is_authenticated %}
+        data-theme="{{ request.user.theme }}"
+        data-colorblind="{{ request.user.colorblind_mode }}"
+        style="font-size: {{ request.user.font_size }}%"
+      {% endif %}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,6 +17,17 @@
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+
+    <!-- Resolve system theme before CSS loads (prevents flash) -->
+    <script>
+      (function(){
+        var h = document.documentElement;
+        if (h.getAttribute('data-theme') === 'system') {
+          h.setAttribute('data-theme',
+            window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      })();
+    </script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
@@ -45,6 +61,35 @@
     {% block extra_js %}
 
     {% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const badge = document.querySelector('.nav-link .badge');
+
+  async function updateNotifications() {
+    try {
+      const response = await fetch("{% url 'poll_notifications' %}");
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (data.unread_count > 0) {
+        if (badge) {
+          badge.textContent = data.unread_count;
+          badge.style.display = 'inline-block';
+        }
+      } else if (badge) {
+        badge.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Notification polling error:', err);
+    }
+  }
+
+  // Update immediately and then every 10 seconds
+  updateNotifications();
+  setInterval(updateNotifications, 10000); 
+});
+</script>
   </body>
   <!-- Footer -->
   {% include 'partials/_footer.html' %}
