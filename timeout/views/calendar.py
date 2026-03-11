@@ -212,7 +212,7 @@ def calendar_view(request):
 @require_POST
 def event_create(request):
     is_all_day = request.POST.get("is_all_day") == "on"
-    allow_conflict = request.POST.get("allow_conflict") == "on"
+    #allow_conflict = request.POST.get("allow_conflict") == "on"
 
     start_datetime = request.POST.get("start_datetime")
     end_datetime = request.POST.get("end_datetime")
@@ -238,7 +238,7 @@ def event_create(request):
         end_datetime=end_datetime,
         location=request.POST.get("location", ""),
         description=request.POST.get("description", ""),
-        allow_conflict=allow_conflict,
+        #allow_conflict=allow_conflict,
         visibility=request.POST.get("visibility", "public"),
         is_all_day=is_all_day,
         recurrence=recurrence,

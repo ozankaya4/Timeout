@@ -56,7 +56,8 @@
             <div class="page-info-tooltip">
               This shows your upcoming events for the month.<br>
               Click on a day or the 'Add Event' button to add a new event. <br>
-              Click on an event to view details and edit your event.
+              Click on an event to view details and edit your event. <br>
+              To link a deadline to a study session, click on the event to 'Edit' and select the related study session.
             </div>
           </div>
         <div class="cal-view-switcher">
@@ -106,29 +107,29 @@
             <span class="cal-day-num">{{ day.day_num }}</span>
             {% if day.events %}
             <div class="cal-events">
-              {% for ev in day.events|slice:":3" %}
-              <a href="#"
-                 class="cal-chip cal-chip--{{ ev.event_type }} {% if ev.allow_conflict %}cal-chip--conflict{% endif %}"
-                 data-bs-toggle="modal"
-                 onclick="event.stopPropagation();"
-                 data-bs-target="#eventDetailsModal"
-                 data-event-id="{{ ev.id }}"
-                 data-event-title="{{ ev.title }}"
-                 data-event-type="{{ ev.get_event_type_display }}"
-                 data-event-color="{{ ev.color }}"
-                 data-event-start="{{ ev.start_datetime|date:'Y-m-d H:i' }}"
-                 data-event-end="{{ ev.end_datetime|date:'Y-m-d H:i' }}"
-                 data-event-location="{{ ev.location }}"
-                 data-event-description="{{ ev.description }}"
-                 data-event-recurrence="{{ ev.get_recurrence_display }}"
-                 data-event-all-day="{{ ev.is_all_day }}"
-                 data-event-visibility="{{ ev.visibility }}"
-                 data-event-status="{% if day.date < now.date %}Past{% elif day.date > now.date %}Upcoming{% else %}Ongoing{% endif %}"
-                 data-event-duration="{{ ev.end_datetime|timesince:ev.start_datetime }}"
-                 data-event-ongoing="{% if day.date == now.date %}Yes{% else %}No{% endif %}"
-                 data-event-past="{% if day.date < now.date %}Yes{% else %}No{% endif %}">
-                 {{ ev.title }}
-              </a>
+              {% for ev in day.events %}
+             <a href="#"
+              class="cal-chip cal-chip--{{ ev.event_type }}"
+              data-bs-toggle="modal"
+              onclick="event.stopPropagation();"
+              data-bs-target="#eventDetailsModal"
+              data-event-id="{{ ev.id }}"
+              data-event-title="{{ ev.title }}"
+              data-event-type="{{ ev.get_event_type_display }}"
+              data-event-color="{{ ev.color }}"
+              data-event-start="{{ ev.start_datetime|date:'Y-m-d H:i' }}"
+              data-event-end="{{ ev.end_datetime|date:'Y-m-d H:i' }}"
+              data-event-location="{{ ev.location }}"
+              data-event-description="{{ ev.description }}"
+              data-event-recurrence="{{ ev.get_recurrence_display }}"
+              data-event-all-day="{{ ev.is_all_day }}"
+              data-event-visibility="{{ ev.visibility }}"
+              data-event-status="{% if day.date < now.date %}Past{% elif day.date > now.date %}Upcoming{% else %}Ongoing{% endif %}"
+              data-event-duration="{{ ev.end_datetime|timesince:ev.start_datetime }}"
+              data-event-ongoing="{% if day.date == now.date %}Yes{% else %}No{% endif %}"
+              data-event-past="{% if day.date < now.date %}Yes{% else %}No{% endif %}">
+              {{ ev.title }}
+            </a>
               {% endfor %}
               {% if day.events|length > 3 %}
               <span class="cal-chip-overflow">+{{ day.events|length|add:"-3" }} more</span>
