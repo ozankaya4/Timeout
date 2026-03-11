@@ -159,13 +159,11 @@ def calendar_view(request):
         "July", "August", "September", "October", "November", "December",
     ]
 
-<<<<<<< HEAD
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,
         event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
         start_datetime__gte=timezone.now(),
     ).order_by('start_datetime')[:20]
-=======
     # Missed study sessions: past events still in UPCOMING status
     now = timezone.now()
     missed_sessions = Event.objects.filter(
@@ -186,7 +184,6 @@ def calendar_view(request):
 
     # Recently cancelled study sessions (stored in session after event_cancel view)
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
->>>>>>> main
 
     context = {
         "weeks": weeks,
@@ -198,13 +195,32 @@ def calendar_view(request):
         "next_year": next_year,
         "next_month": next_month,
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-<<<<<<< HEAD
+
         "upcoming_deadlines": upcoming_deadlines,
-=======
         "reschedule_prompts": reschedule_prompts,
->>>>>>> main
     }
     return render(request, "pages/calendar.html", context)
+
+
+@login_required
+@require_POST
+def subscribe_event(request, pk):
+    from django.shortcuts import get_object_or_404
+    original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)
+    if original.creator == request.user:
+        return JsonResponse({'success': False, 'error': 'You own this event.'}, status=400)
+    already = Event.objects.filter(creator=request.user, title=original.title, start_datetime=original.start_datetime,
+    ).exists()
+    if already:
+        return JsonResponse({'success': False, 'error': 'Already subscribed.'}, status=400)
+    Event.objects.create( creator=request.user,title=original.title,
+        event_type=original.event_type, start_datetime=original.start_datetime,
+        end_datetime=original.end_datetime, location=original.location,
+        description=original.description, visibility=Event.Visibility.PRIVATE,
+        is_all_day=original.is_all_day, recurrence=original.recurrence,
+        allow_conflict=True,
+    )
+    return JsonResponse({'success': True})
 
 
 @login_required
