@@ -33,11 +33,7 @@ def deadline_list_view(request):
     NotificationService.create_deadline_notifications(request.user)
 
     context = {
-        'deadlines': deadlines,
-        'total_count': len(deadlines),
-        'overdue_count': sum(1 for d in deadlines if d['urgency_status'] == 'overdue'), # Get how much assignments are overdue
-        # Get how much assignments are urgent
-        'urgent_count': sum(1 for d in deadlines if d['urgency_status'] == 'urgent'),
+        
 
         'unread_notifications': request.user.notifications.filter(is_read=False),
         'sections': sections,
