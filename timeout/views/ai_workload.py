@@ -1,4 +1,3 @@
-# timeout/ai_workload.py
 from django.conf import settings
 
 def get_ai_workload_warning(events):
@@ -13,7 +12,6 @@ def get_ai_workload_warning(events):
         from openai import OpenAI
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-        # Prepare a simple summary of today's events
         event_summaries = [
             f"- {e['title']} from {e['start_datetime'].strftime('%H:%M')} to {e['end_datetime'].strftime('%H:%M')}"
             if isinstance(e, dict) else
@@ -41,5 +39,6 @@ def get_ai_workload_warning(events):
         )
 
         return response.choices[0].message.content.strip()
+        
     except Exception:
         return None
