@@ -1,43 +1,39 @@
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from timeout.models import Event
-from django.core.exceptions import ValidationError
+from datetime import datetime
 
+@login_required
 def event_edit(request, pk):
-    """Edit an existing event."""
+
     event = get_object_or_404(Event, pk=pk, creator=request.user)
 
+    study_sessions = Event.objects.filter(
+        creator=request.user,
+        event_type=Event.EventType.STUDY_SESSION,
+        start_datetime__lt=event.start_datetime
+    )
+
     if request.method == "POST":
+        event.title = request.POST.get("title")
+        event.event_type = request.POST.get("event_type")
+        event.visibility = request.POST.get("visibility")
+        event.recurrence = request.POST.get("recurrence")
+        event.start_datetime = datetime.fromisoformat(request.POST.get("start_datetime"))
+        event.end_datetime = datetime.fromisoformat(request.POST.get("end_datetime"))
+        event.location = request.POST.get("location")
+        event.description = request.POST.get("description")
+        event.allow_conflict = bool(request.POST.get("allow_conflict"))
 
-        is_all_day = request.POST.get("is_all_day") == "on"
+        event.save()
 
-        start_datetime = request.POST.get("start_datetime")
-        end_datetime = request.POST.get("end_datetime")
+        if event.event_type == Event.EventType.DEADLINE:
+            session_ids = request.POST.getlist("linked_study_sessions")
+            event.linked_study_sessions.set(session_ids)
 
-        if is_all_day and start_datetime:
-            date_part = start_datetime.split("T")[0]
-            start_datetime = f"{date_part}T00:00"
-            end_datetime = f"{date_part}T23:59"
+        return redirect("calendar")
 
-        event.title = request.POST.get("title", event.title)
-        event.start_datetime = start_datetime
-        event.end_datetime = end_datetime
-        event.description = request.POST.get("description", "")
-        event.location = request.POST.get("location", "")
-        event.event_type = request.POST.get("event_type", "other")
-        event.visibility = request.POST.get("visibility", "public")
-        event.allow_conflict = request.POST.get("allow_conflict") == "on"
-        event.is_all_day = is_all_day
-        event.recurrence = request.POST.get("recurrence", "none")
-
-        try:
-            event.full_clean()  
-            event.save()
-            messages.success(request, f'Event "{event.title}" updated successfully.')
-            return redirect("calendar")  
-        except ValidationError as e:
-            messages.error(request, "Error updating event: " + '; '.join(e.messages))
-        except Exception as e:
-            messages.error(request, "Unexpected error: " + str(e))
-
-    return render(request, "pages/event_form.html", {"event": event})
+    return render(request, "pages/event_form.html", {
+        "event": event,
+        "study_sessions": study_sessions
+    })

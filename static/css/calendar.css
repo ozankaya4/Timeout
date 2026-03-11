@@ -256,3 +256,94 @@ td.cal-today .cal-day-num {
   background: #5b5ddf;
   color: #ffffff;
 }
+
+/* timeout/static/css/calendar.css */
+
+/* Container for multi-select */
+.select-multiple-wrapper {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  min-height: 50px;
+  cursor: text;
+  background-color: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.select-multiple-wrapper.focused {
+  border-color: #6c63ff; /* highlight color */
+  box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+}
+
+/* Each selected item */
+.select-multiple-wrapper .selected-item {
+  background-color: #6c63ff;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Close button on each selected item */
+.select-multiple-wrapper .selected-item .remove-btn {
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Dropdown options */
+.select-multiple-dropdown {
+  display: none; /* hidden by default */
+  position: absolute;
+  top: 100%; /* place it below wrapper */
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  background: #fff;
+  z-index: 999; /* make sure it’s on top */
+}
+
+.select-multiple-dropdown.active {
+  display: block;
+}
+
+.select-multiple-dropdown .option {
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.select-multiple-dropdown .option:hover {
+  background-color: #f1f1f1;
+}
+
+.select-multiple-dropdown .option.selected {
+  background-color: #6c63ff;
+  color: white;
+}
+
+.cal-card .select-multiple-wrapper { 
+  border: 2px solid #6c63ff; 
+}
+
+.cal-card .select-multiple-dropdown .option.selected { 
+  background-color: #6c63ff !important; 
+  color: white !important; 
+}
+
+.select-multiple-wrapper .dropdown-arrow {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: #6c63ff;
+  pointer-events: none;
+}

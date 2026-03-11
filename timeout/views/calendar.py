@@ -13,6 +13,7 @@ from timeout.models import Event
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from timeout.views.ai_workload import get_ai_workload_warning
+from timeout.views.deadline_warning import get_deadline_study_warnings
 
 
 @login_required
@@ -129,7 +130,7 @@ def calendar_view(request):
             pseudo_event = {
                 'original': ev,
                 'recurrence_instance': True,
-                'id': ev.id,  # pass the real ID
+                'id': ev.id, 
                 'title': ev.title,
                 'start_datetime': datetime.combine(current_date, ev.start_datetime.time()),
                 'end_datetime': datetime.combine(current_date, ev.end_datetime.time()),
@@ -137,7 +138,7 @@ def calendar_view(request):
                 'location': ev.location,
                 'description': ev.description,
                 'is_all_day': ev.is_all_day,
-                'instance_date': current_date,  # the date this occurrence is shown
+                'instance_date': current_date, 
             }
 
             events_by_date.setdefault(current_date, []).append(pseudo_event)
@@ -165,7 +166,7 @@ def calendar_view(request):
     # Get today's events for AI workload warning
     today_events = events_by_date.get(timezone.now().date(), [])
     workload_warning = get_ai_workload_warning(today_events)
-    # Missed study sessions: past events still in UPCOMING status
+    
     now = timezone.now()
     missed_sessions = Event.objects.filter(
         creator=request.user,
@@ -186,6 +187,8 @@ def calendar_view(request):
     # Recently cancelled study sessions (stored in session after event_cancel view)
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
 
+    warnings = get_deadline_study_warnings(request.user)
+
     context = {
         "weeks": weeks,
         "year": year,
@@ -198,6 +201,8 @@ def calendar_view(request):
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         "workload_warning": workload_warning,
         "reschedule_prompts": reschedule_prompts,
+        "events": events_qs,
+        "warnings": warnings,
     }
 
     return render(request, "pages/calendar.html", context)

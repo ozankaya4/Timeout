@@ -88,6 +88,15 @@ class Event(models.Model):
     is_global = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False) # Added to track event
 
+    linked_study_sessions = models.ManyToManyField(
+        "self",
+        blank=True,
+        symmetrical=False,
+        related_name="linked_deadlines",
+        limit_choices_to={"event_type": "study_session"},
+    )
+    
+
     class Meta:
         ordering = ['-start_datetime']
         indexes = [

@@ -11,11 +11,26 @@
 {% block content %}
 <div class="cal-page">
 
-    {% if workload_warning %}
-    <div class="alert alert-warning mb-3">
-        ⚠️ {{ workload_warning }}
+  {% if workload_warning %}
+  <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center justify-content-between mb-3" role="alert">
+      <span>⚠️ {{ workload_warning }}</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
+
+  {% if warnings %}
+  <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center justify-content-between" role="alert">
+    <div>
+      <strong>Workload Warning</strong>
+      <ul class="mb-0">
+        {% for warning in warnings %}
+          <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
     </div>
-    {% endif %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
 
   {% include "partials/reschedule_banners.html" %}
 
