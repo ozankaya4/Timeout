@@ -1,7 +1,7 @@
 from django.urls import path
 from timeout.views import calendar as cal_views
 from timeout.views import deadlines as deadline_views
-from timeout.views.notifications import notifications_view, mark_notification_read
+from timeout.views.notifications import notifications_view, mark_notification_read, delete_notification
 from timeout.views import ai_calendar as ai_cal_views
 from timeout.views.notifications import poll_notifications
 from timeout.views import event_cancel as event_cancel_views
@@ -10,6 +10,8 @@ from timeout.views import ai_reschedule as ai_reschedule_views
 from timeout.views import event_edit as edit_views
 from timeout.views import event_details as detail_views
 from timeout.views import event_delete as delete_views
+
+
 
 urlpatterns = [
     path('calendar/', cal_views.calendar_view, name='calendar'),
@@ -28,4 +30,5 @@ urlpatterns = [
     path("notifications/", notifications_view, name="notifications"),
     path("notifications/read/<int:notification_id>/", mark_notification_read, name="mark_notification_read"),
     path('notifications/poll/', poll_notifications, name='poll_notifications'),
+    path("notifications/delete/<int:notification_id>/", delete_notification, name="delete_notification"),
 ]

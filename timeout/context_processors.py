@@ -20,7 +20,7 @@ def unread_notifications_count(request):
     if request.user.is_authenticated:
         qs = Notification.objects.filter(user=request.user, is_read=False)
         count = qs.count()
-        latest = Notification.objects.filter(user=request.user).first()
+        latest = Notification.objects.filter(user=request.user, is_dismissed=False).first()
         latest_notif_id = latest.id if latest else 0
     else:
         count = 0
