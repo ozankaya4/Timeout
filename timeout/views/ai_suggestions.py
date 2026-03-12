@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from django.conf import settings
 from openai import OpenAI
+from django.core.cache import cache
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -12,6 +13,12 @@ def get_ai_suggestions(user, events_today):
     `events_today` is a list of Event model instances.
     Returns a list of strings.
     """
+
+    cache_key = f"ai_suggestions_{user.id}_{datetime.now().date()}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
     if not events_today:
         return ["No events today. You have free time!"]
 
@@ -38,7 +45,7 @@ def get_ai_suggestions(user, events_today):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a productivity AI assistant."},
-                {"role": "user", "content": str(prompt)},  # always string
+                {"role": "user", "content": str(prompt)},
             ],
             temperature=0.7,
             max_tokens=200,
@@ -55,6 +62,9 @@ def get_ai_suggestions(user, events_today):
         suggestions = json.loads(raw)
         if not isinstance(suggestions, list):
             suggestions = [str(suggestions)]
+
+        # Cache for 1 hour
+        cache.set(cache_key, suggestions, timeout=3600)
 
         return suggestions
 

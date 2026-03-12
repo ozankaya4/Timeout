@@ -3,6 +3,7 @@ from django.shortcuts import render
 from timeout.models.notification import Notification
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from timeout.services.notification_service import NotificationService
 
 
 @login_required
@@ -39,11 +40,9 @@ def poll_notifications(request):
     except (ValueError, TypeError):
         last_id = 0
 
-    from timeout.services.notification_service import NotificationService
     NotificationService.create_deadline_notifications(request.user)
-
     notifications = Notification.objects.filter(user=request.user, id__gt=last_id).order_by('id')
-
+    
     data = [
         {
             'id': n.id,
@@ -55,4 +54,7 @@ def poll_notifications(request):
         for n in notifications
     ]
 
-    return JsonResponse({'notifications': data})
+    # Add unread_count to the response
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    return JsonResponse({'notifications': data, 'unread_count': unread_count})

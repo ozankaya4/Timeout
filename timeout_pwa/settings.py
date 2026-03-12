@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'timeout.context_processors.ai_suggestions',
+                'timeout.context_processors.unread_notifications_count',
             ],
         },
     },

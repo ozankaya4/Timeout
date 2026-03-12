@@ -246,7 +246,28 @@ function openAddEvent(dateStr) {
 
 (function () {
   const params = new URLSearchParams(window.location.search);
-  const openId = params.get('open_event');
+  const openId = params.get("open_event");
+
+  if (openId) {
+
+      const chip = document.querySelector(`[data-event-id="${openId}"]`);
+
+      if (chip) {
+
+          chip.scrollIntoView({
+              behavior: "smooth",
+              block: "center"
+          });
+
+          chip.classList.add("event-highlight");
+
+          setTimeout(() => {
+              chip.classList.remove("event-highlight");
+          }, 2500);
+
+          chip.click();
+      }
+  }
   if (!openId) return;
   window.addEventListener('load', function () {
     const chip = document.querySelector(`[data-event-id="${openId}"]`);

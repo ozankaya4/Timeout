@@ -256,3 +256,26 @@ td.cal-today .cal-day-num {
   background: #5b5ddf;
   color: #ffffff;
 }
+
+.event-highlight {
+    animation: glowEvent 2.5s ease;
+}
+
+@keyframes glowEvent {
+
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0px rgba(91,115,232,0);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 12px rgba(91,115,232,0.7);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0px rgba(91,115,232,0);
+    }
+
+}

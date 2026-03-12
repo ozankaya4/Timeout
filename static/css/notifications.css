@@ -40,10 +40,12 @@
   border: 1px solid #eef1f6;
   background: #ffffff;
   transition: background 0.18s ease, border-left-color 0.18s ease;
+  cursor: pointer;
 }
 
 .notification-item:hover {
-  background: #f8f9fc;
+  background: #f8f9fc; !important;
+  border-left-color: inherit;
 }
 
 /* ───────── Read vs Unread ───────── */
