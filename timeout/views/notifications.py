@@ -8,18 +8,26 @@ from timeout.services.notification_service import NotificationService
 
 @login_required
 def notifications_view(request):
-
-    notifications_qs = Notification.objects.filter(user=request.user, is_dismissed=False).order_by('-created_at')
+    notifications_qs = Notification.objects.filter(
+        user=request.user,
+        is_dismissed=False
+    ).order_by('-created_at')
 
     unread_count = notifications_qs.filter(is_read=False).count()
 
-    paginator = Paginator(notifications_qs, 10) 
+    # Filter by unread if requested
+    filter_param = request.GET.get('filter')
+    if filter_param == 'unread':
+        notifications_qs = notifications_qs.filter(is_read=False)
+
+    paginator = Paginator(notifications_qs, 10)
     page_number = request.GET.get('page')
     notifications = paginator.get_page(page_number)
 
     return render(request, 'pages/notifications.html', {
         'notifications': notifications,
         'unread_count': unread_count,
+        'current_filter': filter_param,
     })
 
 

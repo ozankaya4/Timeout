@@ -19,7 +19,11 @@
             You have <span id="page-unread-count">{{ unread_count }}</span> unread notifications
         </p>
     </div>
-    <button id="toggle-unread-btn" class="notif-clear-btn">Show unread</button>
+    {% if current_filter == 'unread' %}
+        <a href="{% url 'notifications' %}" class="notif-clear-btn" style="text-decoration:none;">Show all</a>
+    {% else %}
+        <a href="{% url 'notifications' %}?filter=unread" class="notif-clear-btn" style="text-decoration:none;">Show unread</a>
+    {% endif %}
 </div>
 
 <div class="chart-card">
@@ -56,14 +60,16 @@
     </div>
 
     <div class="pagination-container mt-4">
-        {% if notifications.has_previous %}
-        <a href="?page={{ notifications.previous_page_number }}" class="btn btn-sm btn-outline-secondary">Previous</a>
-        {% endif %}
-        <span class="mx-2 text-muted">Page {{ notifications.number }} of {{ notifications.paginator.num_pages }}</span>
-        {% if notifications.has_next %}
-        <a href="?page={{ notifications.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next</a>
-        {% endif %}
-    </div>
+    {% if notifications.has_previous %}
+    <a href="?page={{ notifications.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}" 
+       class="btn btn-sm btn-outline-secondary">Previous</a>
+    {% endif %}
+    <span class="mx-2 text-muted">Page {{ notifications.number }} of {{ notifications.paginator.num_pages }}</span>
+    {% if notifications.has_next %}
+    <a href="?page={{ notifications.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}" 
+       class="btn btn-sm btn-outline-secondary">Next</a>
+    {% endif %}
+</div>
 
 </div>
 
@@ -75,8 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const notifList = document.querySelector(".notifications-list");
     const badge = document.querySelector(".nav-link .badge");
     const pageUnread = document.getElementById("page-unread-count");
-    const toggleUnreadBtn = document.getElementById("toggle-unread-btn");
-    let showingUnreadOnly = false;
+    
 
     if (!notifList) return;
 
@@ -208,25 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
        SHOW UNREAD TOGGLE
     ----------------------------- */
 
-    if (toggleUnreadBtn) {
-        toggleUnreadBtn.addEventListener("click", () => {
-
-            showingUnreadOnly = !showingUnreadOnly;
-            const allNotifs = document.querySelectorAll(".notification-item");
-
-            allNotifs.forEach(n => {
-                const isUnread = n.classList.contains("notification-unread");
-
-                if (showingUnreadOnly) {
-                    n.style.display = isUnread ? "flex" : "none";
-                } else {
-                    n.style.display = "flex";
-                }
-            });
-
-            toggleUnreadBtn.textContent = showingUnreadOnly ? "Show all" : "Show unread";
-        });
-    }
+    
 
 });
 </script>
