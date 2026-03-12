@@ -256,9 +256,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    document.querySelectorAll('.btn-subscribe-event').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    btn.textContent = '✓ Added';
+                    btn.disabled = true;
+                    btn.style.background = '#198754';
+                } else {
+                    btn.textContent = data.error || 'Error';
+                    btn.disabled = true;
+                }
+            })
+            .catch(err => console.error('Subscribe error:', err));
+        });
+    });
+
 });
 
 document.addEventListener('DOMContentLoaded', function () {
+    let inactiveTimer = null;
+
     function setStatus(status) {
         fetch('/social/status/update/', {
             method: 'POST',
@@ -272,13 +299,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    window.addEventListener('beforeunload', function () {
+        clearTimeout(inactiveTimer);
+    });
+
     document.addEventListener('visibilitychange', function () {
         const currentStatus = document.body.dataset.userStatus;
         if (currentStatus === 'focus') return;
 
         if (document.hidden) {
-            setStatus('inactive');
+            inactiveTimer = setTimeout(function () {
+                setStatus('inactive');
+            }, 1500);
         } else {
+            clearTimeout(inactiveTimer);
             setStatus('social');
         }
     });

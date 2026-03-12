@@ -54,20 +54,27 @@
           <label for="id_content" class="form-label">Content</label>
           {{ form.content }}
           <div class="nt-word-count" id="wordCount">0 words</div>
-          <div class="nt-word-count" id="wordCount">0 words</div>
         </div>
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
             <label for="id_category" class="form-label">Category</label>
             {{ form.category }}
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label for="id_event" class="form-label">Link to Event</label>
             {{ form.event }}
           </div>
+          <div class="col-md-4">
+            <label for="id_due_date" class="form-label">Due Date</label>
+            {{ form.due_date }}
+          </div>
         </div>
+        {% if note.time_spent_display %}
+        <div class="nt-time-spent-badge mb-4">
+          &#9201; {{ note.time_spent_display }} studied via Pomodoro
+        </div>
+        {% endif %}
         <div class="d-flex gap-2">
-          <button type="submit" class="btn submit-btn">Save Changes</button>
           <button type="submit" class="btn submit-btn">Save Changes</button>
           <a href="{% url 'notes' %}" class="btn btn-light">Cancel</a>
         </div>
@@ -76,42 +83,6 @@
 
   </div>
 </div>
-
-<!-- ══ Focus Mode Overlay ══ -->
-<div class="nt-focus-overlay" id="focusOverlay" style="display:none">
-  <div class="nt-focus-bar">
-    <span class="nt-focus-bar-label">&#127919; Focus Mode Active</span>
-    <span class="nt-focus-bar-timer" id="focusElapsed">00:00</span>
-    <button class="nt-focus-exit-btn" id="focusExitBtn">Exit Focus Mode</button>
-  </div>
-</div>
-
-<!-- ══ Inactivity Warning Overlay ══ -->
-<div class="nt-warn-overlay" id="warnOverlay" style="display:none">
-  <div class="nt-warn-card">
-    <div class="nt-warn-icon">&#9888;&#65039;</div>
-    <h2 class="nt-warn-title">You've been inactive!</h2>
-    <p class="nt-warn-text">It's been 2 minutes since your last activity.<br>Get back to your notes!</p>
-    <button class="nt-warn-dismiss" id="warnDismissBtn">I'm Back!</button>
-  </div>
-</div>
-
-<!-- ══ XP Gain Toast ══ -->
-<div class="nt-xp-toast" id="xpToast" style="display:none">
-  <span class="nt-xp-toast-text" id="xpToastText">+25 XP</span>
-</div>
-
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  window.NOTES_CONFIG = {
-    csrfToken: '{{ csrf_token }}',
-    pomodoroCompleteUrl: '{% url "pomodoro_complete" %}',
-    statsUrl: '{% url "notes_stats" %}',
-  };
-</script>
-<script src="{% static 'js/notes.js' %}"></script>
 
 <!-- ══ Focus Mode Overlay ══ -->
 <div class="nt-focus-overlay" id="focusOverlay" style="display:none">

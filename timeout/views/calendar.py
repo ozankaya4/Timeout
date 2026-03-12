@@ -159,6 +159,32 @@ def calendar_view(request):
         "July", "August", "September", "October", "November", "December",
     ]
 
+    upcoming_deadlines = Event.objects.filter(
+        creator=request.user,
+        event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
+        start_datetime__gte=timezone.now(),
+    ).order_by('start_datetime')[:20]
+    # Missed study sessions: past events still in UPCOMING status
+    now = timezone.now()
+    missed_sessions = Event.objects.filter(
+        creator=request.user,
+        event_type=Event.EventType.STUDY_SESSION,
+        status=Event.EventStatus.UPCOMING,
+        end_datetime__lt=now,
+    )
+    reschedule_prompts = [
+        {
+            'id': e.pk,
+            'title': e.title,
+            'duration_minutes': int((e.end_datetime - e.start_datetime).total_seconds() / 60),
+            'reason': 'missed',
+        }
+        for e in missed_sessions
+    ]
+
+    # Recently cancelled study sessions (stored in session after event_cancel view)
+    reschedule_prompts += request.session.pop('reschedule_prompts', [])
+
     context = {
         "weeks": weeks,
         "year": year,
@@ -169,8 +195,32 @@ def calendar_view(request):
         "next_year": next_year,
         "next_month": next_month,
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+
+        "upcoming_deadlines": upcoming_deadlines,
+        "reschedule_prompts": reschedule_prompts,
     }
     return render(request, "pages/calendar.html", context)
+
+
+@login_required
+@require_POST
+def subscribe_event(request, pk):
+    from django.shortcuts import get_object_or_404
+    original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)
+    if original.creator == request.user:
+        return JsonResponse({'success': False, 'error': 'You own this event.'}, status=400)
+    already = Event.objects.filter(creator=request.user, title=original.title, start_datetime=original.start_datetime,
+    ).exists()
+    if already:
+        return JsonResponse({'success': False, 'error': 'Already subscribed.'}, status=400)
+    Event.objects.create( creator=request.user,title=original.title,
+        event_type=original.event_type, start_datetime=original.start_datetime,
+        end_datetime=original.end_datetime, location=original.location,
+        description=original.description, visibility=Event.Visibility.PRIVATE,
+        is_all_day=original.is_all_day, recurrence=original.recurrence,
+        allow_conflict=True,
+    )
+    return JsonResponse({'success': True})
 
 
 @login_required
@@ -214,6 +264,6 @@ def event_create(request):
         event.save()
         messages.success(request, f'"{event.title}" added to calendar.')
     except ValidationError as e:
-        messages.error(request, str(e))
+        messages.error(request, '; '.join(e.messages))
 
     return redirect("calendar")

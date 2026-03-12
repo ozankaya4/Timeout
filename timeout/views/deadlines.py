@@ -3,6 +3,17 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 from timeout.services.deadline_service import DeadlineService
+from timeout.services.notification_service import NotificationService
+
+# Display labels and ordering for each event type section
+_TYPE_META = [
+    ('deadline',      'Deadlines'),
+    ('study_session', 'Study Sessions'),
+    ('exam',          'Exams'),
+    ('class',         'Classes'),
+    ('meeting',       'Meetings'),
+    ('other',         'Other'),
+]
 
 
 @login_required
@@ -30,6 +41,8 @@ def deadline_list_view(request):
         event_type=event_type or None,
     )
 
+    NotificationService.create_deadline_notifications(request.user)
+
     context = {
         'deadlines': deadlines,
         'total_count': len(deadlines),
@@ -48,6 +61,7 @@ def deadline_list_view(request):
             ('meeting', 'Meetings'),
             ('study_session', 'Study Sessions'),
             ('other', 'Other'),
+            'unread_notifications': request.user.notifications.filter(is_read=False),
         ],
     }
     return render(request, 'pages/deadlines.html', context)
