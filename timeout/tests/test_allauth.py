@@ -26,6 +26,7 @@ class TimeoutAccountAdapterTests(TestCase):
 
     def test_login_redirect_goes_to_dashboard(self):
         request = self.factory.get('/')
+        request.user = AnonymousUser() 
         url = self.adapter.get_login_redirect_url(request)
         self.assertEqual(url, '/dashboard/')
 
