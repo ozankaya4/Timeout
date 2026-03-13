@@ -6,6 +6,8 @@ from django.contrib.sessions.backends.db import SessionStore
 
 from timeout.adapters import TimeoutAccountAdapter, TimeoutSocialAccountAdapter
 
+from django.contrib.auth.models import AnonymousUser
+
 User = get_user_model()
 
 
