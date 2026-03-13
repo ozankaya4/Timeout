@@ -39,7 +39,8 @@
             <div id="notif-{{ n.id }}"
                 class="notification-item {% if not n.is_read %}notification-unread{% else %}notification-read{% endif %}"
                 data-type="{{ n.type }}"
-                data-event-id="{{ n.deadline.id }}">
+                data-event-id="{{ n.deadline.id }}"
+                data-convo-id="{{ n.conversation.id }}">
 
             <div class="notification-main">
                 <div class="notification-title">
@@ -167,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         /* -----------------------------
            CLICK NOTIFICATION
            auto mark as read + open event
@@ -203,9 +205,15 @@ document.addEventListener("DOMContentLoaded", () => {
            OPEN EVENT IN CALENDAR
         ----------------------------- */
 
-        if (notifItem.dataset.type === "message") return;
+        if (notifItem.dataset.type === "message") {
+            const convoId = notifItem.dataset.convoId;
+            if (convoId && convoId !== "None") {
+                window.location.href = `/messaging/conversation/${convoId}/`;
+            }
+            return;
+        }
 
-        if (eventId) {
+        if (eventId && eventId !== "None") {
             window.location.href = `/calendar/?open_event=${eventId}`;
         }
 

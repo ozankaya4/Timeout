@@ -33,6 +33,14 @@ class Notification(models.Model):
     is_dismissed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    conversation = models.ForeignKey(
+        'Conversation',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+    )
+
     deadline = models.ForeignKey(
         'Event',
         null=True,
