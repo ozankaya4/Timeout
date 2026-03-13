@@ -112,7 +112,7 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 
-# Password hashing — Argon2 is the primary hasher
+# Password hashing, Argon2 is the primary hasher
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',

@@ -24,7 +24,7 @@ class NoteService:
         yesterday = today - datetime.timedelta(days=1)
 
         if user.last_note_date == today:
-            # Already counted today — just award XP without streak change
+            # Already counted today, just award XP without streak change
             user.xp += xp_base
             user.save(update_fields=['xp'])
             return

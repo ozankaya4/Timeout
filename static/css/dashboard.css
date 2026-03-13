@@ -1,5 +1,5 @@
 /* ============================================
-   Dashboard — Redesigned Command Center
+   Dashboard Redesigned Command Center
    ============================================ */
 
 /* --- Layout --- */
@@ -535,7 +535,7 @@
 }
 /*lines 536-606 added for weekly briefing card*/
 /* ============================================
-   AI Weekly Insight — Hero Card
+   AI Weekly Insight Hero Card
    ============================================ */
 .dash-ai-briefing {
     background: linear-gradient(135deg, rgba(91, 115, 232, 0.10) 0%, rgba(91, 93, 223, 0.04) 100%);

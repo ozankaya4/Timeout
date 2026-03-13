@@ -66,7 +66,7 @@
 
 /* ───────── Colour palette per type ───────── */
 
-/* Message — teal */
+/* Message teal */
 .notification-item[data-type="message"] {
     border-left-color: #00acc1;
 }
@@ -74,7 +74,7 @@
     background: rgba(0, 172, 193, 0.08);
 }
 
-/* Deadline — indigo */
+/* Deadline indigo */
 .notification-item[data-type="deadline"] {
     border-left-color: #5b5ddf;
 }
@@ -82,7 +82,7 @@
     background: rgba(91, 93, 223, 0.08);
 }
 
-/* Exam — red */
+/* Exam red */
 .notification-item[data-type="exam"] {
     border-left-color: #e53935;
 }
@@ -90,7 +90,7 @@
     background: rgba(229, 57, 53, 0.08);
 }
 
-/* Class — amber */
+/* Class amber */
 .notification-item[data-type="class"] {
     border-left-color: #f4a100;
 }
@@ -98,7 +98,7 @@
     background: rgba(244, 161, 0, 0.08);
 }
 
-/* Meeting — purple */
+/* Meeting purple */
 .notification-item[data-type="meeting"] {
     border-left-color: #8e24aa;
 }
@@ -106,7 +106,7 @@
     background: rgba(142, 36, 170, 0.08);
 }
 
-/* Study session — green */
+/* Study session green */
 .notification-item[data-type="study_session"] {
     border-left-color: #43a047;
 }
@@ -114,7 +114,7 @@
     background: rgba(67, 160, 71, 0.08);
 }
 
-/* Event / other — blue */
+/* Event / other blue */
 .notification-item[data-type="event"] {
     border-left-color: #1e88e5;
 }
@@ -195,6 +195,43 @@
 #toggle-unread-btn:hover {
     background: #e8e9ff;
     color: #2a3547;
+}
+
+/* ───────── Empty State ───────── */
+.no-notifications-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    border-radius: 14px;
+}
+
+.no-notifications-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.no-notifications-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2a3547;
+    margin-bottom: 4px;
+}
+
+.no-notifications-desc {
+    font-size: 0.8rem;
+    color: #8892B0;
+    margin: 0;
+}
+
+/* ───────── Dark mode: blend card with page ───────── */
+[data-theme="dark"] .chart-card {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
 }
 
 /* ───────── Pagination ───────── */

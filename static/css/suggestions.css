@@ -1,5 +1,5 @@
 /* ============================================
-   AI Suggestions Button — Dashboard Style Match
+   AI Suggestions Button Dashboard Style Match
    ============================================ */
 
 .nav-ai-btn {
@@ -39,7 +39,7 @@
     fill: currentColor;
 }
 
-/* Tooltip styling — matches dashboard cards */
+/* Tooltip styling matches dashboard cards */
 .tooltip-inner {
     max-width: 280px;
     text-align: left;
@@ -61,7 +61,7 @@
     margin-bottom: 0;
 }
 
-/* Overload glow effect — use when >5 events or overloaded */
+/* Overload glow effect use when >5 events or overloaded */
 .nav-ai-btn.overloaded {
     box-shadow: 0 0 12px 2px rgba(91, 115, 232, 0.5);
     animation: pulse-glow 1.6s infinite;
@@ -73,7 +73,7 @@
     100% { box-shadow: 0 0 6px 2px rgba(91, 115, 232, 0.3); }
 }
 
-/* AI icon style — replaces the 'i' icon */
+/* AI icon style replaces the 'i' icon */
 .nav-ai-btn .ai-icon {
     display: inline-flex;
     align-items: center;

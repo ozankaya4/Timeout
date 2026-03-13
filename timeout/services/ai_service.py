@@ -112,7 +112,7 @@ def _call_openai_for_briefing(stats):
     """
     api_key = getattr(settings, 'OPENAI_API_KEY', None)
     if not api_key:
-        logger.warning('OPENAI_API_KEY not configured — skipping AI briefing.')
+        logger.warning('OPENAI_API_KEY not configured. Skipping AI briefing.')
         return None
 
     prompt = (

@@ -170,7 +170,7 @@ td.cal-today .cal-day-num {
 .cal-chip--study_session { background: #00acc1; }
 .cal-chip--other         { background: #78909c; }
 
-/* Overflow chip — clickable */
+/* Overflow chip clickable */
 .cal-chip-overflow {
   font-size: 0.6rem;
   color: #5b5ddf;

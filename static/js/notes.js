@@ -1,4 +1,4 @@
-/* Notes Page — Pomodoro, Focus Mode, Streaks, Heatmap, Daily Goals */
+/* Notes Page: Pomodoro, Focus Mode, Streaks, Heatmap, Daily Goals */
 
 /* ═══ Helpers ═══ */
 

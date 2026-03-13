@@ -28,8 +28,10 @@
 
 <div class="chart-card">
 
-    <div id="no-notifications" class="text-center py-4" {% if notifications %}style="display:none"{% endif %}>
-        <p class="text-muted mb-1">No notifications yet</p>
+    <div id="no-notifications" class="no-notifications-state" {% if notifications %}style="display:none"{% endif %}>
+        <div class="no-notifications-icon">🔔</div>
+        <p class="no-notifications-title">No notifications yet</p>
+        <p class="no-notifications-desc">When you receive notifications, they'll appear here.</p>
     </div>
 
     <div class="notifications-list">

@@ -2,8 +2,8 @@
 Custom management command to clear seeded data from the database.
 
 Usage:
-    python manage.py unseed          # Keep superuser @johndoe
-    python manage.py unseed --all    # Remove everyone including superusers
+    python manage.py unseed              # Remove everything including superusers
+    python manage.py unseed --keep-super  # Keep superuser @johndoe
 """
 
 from django.contrib.auth import get_user_model
@@ -17,18 +17,18 @@ SUPERUSER_USERNAME = 'johndoe'
 
 
 class Command(BaseCommand):
-    help = 'Remove all seeded data from the database (preserves @johndoe by default).'
+    help = 'Remove all seeded data from the database (including superuser by default).'
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--all',
+            '--keep-super',
             action='store_true',
-            dest='remove_all',
-            help='Remove ALL users including the superuser @johndoe.',
+            dest='keep_super',
+            help='Keep the superuser @johndoe instead of deleting.',
         )
 
     def handle(self, *args, **options):
-        remove_all = options['remove_all']
+        keep_super = options['keep_super']
         total_users_before = User.objects.count()
 
         if total_users_before == 0:
@@ -36,19 +36,19 @@ class Command(BaseCommand):
             return
 
         # Clear notes and study logs first (cascade would handle it, but be explicit)
-        if remove_all:
+        if keep_super:
+            self.stdout.write('Mode: Removing seeded data (keeping @johndoe)')
+            excluded_users = User.objects.filter(username=SUPERUSER_USERNAME)
+            notes_deleted = Note.objects.exclude(owner__in=excluded_users).delete()[0]
+            logs_deleted = StudyLog.objects.exclude(user__in=excluded_users).delete()[0]
+            User.objects.exclude(username=SUPERUSER_USERNAME).delete()
+        else:
             self.stdout.write(self.style.WARNING(
                 'Mode: Removing ALL data (including superusers)'
             ))
             notes_deleted = Note.objects.all().delete()[0]
             logs_deleted = StudyLog.objects.all().delete()[0]
             User.objects.all().delete()
-        else:
-            self.stdout.write('Mode: Removing seeded data (keeping @johndoe)')
-            excluded_users = User.objects.filter(username=SUPERUSER_USERNAME)
-            notes_deleted = Note.objects.exclude(owner__in=excluded_users).delete()[0]
-            logs_deleted = StudyLog.objects.exclude(user__in=excluded_users).delete()[0]
-            User.objects.exclude(username=SUPERUSER_USERNAME).delete()
 
         total_users_after = User.objects.count()
         users_removed = total_users_before - total_users_after

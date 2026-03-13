@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   TIMEOUT — DEADLINES PAGE
+   TIMEOUT DEADLINES PAGE
    Palette: Neptune blues on light theme
    Font: Plus Jakarta Sans
 ═══════════════════════════════════════════════════ */
@@ -23,6 +23,22 @@
   --shadow:    0 1px 4px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
   --font:      'Plus Jakarta Sans', -apple-system, sans-serif;
   --ease:      0.18s ease;
+}
+
+/* Dark theme overrides for local variables */
+[data-theme="dark"] {
+  --nep-400: #7b8ef0;
+  --nep-500: #6a7de0;
+  --bg-page:   #13141f;
+  --bg-card:   #1e2035;
+  --bg-hover:  rgba(91, 115, 232, 0.12);
+  --bg-muted:  #1a1b2e;
+  --text-1:    #e4e6f0;
+  --text-2:    #a0a8c4;
+  --text-3:    #6b7394;
+  --border:    #2a2d45;
+  --border-lt: rgba(91, 115, 232, 0.18);
+  --shadow:    0 1px 4px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
 }
 
 /* ── Page & Card ── */
@@ -115,7 +131,7 @@
 
 
 /* ══════════════════════════════════════════════════
-   TAGS — urgency + event type (same pill shape)
+   TAGS: urgency + event type (same pill shape)
 ══════════════════════════════════════════════════ */
 .dl-urgency-tag {
   display: inline-flex;
