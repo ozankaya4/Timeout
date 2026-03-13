@@ -239,13 +239,13 @@ class CompleteProfileForm(forms.ModelForm):
 
 
 class LoginForm(AuthenticationForm):
-    """Login form styled with Bootstrap classes. Authenticates via email."""
+    """Login form styled with Bootstrap classes. Authenticates via email or username."""
 
-    username = forms.EmailField(
-        label='Email',
-        widget=forms.EmailInput(attrs={
+    username = forms.CharField(
+        label='Email or Username',
+        widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'your@email.com',
+            'placeholder': 'Email or username',
             'autofocus': True,
         }),
     )
@@ -257,17 +257,16 @@ class LoginForm(AuthenticationForm):
     )
 
     def clean(self):
-        email = self.cleaned_data.get('username')
+        identifier = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
-        if email and password:
-            # Look up the user by email, then authenticate with their username
+        if identifier and password:
+            # Try email first, then fall back to username
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email=identifier)
+                self.cleaned_data['username'] = user.username
             except User.DoesNotExist:
-                raise ValidationError(
-                    'Please enter a correct email and password.'
-                )
-            self.cleaned_data['username'] = user.username
+                # Not an email — treat as username directly, let super() handle it
+                pass
 
         return super().clean()
