@@ -36,6 +36,7 @@
 
     {% endblock %}
   </head>
+
   <body class="d-flex flex-column min-vh-100" data-user-status="{{ request.user.status }}">
     <!-- Navigation Bar -->
     {% include 'partials/_navbar.html' %}
@@ -45,7 +46,8 @@
       {% include 'partials/_messages.html' %}
     {% endblock %}
     <!-- Main Content Area -->
-    <main class="container mt-4 flex-grow-1">
+    {% comment %} <main class="container mt-4 flex-grow-1"> {% endcomment %}
+    <main class="{% block main_class %}container mt-4 flex-grow-1{% endblock %}">
       {% block content %}
 
       {% endblock %}
