@@ -29,7 +29,9 @@ def plan_sessions(request):
     num_sessions = max(1, int(hours_needed / session_length))
     candidates = pick_evenly_spaced_slots(free_slots, num_sessions, now, deadline.start_datetime)
 
-    return JsonResponse({'success': True, 'sessions': candidates})
+    title = f'Study for {deadline.title}'
+    sessions = [{**slot, 'title': title} for slot in candidates]
+    return JsonResponse({'success': True, 'sessions': sessions})
 
 
 @login_required

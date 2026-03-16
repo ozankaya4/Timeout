@@ -12,6 +12,109 @@ from timeout.models import Event
 
 @login_required
 @require_POST
+def reschedule_study_sessions(request):
+    """Ask AI to redistribute all upcoming study sessions into a balanced schedule."""
+    now = timezone.now()
+    lookahead = now + timedelta(days=21)
+
+    sessions = Event.objects.filter(
+        creator=request.user,
+        event_type=Event.EventType.STUDY_SESSION,
+        status=Event.EventStatus.UPCOMING,
+        start_datetime__gte=now,
+        start_datetime__lte=lookahead,
+    ).order_by('start_datetime')
+
+    if not sessions.exists():
+        return JsonResponse({'success': False, 'error': 'No upcoming study sessions found.'}, status=400)
+
+    deadlines = Event.objects.filter(
+        creator=request.user,
+        event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
+        start_datetime__gte=now,
+        start_datetime__lte=lookahead,
+    ).order_by('start_datetime')
+
+    fixed_events = Event.objects.filter(
+        creator=request.user,
+        start_datetime__gte=now,
+        start_datetime__lte=lookahead,
+        status=Event.EventStatus.UPCOMING,
+    ).exclude(event_type=Event.EventType.STUDY_SESSION).order_by('start_datetime')
+
+    sessions_data = [
+        {
+            'id': s.pk,
+            'title': s.title,
+            'duration_hours': round((s.end_datetime - s.start_datetime).total_seconds() / 3600, 1),
+        }
+        for s in sessions
+    ]
+    deadlines_data = [
+        {'title': d.title, 'due': d.start_datetime.strftime('%Y-%m-%d %H:%M')}
+        for d in deadlines
+    ]
+    fixed_data = [
+        {'title': e.title, 'start': e.start_datetime.strftime('%Y-%m-%d %H:%M'), 'end': e.end_datetime.strftime('%Y-%m-%d %H:%M')}
+        for e in fixed_events
+    ]
+
+    prompt = f"""Today is {now.strftime('%Y-%m-%d %H:%M')}.
+
+Study sessions to reschedule (keep same duration, assign new times):
+{json.dumps(sessions_data)}
+
+Deadlines/exams to study toward (do NOT move these):
+{json.dumps(deadlines_data)}
+
+Fixed events to avoid overlapping:
+{json.dumps(fixed_data)}
+
+Rules:
+- Schedule between 08:00 and 22:00 only
+- Spread sessions evenly across the next 3 weeks
+- Place sessions before relevant deadlines where possible
+- Leave at least 1 hour gap between any two sessions
+- Preserve each session's exact duration
+
+Return ONLY a valid JSON array, no markdown:
+[{{"id": <id>, "title": "<title>", "start": "YYYY-MM-DDTHH:MM", "end": "YYYY-MM-DDTHH:MM"}}]
+Return all {len(sessions_data)} sessions."""
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model='gpt-4o-mini',
+            messages=[{'role': 'user', 'content': prompt}],
+            temperature=0,
+            max_tokens=800,
+        )
+        raw = response.choices[0].message.content.strip()
+        if raw.startswith('```'):
+            raw = raw.split('```')[1]
+            if raw.startswith('json'):
+                raw = raw[4:]
+        suggestions = json.loads(raw)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'AI returned an invalid response. Try again.'}, status=500)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'AI error: {str(e)}'}, status=500)
+
+    original = [
+        {
+            'id': s.pk,
+            'title': s.title,
+            'start': s.start_datetime.strftime('%Y-%m-%dT%H:%M'),
+            'end': s.end_datetime.strftime('%Y-%m-%dT%H:%M'),
+        }
+        for s in sessions
+    ]
+    return JsonResponse({'success': True, 'suggestions': suggestions, 'original': original})
+
+
+@login_required
+@require_POST
 def ai_suggest_reschedule(request):
     """Use OpenAI to suggest a new timeslot for a cancelled/missed study session."""
     event_id = request.POST.get('event_id')
