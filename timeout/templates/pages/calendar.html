@@ -59,6 +59,9 @@
         <a href="#" class="cal-add-btn" data-bs-toggle="modal" data-bs-target="#studyPlannerModal">
           <span class="cal-add-label">Plan Study</span>
         </a>
+        <a href="#" class="cal-add-btn" data-bs-toggle="modal" data-bs-target="#rescheduleSessionsModal">
+          <span class="cal-add-label">Reschedule Sessions</span>
+        </a>
         <a href="#" class="cal-add-btn" data-bs-toggle="modal" data-bs-target="#aiEventModal">
           <span class="cal-add-label">AI Add</span>
         </a>
@@ -209,6 +212,7 @@
 
 {% include "partials/modals/ai_modal.html" %}
 {% include "partials/modals/study_planner_modal.html" %}
+{% include "partials/modals/reschedule_sessions_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
@@ -239,9 +243,12 @@ window.SP_CONFIRM_URL = '{% url "study_planner_confirm" %}';
 window.RESCHEDULE_URL = '{% url "ai_reschedule" %}';
 window.RESCHEDULE_CANCEL_URL_TPL = '/calendar/{id}/cancel/';
 window.EVENT_CREATE_URL = '{% url "event_create" %}';
+window.RS_SUGGEST_URL = '{% url "reschedule_study_sessions" %}';
+window.RS_APPLY_URL = '{% url "apply_session_schedule" %}';
 
 </script>
 <script src="{% static 'js/reschedule.js' %}"></script>
 <script src="{% static 'js/ai_calendar.js' %}"></script>
 <script src="{% static 'js/study_planner.js' %}"></script>
+<script src="{% static 'js/reschedule_sessions.js' %}"></script>
 {% endblock %}
