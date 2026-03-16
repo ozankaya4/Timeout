@@ -213,7 +213,7 @@
                     {% endif %}
                   </div>
 
-                  <p class="nt-item__preview">{{ note.content|truncatewords:20 }}</p>
+                  <p class="nt-item__preview">{{ note.content|striptags|truncatewords:20 }}</p>
 
                   <div class="nt-item__meta">
                     <span class="nt-meta">{{ note.updated_at|timesince }} ago</span>
@@ -372,7 +372,7 @@
   </div>
 </div>
 
-<!-- New Note Modal -->
+<!-- New Note Modal (setup — title, category, event, then opens editor) -->
 <div class="modal fade" id="newNoteModal" tabindex="-1" aria-labelledby="newNoteLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -385,11 +385,7 @@
         <div class="modal-body">
           <div class="mb-3">
             <label for="noteTitle" class="form-label">Title</label>
-            <input type="text" class="form-control" id="noteTitle" name="title" placeholder="Note title" required maxlength="200">
-          </div>
-          <div class="mb-3">
-            <label for="noteContent" class="form-label">Content</label>
-            <textarea class="form-control" id="noteContent" name="content" rows="5" placeholder="Write your note here..." maxlength="5000" required></textarea>
+            <input type="text" class="form-control" id="noteTitle" name="title" placeholder="Note title" required maxlength="200" autofocus>
           </div>
           <div class="row g-3">
             <div class="col-6">
@@ -405,16 +401,10 @@
               {{ form.event }}
             </div>
           </div>
-          <div class="row g-3 mt-1">
-            <div class="col-12">
-              <label for="noteDueDate" class="form-label">Due Date (optional)</label>
-              <input type="datetime-local" class="form-control" id="noteDueDate" name="due_date">
-            </div>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn submit-btn">Create Note</button>
+          <button type="submit" class="btn submit-btn">Start Writing</button>
         </div>
       </form>
     </div>
