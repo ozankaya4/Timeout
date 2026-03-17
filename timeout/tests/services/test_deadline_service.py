@@ -257,7 +257,8 @@ class MarkCompleteServiceTests(TestCase):
         result = DeadlineService.mark_complete(other, self.deadline.pk)
         self.assertIsNone(result)
 
-    def test_non_deadline_event_type_returns_none(self):
+    #def test_non_deadline_event_type_returns_none(self): old one changed bc events other than deadline should be marked complete
+    def test_non_deadline_event_type_completes(self):
         event = Event.objects.create(
             creator=self.user,
             title="Meeting",
@@ -266,4 +267,7 @@ class MarkCompleteServiceTests(TestCase):
             end_datetime=MOCK_NOW + timedelta(hours=1),
         )
         result = DeadlineService.mark_complete(self.user, event.pk)
-        self.assertIsNone(result)
+        self.assertIsNotNone(result) #changed from None to not None elif as marking non deadline complete should be allowed
+        self.assertTrue(result.is_completed) # added 17.03 elif to improve test
+
+        

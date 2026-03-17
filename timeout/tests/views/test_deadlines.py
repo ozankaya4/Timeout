@@ -170,7 +170,7 @@ class DeadlineMarkCompleteViewTests(TestCase):
             end_datetime=timezone.now() + timedelta(hours=1),
         )
         resp = self.client.post(self._url(event.pk))
-        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 200) #changed 404 t0 200 elif as marking non deadline complete should be allowed
 
     # ------------------------------------------------------------------
     # HTTP method / auth guards
