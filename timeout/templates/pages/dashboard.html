@@ -159,7 +159,7 @@
 
                   <div class="dash-note-info">
                     <span class="dash-note-title">{{ note.title }}</span>
-                    <span class="dash-note-preview">{{ note.content|truncatewords:10 }}</span>
+                    <span class="dash-note-preview">{{ note.content|striptags|truncatewords:10 }}</span>
                   </div>
 
                   <span class="dash-note-cat">{{ note.get_category_display }}</span>

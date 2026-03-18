@@ -231,6 +231,33 @@ def get_event_status(start_dt, end_dt, now):
 
 @login_required
 @require_POST
+def apply_session_schedule(request):
+    """Bulk-update study session times after AI reschedule confirmation."""
+    try:
+        sessions = json.loads(request.POST.get('sessions', '[]'))
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid data.'}, status=400)
+
+    updated = 0
+    for s in sessions:
+        try:
+            event = Event.objects.get(
+                pk=s['id'],
+                creator=request.user,
+                event_type=Event.EventType.STUDY_SESSION,
+            )
+            event.start_datetime = s['start']
+            event.end_datetime = s['end']
+            event.save()
+            updated += 1
+        except (Event.DoesNotExist, KeyError):
+            continue
+
+    return JsonResponse({'success': True, 'count': updated})
+
+
+@login_required
+@require_POST
 def subscribe_event(request, pk):
     from django.shortcuts import get_object_or_404
     original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)

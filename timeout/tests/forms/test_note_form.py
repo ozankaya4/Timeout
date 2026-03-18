@@ -73,14 +73,14 @@ class NoteFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('title', form.errors)
 
-    def test_missing_content_invalid(self):
+    def test_empty_content_valid(self):
+        """Content is optional — notes are created empty and filled via the editor."""
         form = NoteForm(data={
             'title': 'Title',
             'content': '',
             'category': Note.Category.OTHER,
         }, user=self.user)
-        self.assertFalse(form.is_valid())
-        self.assertIn('content', form.errors)
+        self.assertTrue(form.is_valid())
 
     def test_invalid_category_rejected(self):
         form = NoteForm(data={
@@ -90,3 +90,49 @@ class NoteFormTest(TestCase):
         }, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('category', form.errors)
+
+    # --- Page mode ---
+
+    def test_page_mode_defaults_to_pageless(self):
+        form = NoteForm(data={
+            'title': 'Note',
+            'content': '',
+            'category': Note.Category.OTHER,
+        }, user=self.user)
+        self.assertTrue(form.is_valid())
+        note = form.save(commit=False)
+        note.owner = self.user
+        note.save()
+        self.assertEqual(note.page_mode, 'pageless')
+
+    def test_page_mode_paged_valid(self):
+        form = NoteForm(data={
+            'title': 'Paged Note',
+            'content': 'Content',
+            'category': Note.Category.LECTURE,
+            'page_mode': 'paged',
+        }, user=self.user)
+        self.assertTrue(form.is_valid())
+        note = form.save(commit=False)
+        note.owner = self.user
+        note.save()
+        self.assertEqual(note.page_mode, 'paged')
+
+    def test_page_mode_pageless_valid(self):
+        form = NoteForm(data={
+            'title': 'Pageless Note',
+            'content': '',
+            'category': Note.Category.OTHER,
+            'page_mode': 'pageless',
+        }, user=self.user)
+        self.assertTrue(form.is_valid())
+
+    def test_page_mode_invalid_value_rejected(self):
+        form = NoteForm(data={
+            'title': 'Note',
+            'content': '',
+            'category': Note.Category.OTHER,
+            'page_mode': 'invalid_mode',
+        }, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('page_mode', form.errors)
