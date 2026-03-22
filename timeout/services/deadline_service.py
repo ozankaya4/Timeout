@@ -77,8 +77,8 @@ def build_event(event, now):
         'event': event,
         'urgency_status': urgency_label(event, time_remaining),
         'time_remaining': time_remaining,
-        'time_remaining_display': _format_timedelta(time_remaining),
-        'time_elapsed_display': _format_elapsed(time_elapsed),
+        'time_remaining_display': time_string(time_remaining),
+        'time_elapsed_display': time_passed(time_elapsed),
     }
 
 
@@ -94,15 +94,15 @@ def urgency_label(event, time_remaining):
         return 'urgent'
     return 'normal'
 
-def _format_timedelta(td):
+def time_string(td):
     """Human-readable string for time remaining or overdue."""
     total_seconds = int(td.total_seconds())
     if total_seconds < 0:
-        return _format_overdue(abs(total_seconds))
-    return _format_remaining(total_seconds)
+        return overdue_time(abs(total_seconds))
+    return remaining_time(total_seconds)
  
  
-def _format_overdue(total_seconds):
+def overdue_time(total_seconds):
     """Format a positive seconds value as 'Xd Yh overdue'."""
     days, remainder = divmod(total_seconds, 86400)
     hours, remainder = divmod(remainder, 3600)
@@ -114,7 +114,7 @@ def _format_overdue(total_seconds):
     return f"{minutes}m overdue"
  
  
-def _format_remaining(total_seconds):
+def remaining_time(total_seconds):
     """Format a positive seconds value as 'Xd Yh left'."""
     days, remainder = divmod(total_seconds, 86400)
     hours, remainder = divmod(remainder, 3600)
@@ -126,7 +126,7 @@ def _format_remaining(total_seconds):
     return f"{minutes}m left"
  
  
-def _format_elapsed(td):
+def time_passed(td):
     """Format elapsed time since creation as 'Added X ago'."""
     total_seconds = int(td.total_seconds())
     if total_seconds < 0:
