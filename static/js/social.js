@@ -258,7 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 const icon = this.querySelector('.like-icon');
                 const count = this.querySelector('.like-count');
-                icon.textContent = data.liked ? '❤️' : '🤍';
+                icon.className = data.liked ? 'bi bi-heart-fill like-icon' : 'bi bi-heart like-icon';
+                this.classList.toggle('liked', data.liked);
                 count.textContent = data.like_count;
                 this.dataset.liked = data.liked;
             })
@@ -269,7 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.bookmark-btn').forEach(button => {
         const icon = button.querySelector('.bookmark-icon');
         if (button.dataset.bookmarked === 'true') {
-            icon.textContent = '🔖';
+            icon.className = 'bi bi-bookmark-fill bookmark-icon';
+            button.classList.add('bookmarked');
         }
 
         button.addEventListener('click', function() {
@@ -286,7 +288,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 const icon = this.querySelector('.bookmark-icon');
-                icon.textContent = data.bookmarked ? '🔖' : '🏷️';
+                icon.className = data.bookmarked ? 'bi bi-bookmark-fill bookmark-icon' : 'bi bi-bookmark bookmark-icon';
+                this.classList.toggle('bookmarked', data.bookmarked);
                 this.dataset.bookmarked = data.bookmarked;
             })
             .catch(error => console.error('Error:', error));
@@ -346,5 +349,33 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Subscribe error:', err));
         });
     });
+
+    // Highlight post from URL param
+    const params = new URLSearchParams(window.location.search);
+    const highlightId = params.get("highlight_post");
+    if (highlightId) {
+        const postEl = document.querySelector(`.post-card[data-post-id="${highlightId}"]`);
+        if (postEl) {
+            postEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            postEl.style.transition = "box-shadow 0.4s ease";
+            postEl.style.boxShadow = "0 0 0 3px #5b73e8";
+            setTimeout(() => postEl.style.boxShadow = "", 2500);
+        }
+    }
+
+    // FAB create-post modal
+    const fab     = document.getElementById("fabBtn");
+    const overlay = document.getElementById("cpOverlay");
+    const cpClose = document.getElementById("cpClose");
+    if (fab && overlay && cpClose) {
+        fab.addEventListener("click", () => overlay.classList.add("open"));
+        cpClose.addEventListener("click", () => overlay.classList.remove("open"));
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) overlay.classList.remove("open");
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") overlay.classList.remove("open");
+        });
+    }
 
 });
