@@ -39,13 +39,17 @@ def feed(request):
     bookmarked_ids = set(
         Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True)
     )
+    liked_ids = set(
+        Like.objects.filter(user=request.user).values_list('post_id', flat=True)
+    )
 
     context = {
         'posts': posts,
         'active_tab': tab,
         'post_form': PostForm(user=request.user),
         'conversation_data': conversation_data,
-        'bookmarked_ids' : bookmarked_ids,
+        'bookmarked_ids': bookmarked_ids,
+        'liked_ids': liked_ids,
     }
     return render(request, 'social/feed.html', context)
 
