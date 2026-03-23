@@ -13,29 +13,67 @@ from timeout.models import Event
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
+MONTH_NAMES = [ # months names for calendar display
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]
 
 @login_required
 def calendar_view(request):
     """Renders a monthly calendar grid with events in day cells, including recurring events."""
-    today = timezone.now().date()
-    weeks = []
+    today = timezone.now().date() # get today's date for default
+    year, month = check_month_year(*get_date(request, today)) # parse month/year from url, with error handling
+    nav = get_months(year, month) # get previous and next month/year for navigation links
 
-    # Get today's date from the URL query string if nothing is provided
+    cal_obj = cal.Calendar(firstweekday=0)
+    weeks_raw = cal_obj.monthdatescalendar(year, month)
+    last_visible = weeks_raw[-1][-1] # get the last visible date for event filtering
+
+    events_qs = visible_events(request.user, last_visible) # fetch events for visible range, including recurring
+    events_by_date = index_events(events_qs, last_visible) # index events by date for easy lookup in template
+    weeks = build_weeks(weeks_raw, month, today, events_by_date) # build the final weeks structure for the template
+    context = calendar_context(year, month, nav, weeks) # build the context dict for the template
+    context.update(get_data(request)) # add data for upcoming deadlines and reschedule prompts
+    return render(request, "pages/calendar.html", context)
+
+
+
+def calendar_context(year, month, nav, weeks):
+    """Helper function to build the context dict for the calendar template"""
+    prev_month, prev_year, next_month, next_year = nav # unpack data from nav 
+    return {
+        "weeks": weeks,
+        "month": month,
+        "year": year,
+        "month_name": MONTH_NAMES[month],
+        "prev_year": prev_year,
+        "prev_month": prev_month,
+        "next_year": next_year,
+        "next_month": next_month,
+        "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    }
+
+# Parsing through dates helpers
+def get_date(request, today):
+    """Helper function to parse through the month and year from url, fallaback to today"""
     try:
         year = int(request.GET.get("year", today.year))
         month = int(request.GET.get("month", today.month))
     except (ValueError, TypeError):
-        year, month = today.year, today.month
+        year, month = today.year, today.month # Error handling, fallback to today
+    return year, month
 
-    # Get months from 1 to 12 
+def check_month_year(year, month):
+    """Helper function to check that the months don't go below 1 or above 12
+    Adjust the year accordingly"""
     if month < 1:
         month, year = 12, year - 1
-    # Handle navigating backwards or forwards when going before january of after december
     elif month > 12:
         month, year = 1, year + 1
+    return year, month
 
-    # Wrapper to make sure if the months go further than 12 so it skips to the next year
-    # Creates links for before or after the current month and year 
+def get_months(year, month):
+    """Helper function to get previous and next months and years"""
     if month > 1:
         prev_month = month - 1
         prev_year = year
@@ -48,144 +86,117 @@ def calendar_view(request):
     else:
         next_month = 1
         next_year = year + 1
+    return prev_month, prev_year, next_month, next_year
 
-    # Build weeks grid starting from Monday
-    cal_obj = cal.Calendar(firstweekday=0)
-    weeks_raw = cal_obj.monthdatescalendar(year, month)
 
-    # Determine visible range
-    first_visible = weeks_raw[0][0]
-    last_visible = weeks_raw[-1][-1]
 
-    context = {
-        "weeks": weeks,
-        "month": month,
-        "year": year,
-        "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        "now": timezone.now(),
+def visible_events(user, last_visible):
+    """Helper function to fetch events for the visible date range, including recurring events"""
+    last_day = timezone.make_aware(datetime.combine(last_visible, time.max)) # gets the last visible dayas a datetime for filters
+    events_qs = Event.objects.filter( # Fetch global or user events up to the last day visible
+        Q(creator=user) | Q(is_global=True),
+        start_datetime__lte=last_day,
+    ).order_by("start_datetime")
+    return events_qs # return the queryset 
+
+def index_events(events_qs, last_visible):
+    """Helper function to index events by date
+    Maps each date to a list of events as dicts """
+    now_date = timezone.now()
+    events_by_date = {} # dict to hold lists of events for each date
+    for ev in events_qs:
+        data = create_dict(ev, ev.start_datetime, ev.end_datetime, now_date) # create a consistent dict for the event
+        events_by_date.setdefault(ev.start_datetime.date(), []).append(data) # add the event to the list for its start date
+
+        if ev.recurrence != 'none':
+            _expand_recurrence(ev, last_visible, now_date, events_by_date) # if the event is recurring, expand it into future occurrences within the visible range
+        
+    return events_by_date # return the indexed events
+
+def create_dict(ev, start_dt, end_dt, now_date):
+    """Helper function to create a dict for an event that can be used by template"""
+    return {
+        'id': ev.id,
+        'title': ev.title,
+        'start_datetime': start_dt,
+        'end_datetime': end_dt,
+        'event_type': ev.event_type,
+        'get_event_type_display': ev.get_event_type_display(),
+        'get_recurrence_display': ev.get_recurrence_display(),
+        'location': ev.location,
+        'description': ev.description,
+        'is_all_day': ev.is_all_day,
+        'visibility': ev.visibility,
+        'allow_conflict': ev.allow_conflict,
+        'color': getattr(ev, 'color', ''),
+        'status_display': event_status(start_dt, end_dt, now_date),
     }
 
-    # Fetch events for visible date range
-    lookahead_days = 365  # how far in the future you want to show recurring events
-    last_visible_datetime = timezone.make_aware(
-        datetime.combine(last_visible, time.max)
-    )
-    events_qs = Event.objects.filter(
-        Q(creator=request.user) | Q(is_global=True),
-        start_datetime__lte=last_visible_datetime,
-    ).order_by("start_datetime")
 
-    calendar_events = []
-    for event in events_qs:
-        if event.recurrence == "yearly" and event.is_global:
-            # Create a display instance for this year
-            event_start = event.start_datetime.replace(year=last_visible.year)
-            event_end = event.end_datetime.replace(year=last_visible.year)
-            calendar_events.append({
-                "title": event.title,
-                "description": event.description,
-                "start_datetime": event_start,
-                "end_datetime": event_end,
-                "is_global": True,
-                "visibility": event.visibility,
-            })
-        else:
-            calendar_events.append(event)
+# to-do add recurrence helpers
+# ask expand_recurrence and advance_date
+def _expand_recurrence(ev, last_visible, now_date, events_by_date):
+    """Generate pseudo-event dicts for recurring occurrences within the visible range."""
+    current_date = ev.start_datetime.date()
+ 
+    while True:
+        current_date = _advance_date(current_date, ev.recurrence)
+        if current_date is None or current_date > last_visible:
+            break
+ 
+        start_dt = timezone.make_aware(
+            datetime.combine(current_date, ev.start_datetime.time()),
+        )
+        end_dt = timezone.make_aware(
+            datetime.combine(current_date, ev.end_datetime.time()),
+        )
+        data = create_dict(ev, start_dt, end_dt, now_date)
+        events_by_date.setdefault(current_date, []).append(data)
+ 
+ 
+def _advance_date(current_date, recurrence):
+    """Return the next occurrence date, or None if recurrence is unrecognised."""
+    if recurrence == 'daily':
+        return current_date + timedelta(days=1)
+    if recurrence == 'weekly':
+        return current_date + timedelta(weeks=1)
+    if recurrence == 'monthly':
+        month_num = current_date.month + 1
+        year_num = current_date.year
+        if month_num > 12:
+            month_num, year_num = 1, year_num + 1
+        day_num = min(current_date.day, cal.monthrange(year_num, month_num)[1])
+        return date(year_num, month_num, day_num)
+    return None
 
-    # Index events by date, including recurrence expansion
-    now_dt = timezone.now()
-    events_by_date = {}
-
-    for ev in events_qs:
-        # Build consistent dict for real event
-        event_data = {
-            'id': ev.id,
-            'title': ev.title,
-            'start_datetime': ev.start_datetime,
-            'end_datetime': ev.end_datetime,
-            'event_type': ev.event_type,
-            'event_type_display': ev.get_event_type_display(),
-            'recurrence_display': ev.get_recurrence_display(),
-            'location': ev.location,
-            'description': ev.description,
-            'is_all_day': ev.is_all_day,
-            'visibility': ev.visibility,
-            'allow_conflict': ev.allow_conflict,
-            'color': getattr(ev, 'color', ''),
-            'status_display': get_event_status(ev.start_datetime, ev.end_datetime, now_dt),
-        }
-        events_by_date.setdefault(ev.start_datetime.date(), []).append(event_data)  # ← event_data not ev
-
-        if ev.recurrence == 'none':
-            continue
-
-        current_date = ev.start_datetime.date()
-        while True:
-            if ev.recurrence == 'daily':
-                current_date += timedelta(days=1)
-            elif ev.recurrence == 'weekly':
-                current_date += timedelta(weeks=1)
-            elif ev.recurrence == 'monthly':
-                month_num = current_date.month + 1
-                year_num = current_date.year
-                if month_num > 12:
-                    month_num = 1
-                    year_num += 1
-                day_num = min(current_date.day, cal.monthrange(year_num, month_num)[1])
-                current_date = date(year_num, month_num, day_num)
-            else:
-                break
-
-            if current_date > last_visible:
-                break
-
-            start_dt = timezone.make_aware(datetime.combine(current_date, ev.start_datetime.time()))
-            end_dt   = timezone.make_aware(datetime.combine(current_date, ev.end_datetime.time()))
-
-            pseudo_event = {
-                'id': ev.id,
-                'title': ev.title,
-                'start_datetime': start_dt,
-                'end_datetime': end_dt,
-                'event_type': ev.event_type,
-                'event_type_display': ev.get_event_type_display(),
-                'recurrence_display': ev.get_recurrence_display(),
-                'location': ev.location,
-                'description': ev.description,
-                'is_all_day': ev.is_all_day,
-                'visibility': ev.visibility,
-                'allow_conflict': ev.allow_conflict,
-                'color': getattr(ev, 'color', ''),
-                'status_display': get_event_status(start_dt, end_dt, now_dt),
-            }
-            events_by_date.setdefault(current_date, []).append(pseudo_event)
-
-    # Build weeks structure for template
-    weeks = []
-    for week in weeks_raw:
-        days = []
-        for day in week:
-            days.append({
-                "date": day,
-                "day_num": day.day,
-                "in_month": day.month == month,
-                "is_today": day == today,
-                "events": events_by_date.get(day, []),
-            })
-        weeks.append(days)
-
-    month_names = [
-        "", "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December",
+# build days and weeks
+def build_weeks(weeks_raw, month, today, events_by_date):
+    """Helper function to convert raw weeks from calendar into a structure for the template"""
+    return[
+        [build_day(day, month, today, events_by_date) for day in week]
+        for week in weeks_raw
     ]
 
+def build_day(day, month, today, events_by_date):
+    """Helper function to build a dict for each day in the calendar grid"""
+    return {
+        "date": day,
+        "day_num": day.day,
+        "in_month": day.month == month,
+        "is_today": day == today,
+        "events": events_by_date.get(day, []), # get events for this day 
+    }
+
+
+# helpers to gather data
+def get_data(request):
+    """Gelper function to gather data needed for upcoming deadlines and reschedule prompts"""
+    now = timezone.now()
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,
         event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
-        start_datetime__gte=timezone.now(),
+        start_datetime__gte=now,
     ).order_by('start_datetime')[:20]
-    # Missed study sessions: past events still in UPCOMING status
-    now = timezone.now()
     missed_sessions = Event.objects.filter(
         creator=request.user,
         event_type=Event.EventType.STUDY_SESSION,
@@ -202,32 +213,20 @@ def calendar_view(request):
         }
         for e in missed_sessions
     ]
-
-    # Recently cancelled study sessions (stored in session after event_cancel view)
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
-
-    context = {
-        "weeks": weeks,
-        "year": year,
-        "month": month,
-        "month_name": month_names[month],
-        "prev_year": prev_year,
-        "prev_month": prev_month,
-        "next_year": next_year,
-        "next_month": next_month,
-        "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-
+    return {
         "upcoming_deadlines": upcoming_deadlines,
         "reschedule_prompts": reschedule_prompts,
     }
-    return render(request, "pages/calendar.html", context)
 
-def get_event_status(start_dt, end_dt, now):
+
+def event_status(start_dt, end_dt, now):
+    """Helper function to derive a human-readable status"""
     if start_dt < now and end_dt > now:
         return 'Ongoing'
     elif end_dt < now:
         return 'Past'
-    else:
+    else:        
         return 'Upcoming'
 
 @login_required
@@ -322,3 +321,6 @@ def event_create(request):
         messages.error(request, '; '.join(e.messages))
 
     return redirect("calendar")
+
+
+    
