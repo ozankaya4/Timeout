@@ -12,6 +12,8 @@ from django.conf import settings
 from timeout.models import Event
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from timeout.views.ai_workload import get_ai_workload_warning
+from timeout.views.deadline_warning import get_deadline_study_warnings
 
 
 @login_required
@@ -19,6 +21,7 @@ def calendar_view(request):
     """Renders a monthly calendar grid with events in day cells, including recurring events."""
     today = timezone.now().date()
     weeks = []
+    workload_warning = None
 
     # Get today's date from the URL query string if nothing is provided
     try:
@@ -143,7 +146,13 @@ def calendar_view(request):
             end_dt   = timezone.make_aware(datetime.combine(current_date, ev.end_datetime.time()))
 
             pseudo_event = {
+<<<<<<< HEAD
                 'id': ev.id,
+=======
+                'original': ev,
+                'recurrence_instance': True,
+                'id': ev.id, 
+>>>>>>> main
                 'title': ev.title,
                 'start_datetime': start_dt,
                 'end_datetime': end_dt,
@@ -153,6 +162,10 @@ def calendar_view(request):
                 'location': ev.location,
                 'description': ev.description,
                 'is_all_day': ev.is_all_day,
+<<<<<<< HEAD
+=======
+                'instance_date': current_date, 
+>>>>>>> main
                 'visibility': ev.visibility,
                 'allow_conflict': ev.allow_conflict,
                 'color': getattr(ev, 'color', ''),
@@ -162,6 +175,7 @@ def calendar_view(request):
 
     # Build weeks structure for template
     weeks = []
+    
     for week in weeks_raw:
         days = []
         for day in week:
@@ -179,11 +193,22 @@ def calendar_view(request):
         "July", "August", "September", "October", "November", "December",
     ]
 
+<<<<<<< HEAD
+=======
+    # Get today's events for AI workload warning
+    today_events = events_by_date.get(timezone.now().date(), [])
+    workload_warning = get_ai_workload_warning(request.user, today_events)
+    
+>>>>>>> main
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,
         event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
         start_datetime__gte=timezone.now(),
     ).order_by('start_datetime')[:20]
+<<<<<<< HEAD
+=======
+    
+>>>>>>> main
     # Missed study sessions: past events still in UPCOMING status
     now = timezone.now()
     missed_sessions = Event.objects.filter(
@@ -191,6 +216,7 @@ def calendar_view(request):
         event_type=Event.EventType.STUDY_SESSION,
         status=Event.EventStatus.UPCOMING,
         end_datetime__lt=now,
+        is_completed=False,
     )
     reschedule_prompts = [
         {
@@ -204,6 +230,11 @@ def calendar_view(request):
 
     # Recently cancelled study sessions (stored in session after event_cancel view)
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
+<<<<<<< HEAD
+=======
+
+    warnings = get_deadline_study_warnings(request.user)
+>>>>>>> main
 
     context = {
         "weeks": weeks,
@@ -215,10 +246,20 @@ def calendar_view(request):
         "next_year": next_year,
         "next_month": next_month,
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+<<<<<<< HEAD
 
         "upcoming_deadlines": upcoming_deadlines,
         "reschedule_prompts": reschedule_prompts,
+=======
+        "workload_warning": workload_warning,
+
+        "upcoming_deadlines": upcoming_deadlines,
+        "reschedule_prompts": reschedule_prompts,
+        "events": events_qs,
+        "warnings": warnings,
+>>>>>>> main
     }
+
     return render(request, "pages/calendar.html", context)
 
 def get_event_status(start_dt, end_dt, now):
@@ -231,6 +272,36 @@ def get_event_status(start_dt, end_dt, now):
 
 @login_required
 @require_POST
+<<<<<<< HEAD
+=======
+def apply_session_schedule(request):
+    """Bulk-update study session times after AI reschedule confirmation."""
+    try:
+        sessions = json.loads(request.POST.get('sessions', '[]'))
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid data.'}, status=400)
+
+    updated = 0
+    for s in sessions:
+        try:
+            event = Event.objects.get(
+                pk=s['id'],
+                creator=request.user,
+                event_type=Event.EventType.STUDY_SESSION,
+            )
+            event.start_datetime = s['start']
+            event.end_datetime = s['end']
+            event.save()
+            updated += 1
+        except (Event.DoesNotExist, KeyError):
+            continue
+
+    return JsonResponse({'success': True, 'count': updated})
+
+
+@login_required
+@require_POST
+>>>>>>> main
 def subscribe_event(request, pk):
     from django.shortcuts import get_object_or_404
     original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)
@@ -254,7 +325,7 @@ def subscribe_event(request, pk):
 @require_POST
 def event_create(request):
     is_all_day = request.POST.get("is_all_day") == "on"
-    allow_conflict = request.POST.get("allow_conflict") == "on"
+    #allow_conflict = request.POST.get("allow_conflict") == "on"
 
     start_datetime = request.POST.get("start_datetime")
     end_datetime = request.POST.get("end_datetime")
@@ -280,7 +351,7 @@ def event_create(request):
         end_datetime=end_datetime,
         location=request.POST.get("location", ""),
         description=request.POST.get("description", ""),
-        allow_conflict=allow_conflict,
+        #allow_conflict=allow_conflict,
         visibility=request.POST.get("visibility", "public"),
         is_all_day=is_all_day,
         recurrence=recurrence,

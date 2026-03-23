@@ -15,18 +15,53 @@ UNIVERSITY_CHOICES = [
     ('Cambridge University', 'Cambridge University'),
     ('University College London', 'University College London'),
     ('University of Bath', 'University of Bath'),
+    ('University of Bristol', 'University of Bristol'),
     ('University of Edinburgh', 'University of Edinburgh'),
     ('University of Glasgow', 'University of Glasgow'),
     ('University of Manchester', 'University of Manchester'),
     ('University of Warwick', 'University of Warwick'),
-    ('Galatasaray University', 'Galatasaray University'),
     ('__other__', 'Other (please specify)'),
 ]
 
+# Set of known university values (for pre-population logic)
 _KNOWN_UNIVERSITIES = {c[0] for c in UNIVERSITY_CHOICES if c[0] not in ('', '__other__')}
 
 
+class ChangeUsernameForm(forms.Form):
+    """Standalone form for changing username from the profile page."""
+
+    new_username = forms.CharField(
+        max_length=150,
+        min_length=3,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'New username',
+            'autocomplete': 'username',
+        }),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        """Stores the current user for uniqueness validation."""
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_new_username(self):
+        """Validates the new username is different, valid, and not already taken."""
+        username = self.cleaned_data['new_username'].strip()
+        if self.user and username == self.user.username:
+            raise forms.ValidationError('Please choose a different username — this is already your current one.')
+        if not username.isalnum() and not all(c.isalnum() or c in '_-.' for c in username):
+            raise forms.ValidationError('Username can only contain letters, numbers, underscores, hyphens, and dots.')
+        qs = User.objects.filter(username=username)
+        if self.user:
+            qs = qs.exclude(pk=self.user.pk)
+        if qs.exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username
+
+
 class ProfileEditForm(forms.ModelForm):
+    """Form for editing a user's profile details, including university selection."""
 
     university_choice = forms.ChoiceField(
         choices=UNIVERSITY_CHOICES,
@@ -48,6 +83,7 @@ class ProfileEditForm(forms.ModelForm):
     )
 
     class Meta:
+        """Defines the model and fields exposed by this form."""
         model = User
         fields = ['first_name', 'last_name', 'bio', 'year_of_study', 'academic_interests', 'profile_picture', 'management_style', 'privacy_private']
         widgets = {
@@ -94,6 +130,7 @@ class ProfileEditForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Pre-populates university fields if the instance already has one set."""
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk and self.instance.university:
             uni = self.instance.university
@@ -104,6 +141,7 @@ class ProfileEditForm(forms.ModelForm):
                 self.initial.setdefault('university_other', uni)
 
     def clean(self):
+        """Resolves the final university value from the dropdown or free-text field."""
         cleaned_data = super().clean()
         choice = cleaned_data.get('university_choice', '')
         if choice == '__other__':
@@ -117,6 +155,7 @@ class ProfileEditForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        """Writes the resolved university value before saving the instance."""
         instance = super().save(commit=False)
         university = self.cleaned_data.get('university')
         if university:

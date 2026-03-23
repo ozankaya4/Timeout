@@ -4,6 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon.png' %}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon.png' %}" />
     <title>
       {% block title %}
         Timeout
@@ -23,17 +25,15 @@
     <!-- Navigation Bar Placeholder -->
     {% include 'partials/_navbar.html' %}
 
-    <!-- Messages -->
-    {% include 'partials/_messages.html' %}
-
     <!-- Full Width Main (only for landing page) -->
     <main>
+
       {% block content %}
 
       {% endblock %}
     </main>
 
-    <!-- Footer  -->
+    <!-- Footer -->
     {% include 'partials/_footer.html' %}
 
     <!-- Bootstrap JS -->

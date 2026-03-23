@@ -1,8 +1,6 @@
-/* ============================================
-   Dashboard — Redesigned Command Center
-   ============================================ */
+/* Dashboard Redesigned Command Center */
 
-/* --- Layout --- */
+/* Layout */
 .dashboard-bg {
     background: #f8f9fc;
     min-height: 100vh;
@@ -14,7 +12,7 @@
     padding: 32px 24px 60px;
 }
 
-/* --- Header: Greeting + Quick Actions --- */
+/* Header: Greeting + Quick Actions */
 .dashboard-header {
     display: flex;
     align-items: flex-start;
@@ -97,7 +95,7 @@
     text-decoration: none;
 }
 
-/* --- Focus Stats Strip --- */
+/* Focus Stats Strip */
 .dash-focus-strip {
     display: flex;
     align-items: center;
@@ -193,14 +191,14 @@
     color: #4a63d8;
 }
 
-/* --- Card Grid --- */
+/* Card Grid */
 .dash-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-/* --- Card Base --- */
+/* Card Base */
 .dash-card {
     background: #fff;
     border: 1px solid rgba(91, 115, 232, 0.10);
@@ -259,7 +257,7 @@
     padding: 8px 0;
 }
 
-/* --- Events Card --- */
+/* Events Card */
 .dash-event-item {
     display: flex;
     align-items: center;
@@ -308,7 +306,7 @@
     font-weight: 500;
 }
 
-/* --- Deadlines Card --- */
+/* Deadlines Card */
 .dash-deadline-item {
     display: flex;
     align-items: center;
@@ -353,7 +351,7 @@
 .dash-deadline-badge--urgent  { background: rgba(245, 158, 11, 0.12); color: #d97706; }
 .dash-deadline-badge--overdue { background: rgba(239, 68, 68, 0.10); color: #ef4444; }
 
-/* --- Notes Card --- */
+/* Notes Card */
 .dash-note-item {
     display: flex;
     align-items: center;
@@ -413,7 +411,7 @@
     flex-shrink: 0;
 }
 
-/* --- Social Card --- */
+/* Social Card */
 .dash-post-item {
     display: flex;
     gap: 10px;
@@ -464,7 +462,7 @@
     margin-top: 2px;
 }
 
-/* --- Messages Card --- */
+/* Messages Card */
 .dash-unread-badge {
     background: #ef4444;
     color: #fff;
@@ -499,7 +497,7 @@
     color: #4a63d8;
 }
 
-/* --- Quick Links Card --- */
+/* Quick Links Card */
 .dash-links-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -534,7 +532,77 @@
     font-size: 20px;
 }
 
-/* --- Responsive --- */
+/* AI Weekly Insight Hero Card */
+
+.dash-ai-briefing {
+    background: linear-gradient(135deg, rgba(91, 115, 232, 0.10) 0%, rgba(91, 93, 223, 0.04) 100%);
+    border: 1px solid rgba(91, 115, 232, 0.18);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: 0 1px 6px rgba(91, 115, 232, 0.06);
+}
+
+.dash-ai-briefing__icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(91, 115, 232, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.dash-ai-briefing__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-ai-briefing__label {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5B73E8;
+    margin-bottom: 6px;
+}
+
+.dash-ai-briefing__text {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #1A1F36;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.dash-ai-briefing__dismiss {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #8892B0;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: all 0.18s ease;
+}
+
+.dash-ai-briefing__dismiss:hover {
+    background: rgba(91, 115, 232, 0.08);
+    color: #5B73E8;
+}
+
+/* Responsive */
 
 /* Tablet: 2 columns */
 @media (max-width: 991.98px) {
@@ -596,5 +664,20 @@
 
     .dash-links-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+    /* AI briefing mobile adjustments */
+    .dash-ai-briefing {
+        padding: 16px 18px;
+        gap: 12px;
+    }
+
+    .dash-ai-briefing__icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .dash-ai-briefing__text {
+        font-size: 13px;
     }
 }
