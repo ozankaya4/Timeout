@@ -3,8 +3,8 @@ from timeout.models.notification import Notification
 from timeout.models.event import Event
 
 class NotificationService:
+    """Maps event type to friendly label for notification messages"""
 
-    # Maps event type to friendly label for notification messages
     EVENT_TYPE_LABELS = {
         Event.EventType.DEADLINE:      ("Deadline",      "⏰"),
         Event.EventType.EXAM:          ("Exam",          "📝"),
@@ -99,6 +99,7 @@ class NotificationService:
             deadline=event,
             message=message
         ).exists()
+        
         if not exists:
             label, icon = NotificationService.EVENT_TYPE_LABELS.get(
                 event.event_type, ("Event", "📅")
@@ -114,7 +115,12 @@ class NotificationService:
     @staticmethod
     def _get_notification_type(event_type):
         """Map event type to notification type."""
-        if event_type == Event.EventType.DEADLINE:
-            return Notification.Type.DEADLINE
-        else:
-            return Notification.Type.EVENT
+        mapping = {
+            Event.EventType.DEADLINE:      Notification.Type.DEADLINE,
+            Event.EventType.EXAM:          Notification.Type.EXAM,
+            Event.EventType.CLASS:         Notification.Type.CLASS,
+            Event.EventType.MEETING:       Notification.Type.MEETING,
+            Event.EventType.STUDY_SESSION: Notification.Type.STUDY_SESSION,
+            Event.EventType.OTHER:         Notification.Type.EVENT,
+        }
+        return mapping.get(event_type, Notification.Type.EVENT)

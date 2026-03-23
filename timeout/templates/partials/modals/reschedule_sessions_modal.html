@@ -1,0 +1,51 @@
+<div class="modal fade" id="rescheduleSessionsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reschedule Study Sessions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="rs-step-1">
+          <p class="text-muted small mb-0">
+            AI will look at all your upcoming study sessions and redistribute them into a balanced schedule —
+            spread evenly, timed before your deadlines, and away from your other events.
+          </p>
+        </div>
+
+        <div id="rs-loading" class="d-none text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2 text-muted small">Analysing your schedule…</p>
+        </div>
+
+        <div id="rs-step-2" class="d-none">
+          <p class="text-muted small mb-3">Here's your rebalanced schedule — confirm to apply all changes.</p>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Session</th>
+                  <th>Current time</th>
+                  <th>New time</th>
+                </tr>
+              </thead>
+              <tbody id="rs-preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="rs-error" class="alert alert-danger d-none mt-3"></div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-nep text-white" id="rs-suggest-btn" onclick="fetchRescheduleSuggestions()">Reschedule with AI</button>
+        <button type="button" class="btn btn-light d-none" id="rs-back-btn" onclick="rsShowStep1()">Back</button>
+        <button type="button" class="btn btn-nep text-white d-none" id="rs-apply-btn" onclick="applyReschedule()">Apply Changes</button>
+      </div>
+    </div>
+  </div>
+</div>

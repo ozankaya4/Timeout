@@ -1,4 +1,4 @@
-/* ───────── Notifications Toolbar ───────── */
+/*  Notifications Toolbar  */
 .notifications-toolbar {
     display: flex;
     justify-content: space-between;
@@ -23,14 +23,14 @@
     color: #2a3547;
 }
 
-/* ───────── Notifications List ───────── */
+/*  Notifications List  */
 .notifications-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-/* ───────── Notification Row ───────── */
+/*  Notification Row  */
 .notification-item {
     display: flex;
     justify-content: space-between;
@@ -49,7 +49,7 @@
     filter: brightness(0.97);
 }
 
-/* ───────── Read vs Unread ───────── */
+/*  Read vs Unread  */
 .notification-unread {
     background: #ffffff;
 }
@@ -64,9 +64,9 @@
 .notification-read .notification-message { color: #8a929e; }
 .notification-read .notification-time { color: #a0a8b3; }
 
-/* ───────── Colour palette per type ───────── */
+/*  Colour palette per type  */
 
-/* Message — teal */
+/* Message teal */
 .notification-item[data-type="message"] {
     border-left-color: #00acc1;
 }
@@ -74,15 +74,16 @@
     background: rgba(0, 172, 193, 0.08);
 }
 
-/* Deadline — indigo */
+/* Deadline indigo */
 .notification-item[data-type="deadline"] {
     border-left-color: #5b5ddf;
 }
+
 .notification-unread[data-type="deadline"] {
     background: rgba(91, 93, 223, 0.08);
 }
 
-/* Exam — red */
+/* Exam red */
 .notification-item[data-type="exam"] {
     border-left-color: #e53935;
 }
@@ -90,39 +91,42 @@
     background: rgba(229, 57, 53, 0.08);
 }
 
-/* Class — amber */
+/* Class amber */
 .notification-item[data-type="class"] {
-    border-left-color: #f4a100;
+    border-left-color: #43a047;
 }
 .notification-unread[data-type="class"] {
-    background: rgba(244, 161, 0, 0.08);
+    background: rgba(67, 160, 71, 0.08);
 }
 
-/* Meeting — purple */
+/* Meeting purple */
 .notification-item[data-type="meeting"] {
     border-left-color: #8e24aa;
 }
+
 .notification-unread[data-type="meeting"] {
     background: rgba(142, 36, 170, 0.08);
 }
 
-/* Study session — green */
+/* Study session green */
 .notification-item[data-type="study_session"] {
-    border-left-color: #43a047;
+    border-left-color: #00acc1;
 }
+
 .notification-unread[data-type="study_session"] {
-    background: rgba(67, 160, 71, 0.08);
+    background: rgba(0, 172, 193, 0.08);
 }
 
-/* Event / other — blue */
+/* Event / other blue */
 .notification-item[data-type="event"] {
-    border-left-color: #1e88e5;
-}
-.notification-unread[data-type="event"] {
-    background: rgba(30, 136, 229, 0.08);
+    border-left-color: #78909c;
 }
 
-/* ───────── Content ───────── */
+.notification-unread[data-type="event"] {
+    background: rgba(120, 144, 156, 0.08);
+}
+
+/*  Content  */
 .notification-main {
     display: flex;
     flex-direction: column;
@@ -145,7 +149,7 @@
     color: #adb5bd;
 }
 
-/* ───────── Action Buttons ───────── */
+/*  Action Buttons  */
 .notification-actions {
     display: flex;
     gap: 6px;
@@ -179,7 +183,7 @@
     color: #b71c1c;
 }
 
-/* ───────── Toggle Unread Button ───────── */
+/*  Toggle Unread Button  */
 #toggle-unread-btn {
     padding: 7px 14px;
     border: 1px solid #5b5ddf;
@@ -197,10 +201,71 @@
     color: #2a3547;
 }
 
-/* ───────── Pagination ───────── */
+/*  Empty State  */
+.no-notifications-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    border-radius: 14px;
+}
+
+.no-notifications-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.no-notifications-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2a3547;
+    margin-bottom: 4px;
+}
+
+.no-notifications-desc {
+    font-size: 0.8rem;
+    color: #8892B0;
+    margin: 0;
+}
+
+/*  Dark mode: blend card with page  */
+[data-theme="dark"] .chart-card {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/*  Pagination  */
 .pagination-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Like — rose */
+.notification-item[data-type="like"] {
+    border-left-color: #e91e63;
+}
+.notification-unread[data-type="like"] {
+    background: rgba(233, 30, 99, 0.08);
+}
+
+/* Comment — orange */
+.notification-item[data-type="comment"] {
+    border-left-color: #ff6f00;
+}
+.notification-unread[data-type="comment"] {
+    background: rgba(255, 111, 0, 0.08);
+}
+
+/* Bookmark — teal-green */
+.notification-item[data-type="bookmark"] {
+    border-left-color: #00897b;
+}
+.notification-unread[data-type="bookmark"] {
+    background: rgba(0, 137, 123, 0.08);
 }

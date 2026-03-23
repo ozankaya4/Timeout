@@ -6,17 +6,30 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
+from django.utils.html import strip_tags
+
 from timeout.forms import NoteForm
 from timeout.models import Note, Post
 from timeout.services import NoteService
 
 
+SORT_OPTIONS = {
+    'newest': ('-created_at', 'Newest First'),
+    'oldest': ('created_at', 'Oldest First'),
+    'alpha_asc': ('title', 'A - Z'),
+    'alpha_desc': ('-title', 'Z - A'),
+    'recently_edited': ('-updated_at', 'Recently Edited'),
+    'category': ('category', 'Category'),
+}
+DEFAULT_SORT = 'recently_edited'
+
+
 @login_required
 def note_list(request):
-    """List all notes with search and category filter."""
+    """List all notes with search, category filter, and sorting."""
     category = request.GET.get('category', '')
     query = request.GET.get('q', '')
-    filter_mode = request.GET.get('filter', '')
+    sort = request.GET.get('sort', DEFAULT_SORT)
 
     if query:
         notes = NoteService.search_notes(request.user, query)
@@ -25,13 +38,10 @@ def note_list(request):
     else:
         notes = NoteService.get_user_notes(request.user)
 
-    # Due Soon filter: only notes with due dates, ordered by soonest
-    if filter_mode == 'due_soon':
-        from django.utils import timezone
-        notes = notes.filter(
-            due_date__isnull=False,
-            due_date__gte=timezone.now(),
-        ).order_by('due_date')
+    # Apply sorting (pinned notes always stay on top)
+    if sort in SORT_OPTIONS:
+        order_field = SORT_OPTIONS[sort][0]
+        notes = notes.order_by('-is_pinned', order_field)
 
     user = request.user
 
@@ -48,7 +58,8 @@ def note_list(request):
         'categories': Note.Category.choices,
         'active_category': category,
         'search_query': query,
-        'active_filter': filter_mode,
+        'active_sort': sort,
+        'sort_options': [(k, v[1]) for k, v in SORT_OPTIONS.items()],
         # Gamification
         'xp': user.xp,
         'level': user.level,
@@ -66,27 +77,42 @@ def note_list(request):
 
 @login_required
 def note_create(request):
-    """Create a new note."""
+    """Create a new note with title/category/event, then redirect to editor."""
     if request.method == 'POST':
-        form = NoteForm(request.POST, user=request.user)
-        if form.is_valid():
-            note = form.save(commit=False)
-            note.owner = request.user
-            note.save()
-            NoteService.update_streak_and_xp(
-                request.user, NoteService.XP_NOTE_CREATE,
-            )
-            NoteService.log_note_created(request.user)
-            messages.success(request, 'Note created successfully!')
+        title = request.POST.get('title', '').strip()
+        category = request.POST.get('category', 'other')
+        event_id = request.POST.get('event', '')
+
+        if not title:
+            messages.error(request, 'Please provide a title for your note.')
             return redirect('notes')
-        else:
-            messages.error(request, 'Error creating note.')
+
+        note = Note(
+            owner=request.user,
+            title=title,
+            content='',
+            category=category,
+        )
+        if event_id:
+            from timeout.models.event import Event
+            try:
+                note.event = Event.objects.get(pk=event_id, creator=request.user)
+            except Event.DoesNotExist:
+                pass
+
+        note.save()
+        NoteService.update_streak_and_xp(
+            request.user, NoteService.XP_NOTE_CREATE,
+        )
+        NoteService.log_note_created(request.user)
+        return redirect('note_edit', note_id=note.id)
+
     return redirect('notes')
 
 
 @login_required
 def note_edit(request, note_id):
-    """Edit an existing note."""
+    """Edit an existing note — full-page rich text editor."""
     note = get_object_or_404(Note, id=note_id)
 
     if not note.can_edit(request.user):
@@ -99,7 +125,8 @@ def note_edit(request, note_id):
             NoteService.update_streak_and_xp(
                 request.user, NoteService.XP_NOTE_EDIT,
             )
-            messages.success(request, 'Note updated successfully!')
+            NoteService.log_note_edited(request.user)
+            messages.success(request, 'Note saved successfully!')
             return redirect('notes')
         messages.error(request, 'Error updating note.')
         return redirect('notes')
@@ -118,6 +145,36 @@ def note_edit(request, note_id):
         'longest_streak': user.longest_note_streak,
     }
     return render(request, 'pages/note_edit.html', context)
+
+
+@login_required
+@require_POST
+def note_autosave(request, note_id):
+    """Autosave note content via AJAX."""
+    note = get_object_or_404(Note, id=note_id, owner=request.user)
+
+    content = request.POST.get('content', '')
+    title = request.POST.get('title', '').strip()
+
+    update_fields = ['content', 'title', 'updated_at']
+
+    if title:
+        note.title = title
+    note.content = content
+
+    # Persist page mode if sent
+    page_mode = request.POST.get('page_mode', '').strip()
+    if page_mode in ('pageless', 'paged'):
+        note.page_mode = page_mode
+        update_fields.append('page_mode')
+
+    note.save(update_fields=update_fields)
+
+    # Track daily edit (once per note per session via flag from client)
+    if request.POST.get('count_edit') == '1':
+        NoteService.log_note_edited(request.user)
+
+    return JsonResponse({'status': 'ok', 'updated_at': note.updated_at.isoformat()})
 
 
 @login_required
@@ -149,7 +206,8 @@ def note_toggle_pin(request, note_id):
 def note_share(request, note_id):
     """Share a note as a social post."""
     note = get_object_or_404(Note, id=note_id, owner=request.user)
-    content = f"[{note.get_category_display()}] {note.title}\n\n{note.content}"
+    plain_content = strip_tags(note.content)
+    content = f"[{note.get_category_display()}] {note.title}\n\n{plain_content}"
     Post.objects.create(
         author=request.user,
         content=content[:5000],

@@ -203,6 +203,7 @@ def calendar_view(request):
         event_type=Event.EventType.STUDY_SESSION,
         status=Event.EventStatus.UPCOMING,
         end_datetime__lt=now,
+        is_completed=False,
     )
     reschedule_prompts = [
         {
@@ -246,6 +247,33 @@ def get_event_status(start_dt, end_dt, now):
         return 'Past'
     else:
         return 'Upcoming'
+
+@login_required
+@require_POST
+def apply_session_schedule(request):
+    """Bulk-update study session times after AI reschedule confirmation."""
+    try:
+        sessions = json.loads(request.POST.get('sessions', '[]'))
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid data.'}, status=400)
+
+    updated = 0
+    for s in sessions:
+        try:
+            event = Event.objects.get(
+                pk=s['id'],
+                creator=request.user,
+                event_type=Event.EventType.STUDY_SESSION,
+            )
+            event.start_datetime = s['start']
+            event.end_datetime = s['end']
+            event.save()
+            updated += 1
+        except (Event.DoesNotExist, KeyError):
+            continue
+
+    return JsonResponse({'success': True, 'count': updated})
+
 
 @login_required
 @require_POST

@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
 <link rel="stylesheet" href="{% static 'css/information.css' %}">
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -28,8 +29,10 @@
 
 <div class="chart-card">
 
-    <div id="no-notifications" class="text-center py-4" {% if notifications %}style="display:none"{% endif %}>
-        <p class="text-muted mb-1">No notifications yet</p>
+    <div id="no-notifications" class="no-notifications-state" {% if notifications %}style="display:none"{% endif %}>
+        <div class="no-notifications-icon">🔔</div>
+        <p class="no-notifications-title">No notifications yet</p>
+        <p class="no-notifications-desc">When you receive notifications, they'll appear here.</p>
     </div>
 
     <div class="notifications-list">
@@ -37,7 +40,9 @@
             <div id="notif-{{ n.id }}"
                 class="notification-item {% if not n.is_read %}notification-unread{% else %}notification-read{% endif %}"
                 data-type="{{ n.type }}"
-                data-event-id="{{ n.deadline.id }}">
+                data-event-id="{{ n.deadline.id }}"
+                data-convo-id="{{ n.conversation.id }}"
+                data-post-id="{{ n.post.id }}">
 
             <div class="notification-main">
                 <div class="notification-title">
@@ -165,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         /* -----------------------------
            CLICK NOTIFICATION
            auto mark as read + open event
@@ -201,9 +207,21 @@ document.addEventListener("DOMContentLoaded", () => {
            OPEN EVENT IN CALENDAR
         ----------------------------- */
 
-        if (notifItem.dataset.type === "message") return;
+        if (notifItem.dataset.type === "message") {
+            const convoId = notifItem.dataset.convoId;
+            if (convoId && convoId !== "None") {
+                window.location.href = `/messaging/conversation/${convoId}/`;
+            }
+            return;
+        }
 
-        if (eventId) {
+        const postId = notifItem.dataset.postId;
+        if (postId && postId !== "None") {
+            window.location.href = `/social/feed/?highlight_post=${postId}`;
+            return;
+        }
+
+        if (eventId && eventId !== "None") {
             window.location.href = `/calendar/?open_event=${eventId}`;
         }
 
