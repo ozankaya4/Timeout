@@ -146,13 +146,9 @@ def calendar_view(request):
             end_dt   = timezone.make_aware(datetime.combine(current_date, ev.end_datetime.time()))
 
             pseudo_event = {
-<<<<<<< HEAD
-                'id': ev.id,
-=======
                 'original': ev,
                 'recurrence_instance': True,
-                'id': ev.id, 
->>>>>>> main
+                'id': ev.id,
                 'title': ev.title,
                 'start_datetime': start_dt,
                 'end_datetime': end_dt,
@@ -162,10 +158,7 @@ def calendar_view(request):
                 'location': ev.location,
                 'description': ev.description,
                 'is_all_day': ev.is_all_day,
-<<<<<<< HEAD
-=======
-                'instance_date': current_date, 
->>>>>>> main
+                'instance_date': current_date,
                 'visibility': ev.visibility,
                 'allow_conflict': ev.allow_conflict,
                 'color': getattr(ev, 'color', ''),
@@ -193,22 +186,16 @@ def calendar_view(request):
         "July", "August", "September", "October", "November", "December",
     ]
 
-<<<<<<< HEAD
-=======
     # Get today's events for AI workload warning
     today_events = events_by_date.get(timezone.now().date(), [])
     workload_warning = get_ai_workload_warning(request.user, today_events)
-    
->>>>>>> main
+
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,
         event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
         start_datetime__gte=timezone.now(),
     ).order_by('start_datetime')[:20]
-<<<<<<< HEAD
-=======
-    
->>>>>>> main
+
     # Missed study sessions: past events still in UPCOMING status
     now = timezone.now()
     missed_sessions = Event.objects.filter(
@@ -230,11 +217,8 @@ def calendar_view(request):
 
     # Recently cancelled study sessions (stored in session after event_cancel view)
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
-<<<<<<< HEAD
-=======
 
     warnings = get_deadline_study_warnings(request.user)
->>>>>>> main
 
     context = {
         "weeks": weeks,
@@ -246,18 +230,12 @@ def calendar_view(request):
         "next_year": next_year,
         "next_month": next_month,
         "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-<<<<<<< HEAD
-
-        "upcoming_deadlines": upcoming_deadlines,
-        "reschedule_prompts": reschedule_prompts,
-=======
         "workload_warning": workload_warning,
 
         "upcoming_deadlines": upcoming_deadlines,
         "reschedule_prompts": reschedule_prompts,
         "events": events_qs,
         "warnings": warnings,
->>>>>>> main
     }
 
     return render(request, "pages/calendar.html", context)
@@ -272,8 +250,6 @@ def get_event_status(start_dt, end_dt, now):
 
 @login_required
 @require_POST
-<<<<<<< HEAD
-=======
 def apply_session_schedule(request):
     """Bulk-update study session times after AI reschedule confirmation."""
     try:
@@ -301,7 +277,6 @@ def apply_session_schedule(request):
 
 @login_required
 @require_POST
->>>>>>> main
 def subscribe_event(request, pk):
     from django.shortcuts import get_object_or_404
     original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)
