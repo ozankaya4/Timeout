@@ -89,6 +89,14 @@ class Event(models.Model):
     is_global = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False) # Added to track event
 
+    linked_study_sessions = models.ManyToManyField(
+        "self",
+        blank=True,
+        symmetrical=False,
+        related_name="linked_deadlines",
+        limit_choices_to={"event_type": "study_session"},
+    )
+    
 
     class Meta:
         ordering = ['-start_datetime']
@@ -108,41 +116,40 @@ class Event(models.Model):
         Prevent overlapping events for the same user unless allowed.
         """
 
-        # 1️⃣ Validate time range
+        # 1️⃣ Basic time validation
         if self.start_datetime >= self.end_datetime:
             raise ValidationError("End time must be after start time.")
 
-        # 2️⃣ Allow certain types to overlap automatically
-        overlap_allowed_types = [
-            self.EventType.DEADLINE,  # keep or change as you like
+        # 2️⃣ Define which types cannot overlap
+        non_overlapping_types = [
+            self.EventType.CLASS,
+            self.EventType.STUDY_SESSION,
+            self.EventType.EXAM,
+            self.EventType.MEETING,
         ]
 
-        if self.event_type in overlap_allowed_types:
-            return
-
-        # 3️⃣ Allow override checkbox
-        if self.allow_conflict:
-            return
+        # 3️⃣ Only check conflicts if the event type is in non_overlapping_types
+        if self.event_type not in non_overlapping_types:
+            return  # deadlines & "other" can overlap freely
 
         # 4️⃣ Ignore cancelled events
         if self.status == self.EventStatus.CANCELLED:
             return
 
+        # 5️⃣ Check for overlapping events for this user
         overlapping_events = Event.objects.filter(
             creator=self.creator,
             start_datetime__lt=self.end_datetime,
             end_datetime__gt=self.start_datetime,
-        ).exclude(pk=self.pk)
+        ).exclude(pk=self.pk).filter(event_type__in=non_overlapping_types)
 
         if overlapping_events.exists():
             conflict = overlapping_events.first()
             raise ValidationError(
                 f'This event conflicts with "{conflict.title}" '
                 f'({conflict.start_datetime:%d %b %H:%M} - '
-                f'{conflict.end_datetime:%H:%M}). '
-                f'Tick "Override conflict" to allow it.'
+                f'{conflict.end_datetime:%H:%M}).'
             )
-
     def save(self, *args, **kwargs):
         is_new = self.pk is None
 
