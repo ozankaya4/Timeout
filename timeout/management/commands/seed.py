@@ -224,7 +224,8 @@ class Command(BaseCommand):
             ))
             return
 
-        app, created = SocialApp.objects.get_or_create(
+        # get_or_create to avoid duplicate SocialApp records on repeated seeding
+        app, created = SocialApp.objects.get_or_create( 
             provider='google',
             defaults={'name': 'Google', 'client_id': client_id, 'secret': secret},
         )

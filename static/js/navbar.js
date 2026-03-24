@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
       badge.classList.remove("new-notif-pulse");
     }, 3000);}
 
-  /* 
+  /*
      Real-time polling for new notifications
      Start lastNotifId from latest known ID so first
      poll only catches genuinely new notifications

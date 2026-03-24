@@ -32,6 +32,7 @@ class Command(BaseCommand):
         site_id = getattr(settings, 'SITE_ID', None)
         self.stdout.write(f'  settings.SITE_ID = {site_id}')
 
+        # List every Site in the DB, currently active ones marked
         sites = Site.objects.all().order_by('id')
         if not sites.exists():
             self.stdout.write(self.style.ERROR('  No Site records in the database!'))
