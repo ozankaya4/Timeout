@@ -66,7 +66,7 @@
   .autosave-indicator.saving { color: #f59e0b; }
   .autosave-indicator.saved { color: #22c55e; }
 
-  /* ── Spacing & page-mode controls ── */
+  /* Spacing & page-mode controls*/
   .spacing-control, .pagemode-control {
     display: flex;
     align-items: center;
@@ -83,12 +83,12 @@
     font-size: 0.8rem;
   }
 
-  /* ── Editor body: outline panel + editor ── */
+  /* Editor body: outline panel + editor */
   .note-editor-body {
     display: flex;
   }
 
-  /* ── Outline panel ── */
+  /* Outline panel */
   .note-outline-panel {
     width: 200px;
     flex-shrink: 0;
@@ -178,13 +178,13 @@
     color: var(--text-primary, #1a202c);
   }
 
-  /* ── Editor area ── */
+  /* Editor area */
   .note-editor-main {
     flex: 1;
     min-width: 0;
   }
 
-  /* ── Paged mode — only adds break lines + page labels ── */
+  /* Paged mode and labels */
   .page-break-line {
     position: absolute;
     left: 0;
@@ -206,7 +206,7 @@
     border-radius: 3px;
   }
 
-  /* ── Quill editor ── */
+  /* Quill editor */
   .ql-editor {
     height: calc(100vh - 220px);
     font-size: 1rem;
@@ -241,7 +241,7 @@
     right: 28px;
   }
 
-  /* ── Dark mode ── */
+  /* Dark mode*/
   [data-theme="dark"] .note-editor-topbar,
   [data-theme="dark"] .note-editor-meta {
     background: var(--bg-primary, #13141f);
@@ -327,7 +327,7 @@
 {% block content %}
 <div class="note-editor-page" id="notesPage">
 
-  <!-- ══ Top bar: Back / Title / Save ══ -->
+  <!-- Top bar: Back / Title / Save -->
   <div class="note-editor-topbar">
     <a href="{% url 'notes' %}" class="btn btn-light btn-sm">&#8592; Back to Notes</a>
     <input
@@ -354,7 +354,7 @@
     </div>
   </div>
 
-  <!-- ══ Meta info ══ -->
+  <!-- Meta info-->
   <div class="note-editor-meta">
     <button class="note-outline-toggle" id="outlineToggleBtn" title="Toggle outline">&#9776; Outline</button>
     <span class="badge bg-light text-dark">{{ note.get_category_display }}</span>
@@ -384,9 +384,9 @@
     <div class="nt-word-count" id="wordCount" style="margin-left:auto;">0 words</div>
   </div>
 
-  <!-- ══ Body: Outline + Editor ══ -->
+  <!-- Body: Outline + Editor -->
   <div class="note-editor-body">
-    <!-- Outline panel (starts collapsed) -->
+
     <div class="note-outline-panel collapsed" id="outlinePanel">
       <div class="note-outline-header">
         <span>Outline</span>
@@ -405,7 +405,7 @@
 
 </div>
 
-<!-- ══ Focus Mode Overlay ══ -->
+<!-- Focus Mode Overlay -->
 <div class="nt-focus-overlay" id="focusOverlay" style="display:none">
   <div class="nt-focus-bar">
     <span class="nt-focus-bar-label">&#127919; Focus Mode Active</span>
@@ -414,7 +414,7 @@
   </div>
 </div>
 
-<!-- ══ Inactivity Warning Overlay ══ -->
+<!-- Inactivity Warning Overlay -->
 <div class="nt-warn-overlay" id="warnOverlay" style="display:none">
   <div class="nt-warn-card">
     <div class="nt-warn-icon">&#9888;&#65039;</div>
@@ -424,7 +424,7 @@
   </div>
 </div>
 
-<!-- ══ XP Gain Toast ══ -->
+<!-- XP Gain Toast -->
 <div class="nt-xp-toast" id="xpToast" style="display:none">
   <span class="nt-xp-toast-text" id="xpToastText">+25 XP</span>
 </div>
@@ -443,7 +443,7 @@
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 <script>
 (function() {
-  /* ── Quill setup ── */
+  /* Quill setup */
   const quill = new Quill('#quill-editor', {
     theme: 'snow',
     placeholder: 'Start writing your note...',
@@ -464,13 +464,13 @@
     },
   });
 
-  /* ── Load existing content ── */
+  /* Load existing content */
   const hiddenInput = document.getElementById('id_content');
   if (hiddenInput.value) {
     quill.root.innerHTML = hiddenInput.value;
   }
 
-  /* ── Word count ── */
+  /* Word count */
   function updateWordCount() {
     const text = quill.getText().trim();
     const words = text ? text.split(/\s+/).length : 0;
@@ -479,7 +479,7 @@
   quill.on('text-change', updateWordCount);
   updateWordCount();
 
-  /* ── Outline panel ── */
+  /* Outline panel */
   const outlinePanel = document.getElementById('outlinePanel');
   const outlineList = document.getElementById('outlineList');
   const outlineToggleBtn = document.getElementById('outlineToggleBtn');
@@ -532,14 +532,14 @@
   quill.on('text-change', updateOutline);
   updateOutline();
 
-  /* ── Line spacing control ── */
+  /* Line spacing control */
   const spacingSelect = document.getElementById('lineSpacing');
   spacingSelect.addEventListener('change', function() {
     quill.root.style.lineHeight = this.value;
     if (pageModeActive) requestAnimationFrame(paginateContent);
   });
 
-  /* ── Page mode ── */
+  /* Page mode */
   const pageModeSelect = document.getElementById('pageMode');
   const qlContainer = document.querySelector('.ql-container');
   const editorMainEl = document.getElementById('editorMain');
@@ -599,7 +599,7 @@
     if (pageModeActive) requestAnimationFrame(paginateContent);
   });
 
-  /* ── Sync to hidden input on manual save ── */
+  /* Sync to hidden input on manual save */
   const editForm = document.getElementById('noteEditForm');
   editForm.addEventListener('submit', function() {
     hiddenInput.value = quill.root.innerHTML;
@@ -607,7 +607,7 @@
     document.getElementById('hiddenPageMode').value = pageModeSelect.value;
   });
 
-  /* ── Autosave ── */
+  /* Autosave */
   const autosaveUrl = '{% url "note_autosave" note.id %}';
   const csrfToken = '{{ csrf_token }}';
   const statusEl = document.getElementById('autosaveStatus');
@@ -667,7 +667,7 @@
   document.getElementById('noteTitleInput').addEventListener('input', scheduleAutosave);
   pageModeSelect.addEventListener('change', scheduleAutosave);
 
-  /* ── Save on page leave ── */
+  /* Save on page leave*/
   window.addEventListener('beforeunload', function() {
     const currentContent = quill.root.innerHTML;
     const currentTitle = document.getElementById('noteTitleInput').value;
