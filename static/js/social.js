@@ -312,6 +312,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    document.querySelectorAll('.btn-flag-post').forEach(button => {
+        button.addEventListener('click', function () {
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const alreadyFlagged = icon.className.includes('flag-fill');
+            icon.className = alreadyFlagged ? 'bi bi-flag' : 'bi bi-flag-fill';
+            fetch(`/social/post/${postId}/flag/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            })
+            .then(r => r.json())
+            .catch(() => {
+                icon.className = alreadyFlagged ? 'bi bi-flag-fill' : 'bi bi-flag';
+            });
+        });
+    });
+
     document.querySelectorAll('.follow-btn').forEach(button => {
         button.addEventListener('click', function() {
             const username = this.dataset.username;

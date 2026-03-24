@@ -13,12 +13,26 @@ from timeout.services import FeedService
 from timeout.views.profile import get_profile_event
 
 
+def _get_conversation_sidebar(user):
+    convs = Conversation.objects.filter(
+        participants=user
+    ).prefetch_related('participants', 'messages').order_by('-updated_at')[:5]
+    return [
+        {'conv': c, 'other': c.get_other_participant(user), 'last': c.get_last_message()}
+        for c in convs
+    ]
+
 
 @login_required
 def feed(request):
     tab = request.GET.get('tab', 'following')
+    posts, flags = [], []
 
-    if tab == 'discover':
+    if tab == 'review_flags' and request.user.is_staff:
+        flags = PostFlag.objects.select_related(
+            'post', 'post__author', 'reporter'
+        ).order_by('-created_at')
+    elif tab == 'discover':
         posts = FeedService.get_discover_feed(request.user)
     elif tab == 'bookmarks':
         posts = FeedService.get_bookmarked_posts(request.user)
@@ -26,33 +40,17 @@ def feed(request):
         tab = 'following'
         posts = FeedService.get_following_feed(request.user)
 
-    conversations = Conversation.objects.filter(
-        participants=request.user
-    ).prefetch_related('participants', 'messages').order_by('-updated_at')[:5]
-
-    conversation_data = []
-    for conv in conversations:
-        conversation_data.append({
-            'conv': conv,
-            'other': conv.get_other_participant(request.user),
-            'last': conv.get_last_message(),
-        })
-    bookmarked_ids = set(
-        Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True)
-    )
-    liked_ids = set(
-        Like.objects.filter(user=request.user).values_list('post_id', flat=True)
-    )
-
     context = {
         'posts': posts,
+        'flags': flags,
         'active_tab': tab,
         'post_form': PostForm(user=request.user),
-        'conversation_data': conversation_data,
-        'bookmarked_ids': bookmarked_ids,
-        'liked_ids': liked_ids,
+        'conversation_data': _get_conversation_sidebar(request.user),
+        'bookmarked_ids': set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True)),
+        'liked_ids': set(Like.objects.filter(user=request.user).values_list('post_id', flat=True)),
     }
     return render(request, 'social/feed.html', context)
+
 
 @login_required
 def create_post(request):
@@ -95,22 +93,15 @@ def like_post(request, post_id):
     if not post.can_view(request.user):
         return JsonResponse({'error': 'Cannot view post'}, status=403)
 
-    like, created = Like.objects.get_or_create(
-        user=request.user,
-        post=post
-    )
+    like, created = Like.objects.get_or_create(user=request.user, post=post)
 
     if not created:
-        # Unlike
         like.delete()
         liked = False
     else:
         liked = True
 
-    return JsonResponse({
-        'liked': liked,
-        'like_count': post.get_like_count()
-    })
+    return JsonResponse({'liked': liked, 'like_count': post.get_like_count()})
 
 
 @login_required
@@ -120,17 +111,11 @@ def bookmark_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if not post.can_view(request.user):
-        return JsonResponse(
-            {'error': 'Cannot view post'}, status=403
-        )
+        return JsonResponse({'error': 'Cannot view post'}, status=403)
 
-    bookmark, created = Bookmark.objects.get_or_create(
-        user=request.user,
-        post=post
-    )
+    bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
 
     if not created:
-        # Remove bookmark
         bookmark.delete()
         bookmarked = False
     else:
@@ -162,7 +147,6 @@ def add_comment(request, post_id):
         comment.author = request.user
         comment.post = post
 
-        # Handle reply to another comment
         parent_id = request.POST.get('parent_id')
         if parent_id:
             parent = get_object_or_404(Comment, id=parent_id)
@@ -173,6 +157,20 @@ def add_comment(request, post_id):
     else:
         messages.error(request, 'Error adding comment.')
 
+    return redirect('social_feed')
+
+
+@login_required
+@require_POST
+def delete_comment(request, comment_id):
+    """Delete a comment (author or staff)."""
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if not comment.can_delete(request.user):
+        return HttpResponseForbidden('You do not have permission to delete this comment.')
+
+    comment.delete()
+    messages.success(request, 'Comment deleted.')
     return redirect('social_feed')
 
 
@@ -231,7 +229,7 @@ def _handle_private_follow(from_user, to_user):
         req.delete()
         notif_filter.delete()
         return False
-    notif_filter.delete()  # clear any leftover before creating a fresh one
+    notif_filter.delete()
     Notification.objects.create(
         user=to_user,
         title="New Follow Request",
@@ -287,6 +285,7 @@ def reject_follow_request(request, username):
     fr.delete()
     return JsonResponse({'rejected': True})
 
+
 @login_required
 @require_POST
 def update_status(request):
@@ -295,7 +294,6 @@ def update_status(request):
     if status not in [s[0] for s in User.Status.choices]:
         return JsonResponse({'error': 'Invalid status'}, status=400)
 
-    # Save focus session when leaving focus mode
     if request.user.status == 'focus' and status != 'focus':
         if request.user.focus_started_at:
             ended_at = timezone.now()
@@ -309,7 +307,6 @@ def update_status(request):
                 )
             request.user.focus_started_at = None
 
-    # Set focus start time when entering focus mode
     if status == 'focus':
         request.user.focus_started_at = timezone.now()
 
@@ -323,42 +320,6 @@ def update_status(request):
                             if request.user.focus_started_at else None,
     })
 
-@login_required
-def followers_api(request):
-    users = request.user.followers.all()
-    following_ids = set(request.user.following.values_list('id', flat=True))
-    return JsonResponse({'users': _serialize_users(users, following_ids=following_ids)})
-
-@login_required
-def following_api(request):
-    users = request.user.following.all()
-    return JsonResponse({'users': _serialize_users(users)})
-
-@login_required
-def user_followers_api(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    can_view = (
-        request.user == profile_user or
-        not profile_user.privacy_private or
-        request.user.following.filter(id=profile_user.id).exists()
-    )
-    if not can_view:
-        return JsonResponse({'error': 'This account is private.'}, status=403)
-    users = profile_user.followers.all()
-    return JsonResponse({'users': _serialize_users(users)})
-
-@login_required
-def user_following_api(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    can_view = (
-        request.user == profile_user or
-        not profile_user.privacy_private or
-        request.user.following.filter(id=profile_user.id).exists()
-    )
-    if not can_view:
-        return JsonResponse({'error': 'This account is private.'}, status=403)
-    users = profile_user.following.all()
-    return JsonResponse({'users': _serialize_users(users)})
 
 @login_required
 def search_users(request):
@@ -384,114 +345,3 @@ def search_users(request):
         for u in users
     ]
     return JsonResponse({'users': results})
-
-@login_required
-def friends_api(request):
-    friends = request.user.following.filter(followers=request.user)
-    return JsonResponse({'users': _serialize_users(friends)})
-
-@login_required
-def user_friends_api(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    can_view = (
-        request.user == profile_user or
-        not profile_user.privacy_private or
-        request.user.following.filter(id=profile_user.id).exists()
-    )
-    if not can_view:
-        return JsonResponse({'error': 'This account is private.'}, status=403)
-    friends = profile_user.following.filter(followers=profile_user)
-    return JsonResponse({'users': _serialize_users(friends)})
-
-def _serialize_users(users, following_ids=None):
-    result = []
-    for u in users:
-        entry = {
-            'username': u.username,
-            'full_name': u.get_full_name(),
-            'profile_picture': u.profile_picture.url if u.profile_picture else None,
-        }
-        if following_ids is not None:
-            entry['is_followed_back'] = u.id in following_ids
-        result.append(entry)
-    return result
-
-
-# ─── Admin / Moderation Views ───────────────────────────────────────
-
-
-@login_required
-@require_POST
-def flag_post(request, post_id):
-    """Flag a post for moderation."""
-    post = get_object_or_404(Post, id=post_id)
-    reason = request.POST.get('reason', 'other')
-    description = request.POST.get('description', '').strip()
-
-    if reason not in [c[0] for c in PostFlag.Reason.choices]:
-        reason = 'other'
-
-    _, created = PostFlag.objects.get_or_create(
-        post=post,
-        reporter=request.user,
-        defaults={'reason': reason, 'description': description},
-    )
-
-    if created:
-        messages.success(request, 'Post has been flagged for review.')
-    else:
-        messages.info(request, 'You have already flagged this post.')
-
-    return redirect('social_feed')
-
-
-@login_required
-@require_POST
-def delete_comment(request, comment_id):
-    """Delete a comment (author or staff)."""
-    comment = get_object_or_404(Comment, id=comment_id)
-
-    if not comment.can_delete(request.user):
-        return HttpResponseForbidden('You do not have permission to delete this comment.')
-
-    comment.delete()
-    messages.success(request, 'Comment deleted.')
-    return redirect('social_feed')
-
-
-@login_required
-@require_POST
-def ban_user(request, username):
-    """Ban a user (staff only)."""
-    if not request.user.is_staff:
-        return HttpResponseForbidden('Staff access required.')
-
-    target = get_object_or_404(User, username=username)
-
-    if target.is_staff:
-        messages.error(request, 'Cannot ban a staff member.')
-        return redirect('user_profile', username=username)
-
-    reason = request.POST.get('reason', '').strip()
-    target.is_banned = True
-    target.ban_reason = reason
-    target.save(update_fields=['is_banned', 'ban_reason'])
-
-    messages.success(request, f'{target.username} has been banned.')
-    return redirect('user_profile', username=username)
-
-
-@login_required
-@require_POST
-def unban_user(request, username):
-    """Unban a user (staff only)."""
-    if not request.user.is_staff:
-        return HttpResponseForbidden('Staff access required.')
-
-    target = get_object_or_404(User, username=username)
-    target.is_banned = False
-    target.ban_reason = ''
-    target.save(update_fields=['is_banned', 'ban_reason'])
-
-    messages.success(request, f'{target.username} has been unbanned.')
-    return redirect('user_profile', username=username)
