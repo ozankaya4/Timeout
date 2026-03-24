@@ -57,7 +57,7 @@ def user_following_api(request, username):
 
 @login_required
 def friends_api(request):
-    friends = request.user.following.filter(followers=request.user)
+    friends = request.user.following.filter(following=request.user)
     return JsonResponse({'users': _serialize_users(friends)})
 
 
@@ -66,5 +66,5 @@ def user_friends_api(request, username):
     profile_user = get_object_or_404(User, username=username)
     if not _can_view_profile(request.user, profile_user):
         return JsonResponse({'error': 'This account is private.'}, status=403)
-    friends = profile_user.following.filter(followers=profile_user)
+    friends = profile_user.following.filter(following=profile_user)
     return JsonResponse({'users': _serialize_users(friends)})
