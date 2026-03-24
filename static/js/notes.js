@@ -171,62 +171,49 @@ var DailyGoals = (function() {
     var editBtn = document.getElementById('goalsEditBtn');
     var saveBtn = document.getElementById('goalsSaveBtn');
     if (!editBtn || !saveBtn) return;
-
     editBtn.addEventListener('click', function() {
       var modal = new bootstrap.Modal(document.getElementById('editGoalsModal'));
-      modal.show();
-    });
-
+      modal.show();});
     saveBtn.addEventListener('click', function() {
       var cfg = window.NOTES_CONFIG || {};
       var body = new FormData();
       body.append('daily_pomo_goal', document.getElementById('goalInputPomo').value);
       body.append('daily_notes_goal', document.getElementById('goalInputNotes').value);
       body.append('daily_focus_goal', document.getElementById('goalInputFocus').value);
-
       fetch(cfg.goalsUpdateUrl, {
         method: 'POST',
         headers: { 'X-CSRFToken': getCsrfToken() },
-        body: body,
-      })
+        body: body,})
       .then(function(r) { return r.json(); })
       .then(function() {
         bootstrap.Modal.getInstance(document.getElementById('editGoalsModal')).hide();
-        refresh();
-      })
-      .catch(function() {});
-    });
+        refresh();})
+      .catch(function() {});});
   }
-
   function init() {
     initToggle();
     initEdit();
     // Initial render from server data
     refresh();
   }
-
   return { init: init, render: render, refresh: refresh };
 })();
 
-
 /* Study Heatmap */
-
+/* There's 2nd degree nesting for this function but I couldn't find any other way to do it to be honest */
 var Heatmap = (function() {
   function render(days) {
     var grid = document.getElementById('heatmapGrid');
     if (!grid || !days) return;
     grid.innerHTML = '';
-
     var weeks = [];
     var week = [];
     for (var i = 0; i < days.length; i++) {
       var d = new Date(days[i].date + 'T00:00:00');
       var dow = d.getDay();
       var mdow = dow === 0 ? 6 : dow - 1;
-
       if (i === 0 && mdow > 0) {
-        for (var p = 0; p < mdow; p++) week.push(null);
-      }
+        for (var p = 0; p < mdow; p++) week.push(null);}
       week.push(days[i]);
       if (mdow === 6) {
         weeks.push(week);
