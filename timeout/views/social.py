@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from timeout.forms import PostForm, CommentForm
-from timeout.models import Post, Comment, Like, Bookmark, User, Conversation, FocusSession, FollowRequest
+from timeout.models import Post, Comment, Like, Bookmark, User, Conversation, FocusSession, FollowRequest, PostFlag
 from timeout.models.notification import Notification
 from timeout.services import FeedService
 from timeout.views.profile import get_profile_event
@@ -402,3 +402,83 @@ def _serialize_users(users, following_ids=None):
             entry['is_followed_back'] = u.id in following_ids
         result.append(entry)
     return result
+
+
+# ─── Admin / Moderation Views ───────────────────────────────────────
+
+
+@login_required
+@require_POST
+def flag_post(request, post_id):
+    """Flag a post for moderation."""
+    post = get_object_or_404(Post, id=post_id)
+    reason = request.POST.get('reason', 'other')
+    description = request.POST.get('description', '').strip()
+
+    if reason not in [c[0] for c in PostFlag.Reason.choices]:
+        reason = 'other'
+
+    _, created = PostFlag.objects.get_or_create(
+        post=post,
+        reporter=request.user,
+        defaults={'reason': reason, 'description': description},
+    )
+
+    if created:
+        messages.success(request, 'Post has been flagged for review.')
+    else:
+        messages.info(request, 'You have already flagged this post.')
+
+    return redirect('social_feed')
+
+
+@login_required
+@require_POST
+def delete_comment(request, comment_id):
+    """Delete a comment (author or staff)."""
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if not comment.can_delete(request.user):
+        return HttpResponseForbidden('You do not have permission to delete this comment.')
+
+    comment.delete()
+    messages.success(request, 'Comment deleted.')
+    return redirect('social_feed')
+
+
+@login_required
+@require_POST
+def ban_user(request, username):
+    """Ban a user (staff only)."""
+    if not request.user.is_staff:
+        return HttpResponseForbidden('Staff access required.')
+
+    target = get_object_or_404(User, username=username)
+
+    if target.is_staff:
+        messages.error(request, 'Cannot ban a staff member.')
+        return redirect('user_profile', username=username)
+
+    reason = request.POST.get('reason', '').strip()
+    target.is_banned = True
+    target.ban_reason = reason
+    target.save(update_fields=['is_banned', 'ban_reason'])
+
+    messages.success(request, f'{target.username} has been banned.')
+    return redirect('user_profile', username=username)
+
+
+@login_required
+@require_POST
+def unban_user(request, username):
+    """Unban a user (staff only)."""
+    if not request.user.is_staff:
+        return HttpResponseForbidden('Staff access required.')
+
+    target = get_object_or_404(User, username=username)
+    target.is_banned = False
+    target.ban_reason = ''
+    target.save(update_fields=['is_banned', 'ban_reason'])
+
+    messages.success(request, f'{target.username} has been unbanned.')
+    return redirect('user_profile', username=username)
