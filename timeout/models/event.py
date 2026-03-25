@@ -4,8 +4,18 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 class Event(models.Model):
-    """Calendar event model."""
+    """
+    Model representing a calendar event.
 
+    Events can represent deadlines, exams, classes, meetings, or study sessions.
+    Each event includes scheduling information, visibility settings, and optional
+    recurrence rules.
+
+    The model ensures that certain types of events do not overlap in time for the
+    same user, unless explicitly allowed. It also supports linking study sessions
+    to other events (such as deadlines), and integrates with the social system by
+    creating or removing posts based on event visibility.
+    """
     class Visibility(models.TextChoices):
         """Event visibility choices."""
         PUBLIC = 'public', 'Public'
@@ -40,7 +50,6 @@ class Event(models.Model):
         WEEKLY = 'weekly', 'Weekly'
         MONTHLY = 'monthly', 'Monthly'
 
-
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -48,7 +57,6 @@ class Event(models.Model):
         null=True,
         blank=True
     )
-
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000, blank=True)
     event_type = models.CharField(
@@ -56,25 +64,21 @@ class Event(models.Model):
         choices=EventType.choices,
         default=EventType.OTHER
     )
-
     status = models.CharField(
         max_length=20,
         choices=EventStatus.choices,
         default=EventStatus.UPCOMING
     )
-
     recurrence = models.CharField(
         max_length=10,
         choices=EventRecurrence.choices,
         blank=True,
         default=EventRecurrence.NONE,
     )
-
     allow_conflict = models.BooleanField(
         default=False,
         help_text='if true, event overlaps with others'
     )
-
     visibility = models.CharField(
         max_length=10,
         choices=Visibility.choices,
@@ -100,8 +104,14 @@ class Event(models.Model):
     
 
     class Meta:
-        ordering = ['-start_datetime']
-        indexes = [
+         """
+         Metadata for the Event model:
+         - Orders events by most recent start time first
+         - Adds indexes to optimise queries by creator and start time
+         """
+
+         ordering = ['-start_datetime']
+         indexes = [
             models.Index(
                 fields=['creator', '-start_datetime'],
                 name='timeout_eve_creator_idx'
@@ -110,18 +120,22 @@ class Event(models.Model):
                 fields=['start_datetime'],
                 name='timeout_eve_start_idx'
             ),
-        ]
+         ]
 
     def clean(self):
         """
         Prevent overlapping events for the same user unless allowed.
+
+        Behaviour:
+        - Ensures the end time is after the start time
+        - Prevents overlapping events for certain event types
+        - Allows deadlines and "other" events to overlap freely
         """
 
-        # Basic time validation
         if self.start_datetime >= self.end_datetime:
             raise ValidationError("End time must be after start time.")
 
-        # Define which types cannot overlap
+        # Events that cannot overlap
         non_overlapping_types = [
             self.EventType.CLASS,
             self.EventType.STUDY_SESSION,
@@ -152,8 +166,13 @@ class Event(models.Model):
                 f'{conflict.end_datetime:%H:%M}).'
             )
     def save(self, *args, **kwargs):
-        """Save event and auto-sync visibility with social post. PUBLIC events create/update posts, PRIVATE ones delete posts."""
-        is_new = self.pk is None
+        """
+        Save the event and synchronise it with a social post.
+
+        Behaviour:
+        - PUBLIC events create or update a corresponding post
+        - PRIVATE events do not create or update posts
+        """
 
         super().save(*args, **kwargs)
 

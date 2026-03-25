@@ -13,17 +13,34 @@ def notifications_view(request):
         user=request.user,
         is_dismissed=False
     ).order_by('-created_at')
-
     unread_count = notifications_qs.filter(is_read=False).count()
 
-    # Filter by unread if requested
     filter_param = request.GET.get('filter')
     if filter_param == 'unread':
         notifications_qs = notifications_qs.filter(is_read=False)
 
-    paginator = Paginator(notifications_qs, 10)
-    page_number = request.GET.get('page')
+    paginator = Paginator(notifications_qs, 15)
+    page_number = request.GET.get('page', 1)
     notifications = paginator.get_page(page_number)
+
+    # AJAX request for infinite scroll
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        data = [{
+            'id': n.id,
+            'title': n.title,
+            'message': n.message,
+            'type': n.type,
+            'is_read': n.is_read,
+            'created_at': n.created_at.isoformat(),
+            'deadline_id': n.deadline_id,
+            'conversation_id': n.conversation_id,
+            'post_id': n.post_id,
+        } for n in notifications]
+        return JsonResponse({
+            'notifications': data,
+            'has_next': notifications.has_next(),
+            'next_page': notifications.next_page_number() if notifications.has_next() else None,
+        })
 
     return render(request, 'pages/notifications.html', {
         'notifications': notifications,
@@ -44,6 +61,13 @@ def mark_notification_read(request, notification_id):
         return JsonResponse({'error': 'Notification not found'}, status=404)
 
 @login_required
+def mark_all_notifications_unread(request):
+    Notification.objects.filter(
+        user=request.user, is_read=True, is_dismissed=False
+    ).update(is_read=False)
+    return JsonResponse({'success': True})
+
+@login_required
 def delete_notification(request, notification_id):
     """Dismiss a notification (mark as dismissed and read)."""
     try:
@@ -51,6 +75,21 @@ def delete_notification(request, notification_id):
         n.is_dismissed = True
         n.is_read = True
         n.save(update_fields=['is_dismissed', 'is_read'])
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Notification not found'}, status=404)
+
+@login_required
+def mark_all_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False, is_dismissed=False).update(is_read=True)
+    return JsonResponse({'success': True})
+
+@login_required
+def mark_notification_unread(request, notification_id):
+    try:
+        n = Notification.objects.get(id=notification_id, user=request.user)
+        n.is_read = False
+        n.save(update_fields=['is_read'])
         return JsonResponse({'success': True})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found'}, status=404)

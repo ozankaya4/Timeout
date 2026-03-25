@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentUnread = parseInt(_nav?.dataset.unreadCount) || 0;
 
+  
+  badge.textContent = currentUnread > 99 ? "99+" : currentUnread;
+
   /**
    * Update notification badge display with the current unread count.
    */
