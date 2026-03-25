@@ -13,14 +13,11 @@ class Like(models.Model):
     a notification is sent to the post author if the liker is not the author themselves.
     """
 
-    # The user who liked the post
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='likes',
     )
-
-    # The post that was liked
     post = models.ForeignKey(
         'Post',
         on_delete=models.CASCADE,

@@ -11,13 +11,10 @@ class Conversation(models.Model):
     creation and last update. The most recently updated conversations are ordered first.
     """
 
-    # The users participating in the conversation
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name='conversations',
     )
-
-    # Timestamps for conversation creation and updates
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

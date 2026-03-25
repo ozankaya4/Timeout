@@ -9,21 +9,17 @@ from django.db.models.signals import post_save
 class Comment(models.Model):
     """
     Model representing comments on posts, including threaded replies.
-    Each comment is linked to a post and an author.
-
+    
     The model stores the content of the comment and the timestamps
     for creation and updates. It also has helper methods for 
     counting replies, and checking deletion permissions.
     """
 
-    # The post this comment belongs to
     post = models.ForeignKey(
         'Post',
         on_delete=models.CASCADE,
         related_name='comments',
     )
-
-    # The user who wrote the comment
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -36,11 +32,7 @@ class Comment(models.Model):
         blank=True,
         related_name='replies',
     )
-
-    # The content of the comment, with a 1000 character limit
     content = models.TextField(max_length=1000)
-
-    # Timestamps for creation and last update
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -84,7 +76,7 @@ def create_comment_notification(sender, instance, created, **kwargs):
     - Only creates a notification when a new comment is created 
     - Notifies the post author if someone else comments on their post
     """
-    
+
     if created:
         # Notify post author if not self
         if instance.post.author != instance.author:

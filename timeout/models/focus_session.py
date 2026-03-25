@@ -10,14 +10,11 @@ class FocusSession(models.Model):
     and the total duration of the session.
     """
 
-    # The user who had the focus session
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='focus_sessions',
     )
-
-    # Timestamps
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField()
     duration_seconds = models.PositiveIntegerField()

@@ -50,8 +50,6 @@ class Event(models.Model):
         WEEKLY = 'weekly', 'Weekly'
         MONTHLY = 'monthly', 'Monthly'
 
-
-    # The user who created the event (optional for global events)
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -59,8 +57,6 @@ class Event(models.Model):
         null=True,
         blank=True
     )
-
-    # Event details
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000, blank=True)
     event_type = models.CharField(
@@ -68,25 +64,21 @@ class Event(models.Model):
         choices=EventType.choices,
         default=EventType.OTHER
     )
-
     status = models.CharField(
         max_length=20,
         choices=EventStatus.choices,
         default=EventStatus.UPCOMING
     )
-
     recurrence = models.CharField(
         max_length=10,
         choices=EventRecurrence.choices,
         blank=True,
         default=EventRecurrence.NONE,
     )
-
     allow_conflict = models.BooleanField(
         default=False,
         help_text='if true, event overlaps with others'
     )
-
     visibility = models.CharField(
         max_length=10,
         choices=Visibility.choices,
@@ -102,7 +94,6 @@ class Event(models.Model):
     is_global = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False)
 
-    # Links study sessions to deadlines
     linked_study_sessions = models.ManyToManyField(
         "self",
         blank=True,
@@ -114,13 +105,13 @@ class Event(models.Model):
 
     class Meta:
          """
-        Metadata for the Event model:
-        - Orders events by most recent start time first
-        - Adds indexes to optimise queries by creator and start time
-        """
+         Metadata for the Event model:
+         - Orders events by most recent start time first
+         - Adds indexes to optimise queries by creator and start time
+         """
 
-        ordering = ['-start_datetime']
-        indexes = [
+         ordering = ['-start_datetime']
+         indexes = [
             models.Index(
                 fields=['creator', '-start_datetime'],
                 name='timeout_eve_creator_idx'
@@ -129,7 +120,7 @@ class Event(models.Model):
                 fields=['start_datetime'],
                 name='timeout_eve_start_idx'
             ),
-        ]
+         ]
 
     def clean(self):
         """

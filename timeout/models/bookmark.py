@@ -13,21 +13,16 @@ class Bookmark(models.Model):
     a notification is sent to the post author if the bookmarker is not the author themselves.
     """
 
-    # The user who created the bookmark
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='bookmarks',
     )
-
-    # The post that is bookmarked
     post = models.ForeignKey(
         'Post',
         on_delete=models.CASCADE,
         related_name='bookmarks',
     )
-
-    # Timestamp of when the bookmark was created
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

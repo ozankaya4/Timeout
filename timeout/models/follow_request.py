@@ -10,14 +10,11 @@ class FollowRequest(models.Model):
     recipient can accept or delete the request. 
     """
 
-    # The user who sent the follow request
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='sent_follow_requests',
     )
-
-    # The user who received the follow request
     to_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
