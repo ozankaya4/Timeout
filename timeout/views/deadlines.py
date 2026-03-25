@@ -40,7 +40,6 @@ def _build_deadline_context(request, deadlines, status_filter, sort_order, event
         'unread_notifications': request.user.notifications.filter(is_read=False),
     }
 
-
 @login_required
 def deadline_list_view(request):
     """Renders the deadline list view showing deadlines with filter and sort options."""
@@ -63,7 +62,6 @@ def build_context(request, deadlines, status_filter, sort_order, event_type):
         'overdue_count': sum(1 for d in deadlines if d['urgency_status'] == 'overdue'),
         'urgent_count': sum(1 for d in deadlines if d['urgency_status'] == 'urgent'),
         'completed_count': sum(1 for d in deadlines if d['urgency_status'] == 'completed'),
-        # Pass current filter/sort back so the template can highlight active controls
         'status_filter': status_filter,
         'sort_order': sort_order,
         'event_type': event_type,

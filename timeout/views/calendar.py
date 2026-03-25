@@ -2,7 +2,7 @@ import calendar as cal
 import json
 import os
 from datetime import timedelta, date, datetime, time
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
@@ -42,7 +42,7 @@ def calendar_view(request):
 
 def calendar_context(year, month, nav, weeks):
     """Helper function to build the context dict for the calendar template"""
-    prev_month, prev_year, next_month, next_year = nav # unpack data from nav 
+    prev_month, prev_year, next_month, next_year = nav # unpack data from nav
     return {
         "weeks": weeks,
         "month": month,
@@ -88,7 +88,6 @@ def get_months(year, month):
     return prev_month, prev_year, next_month, next_year
 
 
-
 def visible_events(user, last_visible):
     """Helper function to fetch events for the visible date range, including recurring events"""
     last_day = timezone.make_aware(datetime.combine(last_visible, time.max)) # gets the last visible dayas a datetime for filters
@@ -96,7 +95,7 @@ def visible_events(user, last_visible):
         Q(creator=user) | Q(is_global=True),
         start_datetime__lte=last_day,
     ).order_by("start_datetime")
-    return events_qs # return the queryset 
+    return events_qs # return the queryset
 
 def index_events(events_qs, last_visible):
     """Helper function to index events by date
@@ -109,7 +108,7 @@ def index_events(events_qs, last_visible):
 
         if ev.recurrence != 'none':
             create_recurrence(ev, last_visible, now_date, events_by_date) # if the event is recurring, expand it into future occurrences within the visible range
-        
+
     return events_by_date # return the indexed events
 
 def create_dict(ev, start_dt, end_dt, now_date):
@@ -131,18 +130,17 @@ def create_dict(ev, start_dt, end_dt, now_date):
         'status_display': event_status(start_dt, end_dt, now_date),
     }
 
-
 # to-do add recurrence helpers
 # ask expand_recurrence and advance_date
 def create_recurrence(ev, last_visible, now_date, events_by_date):
     """Generate pseudo-event dicts for recurring occurrences within the visible range."""
     current_date = ev.start_datetime.date()
- 
+
     while True:
         current_date = advance_date(current_date, ev.recurrence)
         if current_date is None or current_date > last_visible:
             break
- 
+
         start_dt = timezone.make_aware(
             datetime.combine(current_date, ev.start_datetime.time()),
         )
@@ -151,8 +149,8 @@ def create_recurrence(ev, last_visible, now_date, events_by_date):
         )
         data = create_dict(ev, start_dt, end_dt, now_date)
         events_by_date.setdefault(current_date, []).append(data)
- 
- 
+
+
 def advance_date(current_date, recurrence):
     """Return the next occurrence date. Returns None if the recurrence is not recognized."""
     if recurrence == 'daily':
@@ -183,7 +181,7 @@ def build_day(day, month, today, events_by_date):
         "day_num": day.day,
         "in_month": day.month == month,
         "is_today": day == today,
-        "events": events_by_date.get(day, []), # get events for this day 
+        "events": events_by_date.get(day, []), # get events for this day
     }
 
 
@@ -205,7 +203,8 @@ def get_data(request, events_by_date=None):
             'duration_minutes': int((e.end_datetime - e.start_datetime).total_seconds() / 60),
             'reason': 'missed',
         }
-        for e in missed_sessions]
+        for e in missed_sessions
+    ]
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
     today_events = (events_by_date or {}).get(now.date(), [])
     return {
@@ -222,7 +221,7 @@ def event_status(start_dt, end_dt, now):
         return 'Ongoing'
     elif end_dt < now:
         return 'Past'
-    else:        
+    else:
         return 'Upcoming'
 
 
@@ -258,8 +257,7 @@ def apply_session_schedule(request):
 @login_required
 @require_POST
 def subscribe_event(request, pk):
-    """Subscribe to a public event by copying it to the user's calendar."""
-    from django.shortcuts import get_object_or_404
+    """Subscribe to a public event by creating a private copy for the user."""
     original = get_object_or_404(Event, pk=pk, visibility=Event.Visibility.PUBLIC)
     if original.creator == request.user:
         return JsonResponse({'success': False, 'error': 'You own this event.'}, status=400)
@@ -342,6 +340,3 @@ def event_create(request):
         messages.error(request, '; '.join(e.messages))
 
     return redirect("calendar")
-
-
-    

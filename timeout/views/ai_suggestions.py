@@ -6,18 +6,19 @@ from django.core.cache import cache
 
 
 def get_ai_suggestions(user, events_today):
-    """Generate AI suggestions for today's events. Returns a list of strings."""
-    if not getattr(settings, 'OPENAI_API_KEY', ''):
-        return []
+    """
+    Generate AI suggestions for today's events.
+    `user` is a Django User instance.
+    `events_today` is a list of Event model instances.
+    Returns a list of strings.
+    """
 
     cache_key = f"ai_suggestions_{user.id}_{datetime.now().date()}"
     cached = cache.get(cache_key)
     if cached:
         return cached
-
     if not events_today:
         return ["No events today. You have free time!"]
-
     try:
         events_list = _format_events_for_prompt(events_today)
         suggestions = _call_openai_suggestions(events_list)
@@ -42,14 +43,18 @@ def _format_events_for_prompt(events_today):
 
 
 def _call_openai_suggestions(events_list):
-    """Call OpenAI to generate productivity suggestions from event list."""
+    """Call OpenAI API to generate productivity suggestions for the given events."""
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+    # Build prompt safely
     prompt = (
         "You are a helpful calendar assistant. The user's events today are:\n"
         + "\n".join(events_list) +
         "\n\nSuggest 2–3 actionable tips to optimize their day, like when to take breaks, "
         "add focus sessions, or avoid overload. Return a JSON list of strings ONLY."
     )
+
+    # Call OpenAI
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -59,12 +64,17 @@ def _call_openai_suggestions(events_list):
         temperature=0.7,
         max_tokens=200,
     )
+
     raw = response.choices[0].message.content.strip()
+
+    # Remove markdown fences if present
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):
             raw = raw[4:]
+
     suggestions = json.loads(raw)
     if not isinstance(suggestions, list):
         suggestions = [str(suggestions)]
+
     return suggestions

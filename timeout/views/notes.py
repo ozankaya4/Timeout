@@ -161,7 +161,6 @@ def note_autosave(request, note_id):
         note.title = title
     note.content = content
 
-    # Persist page mode if sent
     page_mode = request.POST.get('page_mode', '').strip()
     if page_mode in ('pageless', 'paged'):
         note.page_mode = page_mode
@@ -169,7 +168,6 @@ def note_autosave(request, note_id):
 
     note.save(update_fields=update_fields)
 
-    # Track daily edit (once per note per session via flag from client)
     if request.POST.get('count_edit') == '1':
         NoteService.log_note_edited(request.user)
 
