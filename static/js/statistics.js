@@ -33,6 +33,17 @@ function makeDoughnutChart(id, labels, data) {
   });
 }
 
+function _chartScales() {
+  return {
+    x: { grid: { display: false }, ticks: { color: tickColor(), font: { size: 12 } } },
+    y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor(), font: { size: 12 } }, grid: { color: gridColor() } }
+  };
+}
+
+function _baseChartOpts() {
+  return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: _chartScales() };
+}
+
 function makeBarChart(id, labels, data) {
   new Chart(document.getElementById(id), {
     type: 'bar',
@@ -46,44 +57,29 @@ function makeBarChart(id, labels, data) {
         borderRadius: 8,
       }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: tickColor(), font: { size: 12 } } },
-        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor(), font: { size: 12 } }, grid: { color: gridColor() } }
-      }
-    }
+    options: _baseChartOpts(),
   });
+}
+
+function _lineDataset(data) {
+  return {
+    data,
+    borderColor: ACCENT,
+    backgroundColor: ACCENT_SOFT,
+    borderWidth: 3,
+    pointBackgroundColor: ACCENT,
+    pointRadius: 5,
+    pointHoverRadius: 7,
+    fill: true,
+    tension: 0.4,
+  };
 }
 
 function makeLineChart(id, labels, data) {
   new Chart(document.getElementById(id), {
     type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: ACCENT,
-        backgroundColor: ACCENT_SOFT,
-        borderWidth: 3,
-        pointBackgroundColor: ACCENT,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        fill: true,
-        tension: 0.4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: tickColor(), font: { size: 12 } } },
-        y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor(), font: { size: 12 } }, grid: { color: gridColor() } }
-      }
-    }
+    data: { labels, datasets: [_lineDataset(data)] },
+    options: _baseChartOpts(),
   });
 }
 

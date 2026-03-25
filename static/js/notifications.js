@@ -18,106 +18,91 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    notifList.addEventListener("click", async (e) => {
+    function _postRequest(url) {
+        return fetch(url, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/json" }
+        });
+    }
 
-        const notifItem = e.target.closest(".notification-item");
-        if (!notifItem) return;
-
-        const notificationId = notifItem.id.replace("notif-", "");
-        const eventId = notifItem.dataset.eventId;
-
-        if (e.target.classList.contains("mark-read-btn")) {
-            try {
-                const res = await fetch(`/notifications/read/${notificationId}/`, {
-                    method: "POST",
-                    headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/json" }
-                });
-                if (res.ok) {
-                    notifItem.classList.remove("notification-unread");
-                    notifItem.classList.add("notification-read");
-                    e.target.remove();
-                    decreaseUnread();
-                }
-            } catch (err) {
-                console.error("Read error:", err);
-            }
-            return;
+    function _hideIfEmpty() {
+        if (!document.querySelectorAll(".notification-item").length) {
+            document.getElementById("no-notifications").style.display = "block";
         }
+    }
 
-        if (e.target.classList.contains("accept-follow-btn") || e.target.classList.contains("reject-follow-btn")) {
-            const username = e.target.dataset.username;
-            const action = e.target.classList.contains("accept-follow-btn") ? "accept" : "reject";
-            try {
-                await fetch(`/social/user/${username}/follow/${action}/`, {
-                    method: "POST",
-                    headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/json" }
-                });
+    async function _handleMarkRead(notifItem, notificationId, target) {
+        try {
+            var res = await _postRequest("/notifications/read/" + notificationId + "/");
+            if (res.ok) {
+                notifItem.classList.remove("notification-unread");
+                notifItem.classList.add("notification-read");
+                target.remove();
+                decreaseUnread();
+            }
+        } catch (err) { console.error("Read error:", err); }
+    }
+
+    async function _handleFollowAction(notifItem, target) {
+        var username = target.dataset.username;
+        var action = target.classList.contains("accept-follow-btn") ? "accept" : "reject";
+        try {
+            await _postRequest("/social/user/" + username + "/follow/" + action + "/");
+            if (notifItem.classList.contains("notification-unread")) decreaseUnread();
+            notifItem.remove();
+            _hideIfEmpty();
+        } catch (err) { console.error("Follow request error:", err); }
+    }
+
+    async function _handleDelete(notifItem, notificationId) {
+        try {
+            var res = await _postRequest("/notifications/delete/" + notificationId + "/");
+            if (res.ok) {
                 if (notifItem.classList.contains("notification-unread")) decreaseUnread();
                 notifItem.remove();
-                if (!document.querySelectorAll(".notification-item").length) {
-                    document.getElementById("no-notifications").style.display = "block";
-                }
-            } catch (err) {
-                console.error("Follow request error:", err);
+                _hideIfEmpty();
             }
-            return;
-        }
+        } catch (err) { console.error("Delete error:", err); }
+    }
 
-        if (e.target.classList.contains("delete-notif-btn")) {
-            try {
-                const res = await fetch(`/notifications/delete/${notificationId}/`, {
-                    method: "POST",
-                    headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/json" }
-                });
-                if (res.ok) {
-                    if (notifItem.classList.contains("notification-unread")) decreaseUnread();
-                    notifItem.remove();
-                    if (!document.querySelectorAll(".notification-item").length) {
-                        document.getElementById("no-notifications").style.display = "block";
-                    }
-                }
-            } catch (err) {
-                console.error("Delete error:", err);
-            }
-            return;
-        }
-
+    async function _handleAutoRead(notifItem, notificationId) {
         try {
             if (notifItem.classList.contains("notification-unread")) {
-                const res = await fetch(`/notifications/read/${notificationId}/`, {
-                    method: "POST",
-                    headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/json" }
-                });
+                var res = await _postRequest("/notifications/read/" + notificationId + "/");
                 if (res.ok) {
                     notifItem.classList.remove("notification-unread");
                     notifItem.classList.add("notification-read");
                     decreaseUnread();
-                    const readBtn = notifItem.querySelector(".mark-read-btn");
+                    var readBtn = notifItem.querySelector(".mark-read-btn");
                     if (readBtn) readBtn.remove();
                 }
             }
-        } catch (err) {
-            console.error("Auto read error:", err);
-        }
+        } catch (err) { console.error("Auto read error:", err); }
+    }
 
+    function _navigateNotification(notifItem) {
         if (notifItem.dataset.type === "message") {
-            const convoId = notifItem.dataset.convoId;
-            if (convoId && convoId !== "None") {
-                window.location.href = `/messaging/conversation/${convoId}/`;
-            }
+            var convoId = notifItem.dataset.convoId;
+            if (convoId && convoId !== "None") window.location.href = "/messaging/conversation/" + convoId + "/";
             return;
         }
+        var postId = notifItem.dataset.postId;
+        if (postId && postId !== "None") { window.location.href = "/social/feed/?highlight_post=" + postId; return; }
+        var eventId = notifItem.dataset.eventId;
+        if (eventId && eventId !== "None") window.location.href = "/calendar/?open_event=" + eventId;
+    }
 
-        const postId = notifItem.dataset.postId;
-        if (postId && postId !== "None") {
-            window.location.href = `/social/feed/?highlight_post=${postId}`;
-            return;
-        }
+    notifList.addEventListener("click", async (e) => {
+        var notifItem = e.target.closest(".notification-item");
+        if (!notifItem) return;
+        var notificationId = notifItem.id.replace("notif-", "");
 
-        if (eventId && eventId !== "None") {
-            window.location.href = `/calendar/?open_event=${eventId}`;
-        }
+        if (e.target.classList.contains("mark-read-btn")) { await _handleMarkRead(notifItem, notificationId, e.target); return; }
+        if (e.target.classList.contains("accept-follow-btn") || e.target.classList.contains("reject-follow-btn")) { await _handleFollowAction(notifItem, e.target); return; }
+        if (e.target.classList.contains("delete-notif-btn")) { await _handleDelete(notifItem, notificationId); return; }
 
+        await _handleAutoRead(notifItem, notificationId);
+        _navigateNotification(notifItem);
     });
 
 });

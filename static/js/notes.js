@@ -202,10 +202,7 @@ var DailyGoals = (function() {
 /* Study Heatmap */
 /* There's 2nd degree nesting for this function but I couldn't find any other way to do it to be honest */
 var Heatmap = (function() {
-  function render(days) {
-    var grid = document.getElementById('heatmapGrid');
-    if (!grid || !days) return;
-    grid.innerHTML = '';
+  function _groupIntoWeeks(days) {
     var weeks = [];
     var week = [];
     for (var i = 0; i < days.length; i++) {
@@ -213,33 +210,41 @@ var Heatmap = (function() {
       var dow = d.getDay();
       var mdow = dow === 0 ? 6 : dow - 1;
       if (i === 0 && mdow > 0) {
-        for (var p = 0; p < mdow; p++) week.push(null);}
-      week.push(days[i]);
-      if (mdow === 6) {
-        weeks.push(week);
-        week = [];
+        for (var p = 0; p < mdow; p++) week.push(null);
       }
+      week.push(days[i]);
+      if (mdow === 6) { weeks.push(week); week = []; }
     }
     if (week.length > 0) weeks.push(week);
+    return weeks;
+  }
 
-    for (var w = 0; w < weeks.length; w++) {
-      var col = document.createElement('div');
-      col.className = 'nt-heatmap-col';
-      for (var r = 0; r < 7; r++) {
-        var cell = document.createElement('span');
-        cell.className = 'nt-heatmap-cell';
-        var day = weeks[w][r];
-        if (day) {
-          cell.setAttribute('data-level', day.level);
-          cell.title = day.date + ': ' + day.pomodoros + ' pomodoros, ' + day.notes + ' notes, ' + day.focus + 'm focus';
-        } else {
-          cell.setAttribute('data-level', '-1');
-          cell.style.visibility = 'hidden';
-        }
-        col.appendChild(cell);
-      }
-      grid.appendChild(col);
+  function _createCell(day) {
+    var cell = document.createElement('span');
+    cell.className = 'nt-heatmap-cell';
+    if (day) {
+      cell.setAttribute('data-level', day.level);
+      cell.title = day.date + ': ' + day.pomodoros + ' pomodoros, ' + day.notes + ' notes, ' + day.focus + 'm focus';
+    } else {
+      cell.setAttribute('data-level', '-1');
+      cell.style.visibility = 'hidden';
     }
+    return cell;
+  }
+
+  function _renderWeekColumn(weekDays) {
+    var col = document.createElement('div');
+    col.className = 'nt-heatmap-col';
+    for (var r = 0; r < 7; r++) col.appendChild(_createCell(weekDays[r]));
+    return col;
+  }
+
+  function render(days) {
+    var grid = document.getElementById('heatmapGrid');
+    if (!grid || !days) return;
+    grid.innerHTML = '';
+    var weeks = _groupIntoWeeks(days);
+    for (var w = 0; w < weeks.length; w++) grid.appendChild(_renderWeekColumn(weeks[w]));
   }
 
   function load() {
@@ -251,11 +256,7 @@ var Heatmap = (function() {
       .catch(function() {});
   }
 
-  function init() {
-    load();
-  }
-
-  return { init: init };
+  return { init: load };
 })();
 
 
@@ -311,31 +312,37 @@ var Pomodoro = (function() {
     return sel ? sel.value : '';
   }
 
-  function render() {
-    var mins = Math.floor(state.remaining / 60);
-    var secs = state.remaining % 60;
-    var timeEl = document.getElementById('pomoTime');
+  function _renderRing() {
     var ringEl = document.getElementById('pomoRing');
-    var phaseEl = document.getElementById('pomoPhase');
-    var countEl = document.getElementById('pomodoroCount');
+    if (!ringEl) return;
+    var progress = 1 - (state.remaining / state.total);
+    ringEl.setAttribute('stroke-dashoffset', CIRCUMFERENCE * (1 - progress));
+    ringEl.style.stroke = state.phase === 'work' ? '#5B73E8' : '#4ECDC4';
+  }
+
+  function _renderButtons() {
     var startBtn = document.getElementById('pomoStartBtn');
     var pauseBtn = document.getElementById('pomoPauseBtn');
-
-    if (timeEl) timeEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-
-    if (ringEl) {
-      var progress = 1 - (state.remaining / state.total);
-      ringEl.setAttribute('stroke-dashoffset', CIRCUMFERENCE * (1 - progress));
-      ringEl.style.stroke = state.phase === 'work' ? '#5B73E8' : '#4ECDC4';
-    }
-
-    if (phaseEl) phaseEl.textContent = getPhaseLabel(state.phase);
-    if (countEl) countEl.textContent = state.todayCount;
-
     if (startBtn && pauseBtn) {
       startBtn.style.display = state.running ? 'none' : '';
       pauseBtn.style.display = state.running ? '' : 'none';
     }
+  }
+
+  function render() {
+    var mins = Math.floor(state.remaining / 60);
+    var secs = state.remaining % 60;
+    var timeEl = document.getElementById('pomoTime');
+    if (timeEl) timeEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+    _renderRing();
+
+    var phaseEl = document.getElementById('pomoPhase');
+    var countEl = document.getElementById('pomodoroCount');
+    if (phaseEl) phaseEl.textContent = getPhaseLabel(state.phase);
+    if (countEl) countEl.textContent = state.todayCount;
+
+    _renderButtons();
 
     var dots = document.querySelectorAll('#pomoDots .nt-pomo-dot');
     dots.forEach(function(dot, i) {
@@ -353,48 +360,44 @@ var Pomodoro = (function() {
     render();
   }
 
-  function onPhaseEnd() {
-    clearInterval(state.intervalId);
-    state.running = false;
-    playAlarm();
+  function _awardWorkXP() {
+    if (!cfg.pomodoroCompleteUrl) return;
+    var body = new FormData();
+    var noteId = getLinkedNoteId();
+    if (noteId) body.append('note_id', noteId);
 
+    fetch(cfg.pomodoroCompleteUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken() },
+      body: body,
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      updateStatsUI(data);
+      showXpToast(25);
+      if (data.daily_progress) DailyGoals.render(data.daily_progress);
+    })
+    .catch(function() {});
+  }
+
+  function _advancePhase() {
     if (state.phase === 'work') {
       state.session++;
       state.todayCount++;
       saveState();
-
-      // Award XP via AJAX, include linked note
-      if (cfg.pomodoroCompleteUrl) {
-        var body = new FormData();
-        var noteId = getLinkedNoteId();
-        if (noteId) body.append('note_id', noteId);
-
-        fetch(cfg.pomodoroCompleteUrl, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCsrfToken() },
-          body: body,
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          updateStatsUI(data);
-          showXpToast(25);
-          if (data.daily_progress) {
-            DailyGoals.render(data.daily_progress);
-          }
-        })
-        .catch(function() {});
-      }
-
-      if (state.session >= 4) {
-        state.phase = 'long_break';
-        state.session = 0;
-      } else {
-        state.phase = 'short_break';
-      }
+      _awardWorkXP();
+      state.phase = state.session >= 4 ? 'long_break' : 'short_break';
+      if (state.session >= 4) state.session = 0;
     } else {
       state.phase = 'work';
     }
+  }
 
+  function onPhaseEnd() {
+    clearInterval(state.intervalId);
+    state.running = false;
+    playAlarm();
+    _advancePhase();
     state.total = getDuration(state.phase);
     state.remaining = state.total;
     render();

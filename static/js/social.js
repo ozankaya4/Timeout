@@ -18,31 +18,7 @@ function getCookie(name) {
 
 const csrftoken = getCookie('csrftoken');
 
-function initEventDropdown() {
-    const nativeSelect = document.getElementById('id_event');
-    if (!nativeSelect) return;
-
-    nativeSelect.style.display = 'none';
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'custom-event-select';
-
-    const trigger = document.createElement('div');
-    trigger.className = 'custom-event-trigger';
-    trigger.textContent = nativeSelect.options[nativeSelect.selectedIndex]?.text || 'No event';
-
-    const dropdown = document.createElement('div');
-    dropdown.className = 'custom-event-dropdown';
-    document.body.appendChild(dropdown); 
-
-    function positionDropdown() {
-        const rect = trigger.getBoundingClientRect();
-        dropdown.style.position = 'fixed';
-        dropdown.style.top = (rect.bottom + 4) + 'px';
-        dropdown.style.left = rect.left + 'px';
-        dropdown.style.width = rect.width + 'px';
-    }
-
+function _createDropdownOptions(nativeSelect, dropdown, trigger) {
     Array.from(nativeSelect.options).forEach((opt) => {
         const item = document.createElement('div');
         item.className = 'custom-event-option' + (opt.selected ? ' selected' : '');
@@ -60,11 +36,13 @@ function initEventDropdown() {
 
         dropdown.appendChild(item);
     });
+}
 
+function _attachDropdownListeners(trigger, dropdown) {
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = dropdown.classList.contains('open');
-        if (!isOpen) positionDropdown();
+        if (!isOpen) _positionEventDropdown(trigger, dropdown);
         dropdown.classList.toggle('open', !isOpen);
         trigger.classList.toggle('open', !isOpen);
     });
@@ -75,8 +53,37 @@ function initEventDropdown() {
     });
 
     window.addEventListener('scroll', () => {
-        if (dropdown.classList.contains('open')) positionDropdown();
+        if (dropdown.classList.contains('open')) _positionEventDropdown(trigger, dropdown);
     }, { passive: true });
+}
+
+function _positionEventDropdown(trigger, dropdown) {
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = (rect.bottom + 4) + 'px';
+    dropdown.style.left = rect.left + 'px';
+    dropdown.style.width = rect.width + 'px';
+}
+
+function initEventDropdown() {
+    const nativeSelect = document.getElementById('id_event');
+    if (!nativeSelect) return;
+
+    nativeSelect.style.display = 'none';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-event-select';
+
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-event-trigger';
+    trigger.textContent = nativeSelect.options[nativeSelect.selectedIndex]?.text || 'No event';
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'custom-event-dropdown';
+    document.body.appendChild(dropdown);
+
+    _createDropdownOptions(nativeSelect, dropdown, trigger);
+    _attachDropdownListeners(trigger, dropdown);
 
     wrapper.appendChild(trigger);
     nativeSelect.insertAdjacentElement('afterend', wrapper);
@@ -98,177 +105,158 @@ function applyFollowState(btn, following, requested) {
     btn.dataset.requested = requested;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// --- User Search ---
+
+function _positionSearchDropdown(input, results) {
+    const rect = input.getBoundingClientRect();
+    results.style.position = 'fixed';
+    results.style.top = (rect.bottom + 4) + 'px';
+    results.style.left = rect.left + 'px';
+    results.style.width = rect.width + 'px';
+    results.style.zIndex = '9999';
+}
+
+function _renderSearchResult(u) {
+    const avatar = u.profile_picture
+        ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
+        : `<div class="search-avatar search-avatar--initial">${u.username[0].toUpperCase()}</div>`;
+    return `<a href="${u.profile_url}" class="search-result-row">
+        ${avatar}
+        <div class="search-result-info">
+            <span class="search-result-name">${u.full_name}</span>
+            <span class="search-result-username">@${u.username}</span>
+        </div>
+        <span class="status-dot status-${u.status}"></span>
+    </a>`;
+}
+
+function _handleSearchResults(data, results, input) {
+    results.innerHTML = '';
+    if (!data.users.length) {
+        results.innerHTML = '<div class="search-no-results">No users found</div>';
+    } else {
+        data.users.forEach(u => { results.innerHTML += _renderSearchResult(u); });
+    }
+    _positionSearchDropdown(input, results);
+    results.hidden = false;
+}
+
+function initUserSearch() {
     const input = document.getElementById('userSearchInput');
     const results = document.getElementById('userSearchResults');
     if (!input) return;
 
     document.body.appendChild(results);
-
-    function positionDropdown() {
-        const rect = input.getBoundingClientRect();
-        results.style.position = 'fixed';
-        results.style.top = (rect.bottom + 4) + 'px';
-        results.style.left = rect.left + 'px';
-        results.style.width = rect.width + 'px';
-        results.style.zIndex = '9999';
-    }
-
     let debounceTimer;
 
     input.addEventListener('input', function() {
         clearTimeout(debounceTimer);
         const query = this.value.trim();
-
-        if (!query) {
-            results.hidden = true;
-            results.innerHTML = '';
-            return;
-        }
+        if (!query) { results.hidden = true; results.innerHTML = ''; return; }
 
         debounceTimer = setTimeout(function() {
             fetch(`/social/search/?q=${encodeURIComponent(query)}`)
                 .then(r => r.json())
-                .then(data => {
-                    results.innerHTML = '';
-                    if (!data.users.length) {
-                        results.innerHTML = '<div class="search-no-results">No users found</div>';
-                    } else {
-                        data.users.forEach(u => {
-                            const avatar = u.profile_picture
-                                ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
-                                : `<div class="search-avatar search-avatar--initial">${u.username[0].toUpperCase()}</div>`;
-                            results.innerHTML += `
-                                <a href="${u.profile_url}" class="search-result-row">
-                                    ${avatar}
-                                    <div class="search-result-info">
-                                        <span class="search-result-name">${u.full_name}</span>
-                                        <span class="search-result-username">@${u.username}</span>
-                                    </div>
-                                    <span class="status-dot status-${u.status}"></span>
-                                </a>`;
-                        });
-                    }
-                    positionDropdown();
-                    results.hidden = false;
-                })
+                .then(data => _handleSearchResults(data, results, input))
                 .catch(() => { results.hidden = true; });
         }, 300);
     });
 
     document.addEventListener('click', function(e) {
-        if (!input.contains(e.target) && !results.contains(e.target)) {
-            results.hidden = true;
-        }
+        if (!input.contains(e.target) && !results.contains(e.target)) results.hidden = true;
     });
 
     input.addEventListener('focus', function() {
-        if (results.innerHTML) {
-            positionDropdown();
-            results.hidden = false;
-        }
+        if (results.innerHTML) { _positionSearchDropdown(input, results); results.hidden = false; }
     });
 
-    window.addEventListener('scroll', positionDropdown, { passive: true });
-    window.addEventListener('resize', positionDropdown, { passive: true });
-});
+    window.addEventListener('scroll', () => _positionSearchDropdown(input, results), { passive: true });
+    window.addEventListener('resize', () => _positionSearchDropdown(input, results), { passive: true });
+}
 
-document.addEventListener('DOMContentLoaded', function () {
+// --- Messaging ---
+
+function _appendMessage(container, msg) {
+    const empty = container.querySelector('.convo-empty');
+    if (empty) empty.remove();
+
+    const row = document.createElement('div');
+    row.className = `msg-bubble-row ${msg.is_me ? 'msg-mine' : 'msg-theirs'}`;
+    row.dataset.messageId = msg.id;
+    row.innerHTML = `
+        <div class="msg-bubble">
+            <div class="msg-text">${msg.content}</div>
+            <div class="msg-time">${msg.created_at}</div>
+        </div>`;
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
+}
+
+function _sendMessage(config, input, sendBtn, container, state) {
+    const content = input.value.trim();
+    if (!content) return;
+    sendBtn.disabled = true;
+
+    fetch(config.sendUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': config.csrfToken },
+        body: new URLSearchParams({ content }),
+    })
+    .then(r => r.json())
+    .then(msg => {
+        if (msg.error) { console.error(msg.error); return; }
+        _appendMessage(container, msg);
+        state.lastMessageId = msg.id;
+        input.value = '';
+    })
+    .catch(err => console.error('Send error:', err))
+    .finally(() => { sendBtn.disabled = false; input.focus(); });
+}
+
+function _pollMessages(config, container, state) {
+    fetch(`${config.pollUrl}?last_id=${state.lastMessageId}`)
+        .then(r => r.json())
+        .then(data => {
+            data.messages.forEach(msg => {
+                _appendMessage(container, msg);
+                state.lastMessageId = msg.id;
+            });
+        })
+        .catch(err => console.error('Poll error:', err));
+}
+
+function initMessaging() {
     const config = window.CONVO_CONFIG;
     if (!config) return;
 
     const input     = document.getElementById('message-input');
     const sendBtn   = document.getElementById('send-btn');
     const container = document.getElementById('message-container');
-
-    let lastMessageId = 0;
+    const state = { lastMessageId: 0 };
 
     document.querySelectorAll('[data-message-id]').forEach(el => {
         const id = parseInt(el.dataset.messageId, 10);
-        if (id > lastMessageId) lastMessageId = id;
+        if (id > state.lastMessageId) state.lastMessageId = id;
     });
 
-    function scrollToBottom() {
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function appendMessage(msg) {
-        const empty = container.querySelector('.convo-empty');
-        if (empty) empty.remove();
-
-        const row = document.createElement('div');
-        row.className = `msg-bubble-row ${msg.is_me ? 'msg-mine' : 'msg-theirs'}`;
-        row.dataset.messageId = msg.id;
-        row.innerHTML = `
-            <div class="msg-bubble">
-                <div class="msg-text">${msg.content}</div>
-                <div class="msg-time">${msg.created_at}</div>
-            </div>`;
-        container.appendChild(row);
-        scrollToBottom();
-    }
-
-    function sendMessage() {
-        const content = input.value.trim();
-        if (!content) return;
-
-        sendBtn.disabled = true;
-
-        fetch(config.sendUrl, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': config.csrfToken },
-            body: new URLSearchParams({ content }),
-        })
-        .then(r => r.json())
-        .then(msg => {
-            if (msg.error) { console.error(msg.error); return; }
-            appendMessage(msg);
-            lastMessageId = msg.id;
-            input.value = '';
-        })
-        .catch(err => console.error('Send error:', err))
-        .finally(() => { sendBtn.disabled = false; input.focus(); });
-    }
-
-    function pollMessages() {
-        fetch(`${config.pollUrl}?last_id=${lastMessageId}`)
-            .then(r => r.json())
-            .then(data => {
-                data.messages.forEach(msg => {
-                    appendMessage(msg);
-                    lastMessageId = msg.id;
-                });
-            })
-            .catch(err => console.error('Poll error:', err));
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', () => _sendMessage(config, input, sendBtn, container, state));
     input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _sendMessage(config, input, sendBtn, container, state); }
     });
 
-    setInterval(pollMessages, 3000);
-    scrollToBottom();
-});
+    setInterval(() => _pollMessages(config, container, state), 3000);
+    container.scrollTop = container.scrollHeight;
+}
 
-document.addEventListener('DOMContentLoaded', function() {
+// --- Feed Interactions ---
 
-    initEventDropdown();
-
+function initLikeButtons() {
     document.querySelectorAll('.like-btn').forEach(button => {
         button.addEventListener('click', function() {
             const postId = this.dataset.postId;
-            const url = `/social/post/${postId}/like/`;
-
-            fetch(url, {
+            fetch(`/social/post/${postId}/like/`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
@@ -282,24 +270,24 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error:', error));
         });
     });
+}
 
+function _initBookmarkState(button) {
+    const icon = button.querySelector('.bookmark-icon');
+    if (button.dataset.bookmarked === 'true') {
+        icon.className = 'bi bi-bookmark-fill bookmark-icon';
+        button.classList.add('bookmarked');
+    }
+}
+
+function initBookmarkButtons() {
     document.querySelectorAll('.bookmark-btn').forEach(button => {
-        const icon = button.querySelector('.bookmark-icon');
-        if (button.dataset.bookmarked === 'true') {
-            icon.className = 'bi bi-bookmark-fill bookmark-icon';
-            button.classList.add('bookmarked');
-        }
-
+        _initBookmarkState(button);
         button.addEventListener('click', function() {
             const postId = this.dataset.postId;
-            const url = `/social/post/${postId}/bookmark/`;
-
-            fetch(url, {
+            fetch(`/social/post/${postId}/bookmark/`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
@@ -311,7 +299,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error:', error));
         });
     });
+}
 
+function initFollowButtons() {
     document.querySelectorAll('.follow-btn').forEach(button => {
         button.addEventListener('click', function() {
             const username = this.dataset.username;
@@ -324,16 +314,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error:', error));
         });
     });
+}
 
+function initSubscribeButtons() {
     document.querySelectorAll('.btn-subscribe-event').forEach(btn => {
         btn.addEventListener('click', function () {
             const url = this.dataset.url;
             fetch(url, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
             })
             .then(r => r.json())
             .then(data => {
@@ -349,33 +338,52 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Subscribe error:', err));
         });
     });
+}
 
-    // Highlight post from URL param
+function initHighlightPost() {
     const params = new URLSearchParams(window.location.search);
     const highlightId = params.get("highlight_post");
-    if (highlightId) {
-        const postEl = document.querySelector(`.post-card[data-post-id="${highlightId}"]`);
-        if (postEl) {
-            postEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            postEl.style.transition = "box-shadow 0.4s ease";
-            postEl.style.boxShadow = "0 0 0 3px #5b73e8";
-            setTimeout(() => postEl.style.boxShadow = "", 2500);
-        }
+    if (!highlightId) return;
+    const postEl = document.querySelector(`.post-card[data-post-id="${highlightId}"]`);
+    if (postEl) {
+        postEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        postEl.style.transition = "box-shadow 0.4s ease";
+        postEl.style.boxShadow = "0 0 0 3px #5b73e8";
+        setTimeout(() => postEl.style.boxShadow = "", 2500);
     }
+}
 
-    // FAB create-post modal
+function initFabModal() {
     const fab     = document.getElementById("fabBtn");
     const overlay = document.getElementById("cpOverlay");
     const cpClose = document.getElementById("cpClose");
-    if (fab && overlay && cpClose) {
-        fab.addEventListener("click", () => overlay.classList.add("open"));
-        cpClose.addEventListener("click", () => overlay.classList.remove("open"));
-        overlay.addEventListener("click", (e) => {
-            if (e.target === overlay) overlay.classList.remove("open");
-        });
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") overlay.classList.remove("open");
-        });
-    }
+    if (!fab || !overlay || !cpClose) return;
+    fab.addEventListener("click", () => overlay.classList.add("open"));
+    cpClose.addEventListener("click", () => overlay.classList.remove("open"));
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.classList.remove("open");
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") overlay.classList.remove("open");
+    });
+}
 
+// --- Init ---
+
+document.addEventListener('DOMContentLoaded', function() {
+    initUserSearch();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    initMessaging();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    initEventDropdown();
+    initLikeButtons();
+    initBookmarkButtons();
+    initFollowButtons();
+    initSubscribeButtons();
+    initHighlightPost();
+    initFabModal();
 });
