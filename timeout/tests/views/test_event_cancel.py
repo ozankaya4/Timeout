@@ -31,21 +31,21 @@ class EventCancelViewTests(TestCase):
         self.event = make_event(self.user, title='My Meeting', event_type=Event.EventType.MEETING)
         self.url = reverse('event_cancel', kwargs={'pk': self.event.pk})
 
-    # ── Authentication ────────────────────────────────────────
+    # Authentication 
 
     def test_login_required_redirects_anonymous(self):
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertIn('/login/', response['Location'])
 
-    # ── Method ───────────────────────────────────────────────
+    # Method
 
     def test_get_request_not_allowed(self):
         self.client.login(username='owner', password='pass123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 405)
 
-    # ── Ownership ─────────────────────────────────────────────
+    # Ownership
 
     def test_other_user_gets_404(self):
         self.client.login(username='other', password='pass123')
@@ -58,7 +58,7 @@ class EventCancelViewTests(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    # ── Cancellation ──────────────────────────────────────────
+    # Cancellation 
 
     def test_event_status_set_to_cancelled(self):
         self.client.login(username='owner', password='pass123')
@@ -80,7 +80,7 @@ class EventCancelViewTests(TestCase):
         self.assertEqual(self.event.title, original_title)
         self.assertEqual(self.event.event_type, original_type)
 
-    # ── Study session reschedule prompt ───────────────────────
+    # Study session reschedule prompt
 
     def test_cancel_study_session_adds_reschedule_prompt(self):
         event = make_event(
@@ -127,7 +127,7 @@ class EventCancelViewTests(TestCase):
         self.assertIn('Session 1', titles)
         self.assertIn('Session 2', titles)
 
-    # ── Event types ───────────────────────────────────────────
+    # Event types 
 
     def test_cancel_deadline_event(self):
         event = make_event(self.user, title='Assignment', event_type=Event.EventType.DEADLINE)

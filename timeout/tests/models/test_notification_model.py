@@ -33,14 +33,14 @@ class NotificationModelTest(TestCase):
             deadline=self.event,
         )
 
-    # ── __str__ ──────────────────────────────────────────────
+    #  __str__ 
 
     def test_str_representation(self):
         result = str(self.notification)
         self.assertIn(self.user.username, result)
         self.assertIn('Deadline', result)
 
-    # ── Default values ────────────────────────────────────────
+    #  Default values 
 
     def test_default_is_read_false(self):
         self.assertFalse(self.notification.is_read)
@@ -59,7 +59,7 @@ class NotificationModelTest(TestCase):
     def test_created_at_auto_set(self):
         self.assertIsNotNone(self.notification.created_at)
 
-    # ── Type choices ──────────────────────────────────────────
+    #  Type choices 
 
     def test_all_type_choices_exist(self):
         expected_types = [
@@ -81,7 +81,7 @@ class NotificationModelTest(TestCase):
             )
             self.assertEqual(n.type, type_value)
 
-    # ── FK: deadline (Event) ──────────────────────────────────
+    #  FK: deadline (Event) 
 
     def test_deadline_fk_set(self):
         self.assertEqual(self.notification.deadline, self.event)
@@ -100,17 +100,17 @@ class NotificationModelTest(TestCase):
         )
         self.assertIsNone(n.deadline)
 
-    # ── FK: conversation ──────────────────────────────────────
+    #  FK: conversation 
 
     def test_conversation_nullable(self):
         self.assertIsNone(self.notification.conversation)
 
-    # ── FK: post ─────────────────────────────────────────────
+    #  FK: post ─
 
     def test_post_nullable(self):
         self.assertIsNone(self.notification.post)
 
-    # ── is_read / is_dismissed ────────────────────────────────
+    #  is_read / is_dismissed 
 
     def test_mark_as_read(self):
         self.notification.is_read = True
@@ -124,7 +124,7 @@ class NotificationModelTest(TestCase):
         self.notification.refresh_from_db()
         self.assertTrue(self.notification.is_dismissed)
 
-    # ── Ordering ──────────────────────────────────────────────
+    #  Ordering 
 
     def test_ordering_newest_first(self):
         older = Notification.objects.create(
@@ -139,11 +139,17 @@ class NotificationModelTest(TestCase):
             message='New',
             type=Notification.Type.MESSAGE,
         )
-        notifications = list(Notification.objects.filter(user=self.user))
+        # Force distinct timestamps so ordering is deterministic
+        Notification.objects.filter(pk=older.pk).update(
+            created_at=timezone.now() - timezone.timedelta(hours=1)
+        )
+        notifications = list(Notification.objects.filter(
+            user=self.user, pk__in=[older.pk, newer.pk]
+        ))
         self.assertEqual(notifications[0], newer)
         self.assertEqual(notifications[1], older)
 
-    # ── Filtering helpers ─────────────────────────────────────
+    #  Filtering helpers ─
 
     def test_filter_unread(self):
         Notification.objects.create(
@@ -181,7 +187,7 @@ class NotificationModelTest(TestCase):
         for n in likes:
             self.assertEqual(n.type, Notification.Type.LIKE)
 
-    # ── Social notification types ─────────────────────────────
+    #  Social notification types ─
 
     def test_like_notification_has_correct_type(self):
         n = Notification.objects.create(
@@ -219,7 +225,7 @@ class NotificationModelTest(TestCase):
         )
         self.assertEqual(n.type, 'message')
 
-    # ── Event-type notifications ──────────────────────────────
+    #  Event-type notifications 
 
     def test_exam_notification_type(self):
         n = Notification.objects.create(
@@ -258,7 +264,7 @@ class NotificationModelTest(TestCase):
         )
         self.assertEqual(n.type, 'study_session')
 
-    # ── User isolation ────────────────────────────────────────
+    #  User isolation 
 
     def test_notifications_scoped_to_user(self):
         Notification.objects.create(

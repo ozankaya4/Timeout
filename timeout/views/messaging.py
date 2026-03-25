@@ -71,6 +71,8 @@ def conversation(request, conversation_id):
     return render(request, 'messaging/conversation.html', context)
 
 
+
+
 @login_required
 @require_POST
 def send_message(request, conversation_id):
@@ -78,8 +80,7 @@ def send_message(request, conversation_id):
     conv = get_object_or_404(
         Conversation,
         id=conversation_id,
-        participants=request.user
-    )
+        participants=request.user )
 
     content = request.POST.get('content', '').strip()
     if not content:
@@ -88,11 +89,9 @@ def send_message(request, conversation_id):
     message = Message.objects.create(
         conversation=conv,
         sender=request.user,
-        content=content,
-    )
+        content=content,)
 
     conv.save()
-
     receiver = conv.get_other_participant(request.user)
 
     if receiver:
@@ -109,8 +108,18 @@ def send_message(request, conversation_id):
         'content': message.content,
         'sender': message.sender.username,
         'created_at': message.created_at.strftime('%H:%M'),
-        'is_me': True,
-    })
+        'is_me': True,})
+
+
+@login_required
+@require_POST
+def delete_message(request, message_id):
+    """Permanently delete a message (staff only)."""
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Staff access required.'}, status=403)
+    message = get_object_or_404(Message, id=message_id)
+    message.delete()
+    return JsonResponse({'ok': True})
 
 
 @login_required

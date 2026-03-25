@@ -59,7 +59,7 @@
             List
           </a>
         </div>
-        <a href="#" class="dl-add-btn" onclick="openAddEvent(new Date().toISOString().slice(0,10))"> <!-- used to be instead of onclick: data-bs-toggle="modal" data-bs-target="#addEventModal" -->
+        <a href="#" class="dl-add-btn" onclick="openAddEvent(new Date().toISOString().slice(0,10))"> 
           + <span class="dl-add-label">Add Deadline</span>
         </a>
 
@@ -116,9 +116,12 @@
               aria-label="Mark '{{ item.event.title }}' as complete"
             >
             {% else %}
-            <input type="checkbox" class="dl-checkbox" checked disabled
-                   aria-label="'{{ item.event.title }}' is completed">
-            {% endif %}
+<input type="checkbox" class="dl-checkbox dl-checkbox--completed"
+       id="dl-check-{{ item.event.id }}"
+       data-event-id="{{ item.event.id }}"
+       checked
+       aria-label="Unmark '{{ item.event.title }}' as complete">
+{% endif %}
           </div>
           <div class="dl-item__body">
             <div class="dl-item__header">
@@ -222,7 +225,7 @@
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'deadline_list' %}">
         <div class="modal-body">
-          <!-- Form fields (title, type, datetime, location, description) -->
+
           <div class="mb-3">
             <label for="eventTitle" class="form-label">Title</label>
             <input type="text" class="form-control" id="eventTitle" name="title" placeholder="e.g. Algorithms Problem Set 3" required>
@@ -260,7 +263,6 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn text-white" style="background:#5b5ddf;">Add Deadline</button>
-          <!--class="btn text-white" style="background:#5b5ddf;" used to be class="btn btn-nep text-white"-->
         </div>
       </form>
     </div>
@@ -271,7 +273,6 @@
 {% include "pages/_event_details_modal.html" %}
 
 <!-- Mobile FAB -->
- <!--onclick="openAddEvent(new Date().toISOString().slice(0,10))" used to be: data-bs-toggle="modal" data-bs-target="#addEventModal"-->
 <a href="#" class="dl-fab" onclick="openAddEvent(new Date().toISOString().slice(0,10))" aria-label="Add deadline">+</a>
 {% endblock %}
 
@@ -285,11 +286,21 @@
 }
 document.addEventListener('DOMContentLoaded', function() {
    
-  document.querySelectorAll('.dl-checkbox:not([disabled])').forEach(function(checkbox) {
+  document.querySelectorAll('.dl-checkbox:not(.dl-checkbox--completed)').forEach(function(checkbox) {
     checkbox.addEventListener('change', function() {
       completeDeadline(this.dataset.eventId, this);
     });
   });
+
+  // Mark incomplete — completed checkboxes
+  document.querySelectorAll('.dl-checkbox--completed').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      if (!this.checked) {
+        incompleteDeadline(this.dataset.eventId, this);
+      }
+    });
+  });
+
 });
 
 function completeDeadline(eventId, checkbox) {
@@ -327,6 +338,38 @@ function completeDeadline(eventId, checkbox) {
   .catch(function(err) {
     console.error('Complete failed:', err);
     checkbox.checked = false;
+  });
+}
+
+function incompleteDeadline(eventId, checkbox) {
+  var item = document.querySelector('[data-id="' + eventId + '"]');
+
+  fetch('/deadlines/' + eventId + '/incomplete/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+        || getCookie('csrftoken'),
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Request failed');
+    return res.json();
+  })
+  .then(function(data) {
+    if (data.is_completed === false && item) {
+      item.classList.add('dl-item--completing');
+      setTimeout(function() {
+        item.remove();
+        if (document.querySelectorAll('.dl-item').length === 0) {
+          location.reload();
+        }
+      }, 400);
+    }
+  })
+  .catch(function(err) {
+    console.error('Incomplete failed:', err);
+    checkbox.checked = true;
   });
 }
 

@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'timeout.middleware.BannedUserMiddleware',
 ]
 
 ROOT_URLCONF = 'timeout_pwa.urls'
@@ -198,8 +199,8 @@ LOGOUT_REDIRECT_URL = 'landing'
 # =============================================================================
 
 # Account settings
-ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_LOGIN_METHODS = {'email', 'username'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_SIGNUP_REDIRECT_URL = '/complete-profile/'
 # ACCOUNT_USERNAME_REQUIRED = False is expressed via ACCOUNT_SIGNUP_FIELDS above (that setting is deprecated in allauth >= 0.56; SIGNUP_FIELDS is the new API)
