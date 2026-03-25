@@ -1,6 +1,14 @@
+/**
+ * User Profile Modals
+ * Handles user list rendering and search functionality for followers, following, and friends modals.
+ */
+
 (function () {
   if (typeof FOLLOWERS_URL === 'undefined' || typeof FOLLOWING_URL === 'undefined') return;
 
+  /**
+   * Escape HTML special characters to prevent XSS vulnerabilities.
+   */
   function escapeHtml(str) {
     if (str == null) return '';
     return String(str)
@@ -11,12 +19,18 @@
       .replaceAll("'", '&#39;');
   }
 
+  /**
+   * Generate avatar HTML - image if available, otherwise initial badge.
+   */
   function _userAvatar(pic, username) {
     if (pic) return '<img src="' + escapeHtml(pic) + '" class="rounded-circle" width="40" height="40" style="object-fit:cover;">';
     return '<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;">' +
       escapeHtml(username.charAt(0).toUpperCase() || '?') + '</div>';
   }
 
+  /**
+   * Generate complete user card HTML with avatar, username, and full name.
+   */
   function _userCard(u) {
     var username = u && u.username ? String(u.username) : '';
     var fullName = u && u.full_name ? String(u.full_name) : '';
@@ -30,11 +44,17 @@
       '</a></div>';
   }
 
+  /**
+   * Render HTML for complete user list or empty state message.
+   */
   function renderUserList(users) {
     if (!users || users.length === 0) return '<p class="text-center text-muted py-3">No users yet.</p>';
     return users.map(_userCard).join('');
   }
 
+  /**
+   * Attach real-time search filter to user list input field.
+   */
   function _attachSearchFilter(input, listEl) {
     if (!input) return;
     input.oninput = function () {
@@ -46,6 +66,9 @@
     };
   }
 
+  /**
+   * Configure modal to fetch and display user list with search functionality on open.
+   */
   function setupModal(modalId, url, listId, searchAttr) {
     var modalEl = document.getElementById(modalId);
     if (!modalEl) return;

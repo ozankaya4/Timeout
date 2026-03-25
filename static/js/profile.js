@@ -1,8 +1,16 @@
+/**
+ * User Profile Management
+ * Handles status updates, user list rendering, following/unfollowing, and modal search functionality.
+ */
+
 const _cfg = document.getElementById('profile-status-config');
 const FOLLOWERS_URL = _cfg?.dataset.followersUrl ?? '';
 const FOLLOWING_URL = _cfg?.dataset.followingUrl ?? '';
 const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
 
+/**
+ * Initialize status management with UI updates and event listeners.
+ */
 (() => {
   const cfg = document.getElementById('profile-status-config');
   if (!cfg) return;
@@ -14,6 +22,9 @@ const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
   const navDot  = document.getElementById('nav-status-dot');
   const currentText = document.getElementById('current-status-display');
 
+  /**
+   * Update navigation status indicator dot with appropriate color class.
+   */
   function setNavDot(status) {
     if (!navDot) return;
     [...navDot.classList].forEach((cls) => {
@@ -24,6 +35,9 @@ const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
     navDot.classList.add(`status-${status}`);
   }
 
+  /**
+   * Highlight the currently active status button and deactivate others.
+   */
   function setActiveStatusButton(status) {
     document.querySelectorAll('.status-btn').forEach((b) => {
       const val = b.dataset.status;
@@ -33,6 +47,9 @@ const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
     });
   }
 
+  /**
+   * Update focus mode timer display based on status change.
+   */
   function _updateFocusTimers(data) {
     const navTimer = document.getElementById('nav-focus-timer');
     const profileTimer = document.getElementById('profile-focus-timer');
@@ -51,6 +68,9 @@ const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
     }
   }
 
+  /**
+   * Apply status update to all UI elements and dispatch focus mode event.
+   */
   function _applyStatusUpdate(data) {
     if (!data?.status) return;
     if (currentText) currentText.textContent = data.status_display;
@@ -78,13 +98,18 @@ const FRIENDS_URL   = _cfg?.dataset.friendsUrl   ?? '';
   });
 })();
 
-
+/**
+ * Generate HTML for user avatar image or initial badge.
+ */
 function _userAvatarHtml(u) {
   return u.profile_picture
     ? `<img src="${u.profile_picture}" class="rounded-circle" width="40" height="40" style="object-fit:cover;">`
     : `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;">${u.username[0].toUpperCase()}</div>`;
 }
 
+/**
+ * Generate action button HTML for user item (follow, unfollow, or follow back).
+ */
 function _userActionBtn(u, options) {
   if (options.showUnfollow) {
     return `<button class="btn btn-sm btn-outline-danger unfollow-btn ms-2" data-username="${u.username}">Unfollow</button>`;
@@ -97,6 +122,9 @@ function _userActionBtn(u, options) {
   return '';
 }
 
+/**
+ * Generate complete user list item HTML with avatar, name, and action button.
+ */
 function _userItemHtml(u, options) {
   return `
     <div class="user-item d-flex align-items-center justify-content-between mb-3">
@@ -111,11 +139,17 @@ function _userItemHtml(u, options) {
     </div>`;
 }
 
+/**
+ * Render complete user list HTML with optional action buttons based on context.
+ */
 function renderUserList(users, options = {}) {
   if (users.length === 0) return '<p class="text-center text-muted py-3">No users yet.</p>';
   return users.map(u => _userItemHtml(u, options)).join('');
 }
 
+/**
+ * Update the following count badge with a delta (positive or negative).
+ */
 function _updateBadgeCount(delta) {
   const badge = document.getElementById('following-count-badge');
   if (badge) {
@@ -124,6 +158,9 @@ function _updateBadgeCount(delta) {
   }
 }
 
+/**
+ * Handle unfollow action result and update UI accordingly.
+ */
 function _handleUnfollowResult(data, btn) {
   if (data.following === false) {
     btn.closest('.user-item').remove();
@@ -138,6 +175,9 @@ function _handleUnfollowResult(data, btn) {
   }
 }
 
+/**
+ * Attach click handlers to unfollow buttons and manage follow state updates.
+ */
 function attachUnfollowHandlers(container) {
   container.querySelectorAll('.unfollow-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -160,12 +200,18 @@ function attachUnfollowHandlers(container) {
   });
 }
 
+/**
+ * Attach follow toggle handlers to follow back buttons in a container.
+ */
 function attachFollowBackHandlers(container) {
   container.querySelectorAll('.follow-back-btn').forEach(btn => {
     attachFollowToggle(btn);
   });
 }
 
+/**
+ * Handle follow/unfollow action result and update button state.
+ */
 function _handleFollowToggleResult(data, btn) {
   if (data.following === true) {
     const label = document.createElement('span');
@@ -185,6 +231,9 @@ function _handleFollowToggleResult(data, btn) {
   }
 }
 
+/**
+ * Attach follow/unfollow toggle handler to a button with AJAX submission.
+ */
 function attachFollowToggle(btn) {
   btn.onclick = function () {
     const username = this.dataset.username;
@@ -205,6 +254,9 @@ function attachFollowToggle(btn) {
   };
 }
 
+/**
+ * Initialize search filtering for user list within a modal.
+ */
 function _initModalSearch(input, listEl) {
   input.oninput = function () {
     const query = this.value.toLowerCase().trim();

@@ -1,7 +1,11 @@
-/* Notes Page: Pomodoro, Focus Mode, Streaks, Heatmap, Daily Goals */
+/**
+ * Notes Page: Pomodoro Timer, Focus Mode, Streaks, Study Heatmap, Daily Goals
+ * Handles study productivity tracking including pomodoro sessions, focus mode tracking, daily goal management, and study heatmap visualization.
+ */
 
-/* Helpers */
-
+/**
+ * Retrieve CSRF token from browser cookies for secure form submissions.
+ */
 function getCsrfToken() {
   for (var c of document.cookie.split(';')) {
     var parts = c.trim().split('=');
@@ -10,6 +14,9 @@ function getCsrfToken() {
   return window.NOTES_CONFIG?.csrfToken || '';
 }
 
+/**
+ * Add or remove pin icon from note item header.
+ */
 function updatePinIcon(item, pinned) {
   var header = item.querySelector('.nt-item__header');
   if (!header) return;
@@ -25,6 +32,9 @@ function updatePinIcon(item, pinned) {
   }
 }
 
+/**
+ * Toggle pin state for a note via API and update button.
+ */
 function togglePin(noteId, btn) {
   fetch('/notes/' + noteId + '/pin/', {
     method: 'POST',
@@ -40,9 +50,9 @@ function togglePin(noteId, btn) {
   .catch(function(err) { console.error('Pin toggle failed:', err); });
 }
 
-
-/* Audio Utility */
-
+/**
+ * Play a beep tone at specified frequency, duration, and volume.
+ */
 function playBeep(freq, duration, volume) {
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -57,11 +67,17 @@ function playBeep(freq, duration, volume) {
   } catch(e) {}
 }
 
+/**
+ * Check if sound notifications are enabled in config.
+ */
 function isSoundEnabled() {
   var cfg = window.NOTES_CONFIG || {};
   return cfg.sounds !== undefined ? cfg.sounds : true;
 }
 
+/**
+ * Play alarm sound sequence (two beeps followed by a higher tone).
+ */
 function playAlarm() {
   if (!isSoundEnabled()) return;
   playBeep(880, 150, 0.35);
@@ -69,15 +85,18 @@ function playAlarm() {
   setTimeout(function() { playBeep(1100, 300, 0.4); }, 500);
 }
 
+/**
+ * Play warning sound sequence (two identical beeps).
+ */
 function playWarning() {
   if (!isSoundEnabled()) return;
   playBeep(520, 300, 0.5);
   setTimeout(function() { playBeep(520, 300, 0.5); }, 400);
 }
 
-
-/* XP Toast */
-
+/**
+ * Display XP reward toast notification with fade animation.
+ */
 function showXpToast(amount) {
   var toast = document.getElementById('xpToast');
   var text = document.getElementById('xpToastText');
@@ -93,6 +112,9 @@ function showXpToast(amount) {
   }, 2000);
 }
 
+/**
+ * Update level badge, XP progress bar, and streak display with new stats.
+ */
 function updateStatsUI(data) {
   var badge = document.getElementById('levelBadge');
   var fill = document.getElementById('xpFill');
@@ -104,12 +126,16 @@ function updateStatsUI(data) {
   if (streak && data.note_streak !== undefined) streak.textContent = data.note_streak;
 }
 
-
-/* Daily Goals */
-
+/**
+ * Daily Goals Module
+ * Manages daily goal progress tracking with circular progress indicators and edit functionality.
+ */
 var DailyGoals = (function() {
   var CIRCUMFERENCE = 2 * Math.PI * 16;
 
+  /**
+   * Update circular progress ring stroke offset based on current/goal progress.
+   */
   function updateRing(id, current, goal) {
     var ring = document.getElementById(id);
     if (!ring) return;
@@ -122,6 +148,9 @@ var DailyGoals = (function() {
     }
   }
 
+  /**
+   * Render daily goal progress rings and text for all three goals.
+   */
   function render(data) {
     if (!data) return;
     updateRing('goalRingPomo', data.pomodoros, data.pomo_goal);
@@ -136,6 +165,9 @@ var DailyGoals = (function() {
     if (focusText) focusText.textContent = data.focus_minutes + ' / ' + data.focus_goal + 'm';
   }
 
+  /**
+   * Fetch latest goal progress data from server and render.
+   */
   function refresh() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.goalsProgressUrl) return;
@@ -145,6 +177,9 @@ var DailyGoals = (function() {
       .catch(function() {});
   }
 
+  /**
+   * Initialize collapsible toggle for goals section with localStorage persistence.
+   */
   function initToggle() {
     var toggle = document.getElementById('goalsToggle');
     var body = document.getElementById('goalsBody');
@@ -167,6 +202,9 @@ var DailyGoals = (function() {
     });
   }
 
+  /**
+   * Initialize goal edit modal with form handlers and API submission.
+   */
   function initEdit() {
     var editBtn = document.getElementById('goalsEditBtn');
     var saveBtn = document.getElementById('goalsSaveBtn');
@@ -190,6 +228,10 @@ var DailyGoals = (function() {
         refresh();})
       .catch(function() {});});
   }
+
+  /**
+   * Initialize daily goals module with all event handlers and initial render.
+   */
   function init() {
     initToggle();
     initEdit();
@@ -199,9 +241,14 @@ var DailyGoals = (function() {
   return { init: init, render: render, refresh: refresh };
 })();
 
-/* Study Heatmap */
-/* There's 2nd degree nesting for this function but I couldn't find any other way to do it to be honest */
+/**
+ * Study Heatmap Module
+ * Displays calendar-like heatmap visualization of daily study activity.
+ */
 var Heatmap = (function() {
+  /**
+   * Group daily data points into weeks, padding with nulls for alignment.
+   */
   function _groupIntoWeeks(days) {
     var weeks = [];
     var week = [];
@@ -219,6 +266,9 @@ var Heatmap = (function() {
     return weeks;
   }
 
+  /**
+   * Create a single heatmap cell DOM element with data attributes and tooltip.
+   */
   function _createCell(day) {
     var cell = document.createElement('span');
     cell.className = 'nt-heatmap-cell';
@@ -232,6 +282,9 @@ var Heatmap = (function() {
     return cell;
   }
 
+  /**
+   * Render a single week column with seven day cells.
+   */
   function _renderWeekColumn(weekDays) {
     var col = document.createElement('div');
     col.className = 'nt-heatmap-col';
@@ -239,6 +292,9 @@ var Heatmap = (function() {
     return col;
   }
 
+  /**
+   * Render complete heatmap grid by grouping days into weeks.
+   */
   function render(days) {
     var grid = document.getElementById('heatmapGrid');
     if (!grid || !days) return;
@@ -247,6 +303,9 @@ var Heatmap = (function() {
     for (var w = 0; w < weeks.length; w++) grid.appendChild(_renderWeekColumn(weeks[w]));
   }
 
+  /**
+   * Fetch heatmap data from server and render.
+   */
   function load() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.heatmapUrl) return;
@@ -259,9 +318,10 @@ var Heatmap = (function() {
   return { init: load };
 })();
 
-
-/* Pomodoro Timer */
-
+/**
+ * Pomodoro Timer Module
+ * Manages pomodoro work/break cycles with visual progress ring and session counter.
+ */
 var Pomodoro = (function() {
   var cfg = window.NOTES_CONFIG || {};
   var WORK = (cfg.pomoWork || 25) * 60;
@@ -279,6 +339,9 @@ var Pomodoro = (function() {
     intervalId: null,
   };
 
+  /**
+   * Load pomodoro state from localStorage if it's today's session.
+   */
   function loadState() {
     try {
       var saved = JSON.parse(localStorage.getItem('pomo_state'));
@@ -288,6 +351,9 @@ var Pomodoro = (function() {
     } catch(e) {}
   }
 
+  /**
+   * Save current pomodoro session count and date to localStorage.
+   */
   function saveState() {
     localStorage.setItem('pomo_state', JSON.stringify({
       date: new Date().toDateString(),
@@ -295,23 +361,35 @@ var Pomodoro = (function() {
     }));
   }
 
+  /**
+   * Get duration in seconds for the given phase (work, short break, long break).
+   */
   function getDuration(phase) {
     if (phase === 'work') return WORK;
     if (phase === 'long_break') return LONG_BREAK;
     return SHORT_BREAK;
   }
 
+  /**
+   * Get human-readable label for the given phase.
+   */
   function getPhaseLabel(phase) {
     if (phase === 'work') return 'Work Session';
     if (phase === 'short_break') return 'Short Break';
     return 'Long Break';
   }
 
+  /**
+   * Get the currently selected note ID from dropdown if available.
+   */
   function getLinkedNoteId() {
     var sel = document.getElementById('pomoNoteSelect');
     return sel ? sel.value : '';
   }
 
+  /**
+   * Render progress ring with appropriate color and offset for current phase.
+   */
   function _renderRing() {
     var ringEl = document.getElementById('pomoRing');
     if (!ringEl) return;
@@ -320,6 +398,9 @@ var Pomodoro = (function() {
     ringEl.style.stroke = state.phase === 'work' ? '#5B73E8' : '#4ECDC4';
   }
 
+  /**
+   * Toggle start/pause button visibility based on running state.
+   */
   function _renderButtons() {
     var startBtn = document.getElementById('pomoStartBtn');
     var pauseBtn = document.getElementById('pomoPauseBtn');
@@ -329,6 +410,9 @@ var Pomodoro = (function() {
     }
   }
 
+  /**
+   * Update all UI elements (timer, phase label, count, ring, buttons).
+   */
   function render() {
     var mins = Math.floor(state.remaining / 60);
     var secs = state.remaining % 60;
@@ -351,6 +435,9 @@ var Pomodoro = (function() {
     });
   }
 
+  /**
+   * Decrement timer by one second and check for phase end.
+   */
   function tick() {
     if (state.remaining <= 0) {
       onPhaseEnd();
@@ -360,6 +447,9 @@ var Pomodoro = (function() {
     render();
   }
 
+  /**
+   * Submit completed pomodoro to server and award XP.
+   */
   function _awardWorkXP() {
     if (!cfg.pomodoroCompleteUrl) return;
     var body = new FormData();
@@ -380,6 +470,9 @@ var Pomodoro = (function() {
     .catch(function() {});
   }
 
+  /**
+   * Advance to next phase (work->break->work) and update session count.
+   */
   function _advancePhase() {
     if (state.phase === 'work') {
       state.session++;
@@ -393,6 +486,9 @@ var Pomodoro = (function() {
     }
   }
 
+  /**
+   * Handle phase completion: stop timer, play alarm, advance phase, reset duration.
+   */
   function onPhaseEnd() {
     clearInterval(state.intervalId);
     state.running = false;
@@ -403,6 +499,9 @@ var Pomodoro = (function() {
     render();
   }
 
+  /**
+   * Start the pomodoro timer interval.
+   */
   function start() {
     if (state.running) return;
     state.running = true;
@@ -410,12 +509,18 @@ var Pomodoro = (function() {
     render();
   }
 
+  /**
+   * Pause the pomodoro timer without resetting progress.
+   */
   function pause() {
     clearInterval(state.intervalId);
     state.running = false;
     render();
   }
 
+  /**
+   * Skip to end of current phase immediately.
+   */
   function skip() {
     clearInterval(state.intervalId);
     state.running = false;
@@ -423,6 +528,9 @@ var Pomodoro = (function() {
     onPhaseEnd();
   }
 
+  /**
+   * Reset timer to initial work phase state.
+   */
   function reset() {
     clearInterval(state.intervalId);
     state.running = false;
@@ -433,6 +541,9 @@ var Pomodoro = (function() {
     render();
   }
 
+  /**
+   * Populate note dropdown with user's notes.
+   */
   function populateNoteSelect() {
     var sel = document.getElementById('pomoNoteSelect');
     if (!sel) return;
@@ -445,6 +556,9 @@ var Pomodoro = (function() {
     }
   }
 
+  /**
+   * Initialize pomodoro module with state load and event listeners.
+   */
   function init() {
     loadState();
     populateNoteSelect();
@@ -464,9 +578,10 @@ var Pomodoro = (function() {
   return { init: init };
 })();
 
-
-/* Focus Mode */
-
+/**
+ * Focus Mode Module
+ * Provides distraction-free study environment with inactivity warnings and session tracking.
+ */
 var FocusMode = (function() {
   var active = false;
   var startTime = null;
@@ -476,6 +591,9 @@ var FocusMode = (function() {
   var INACTIVITY_MS = 2 * 60 * 1000;
   var warningShown = false;
 
+  /**
+   * Update user status on server to reflect focus mode state.
+   */
   function setServerStatus(status) {
     fetch('/social/status/update/', {
       method: 'POST',
@@ -484,6 +602,9 @@ var FocusMode = (function() {
     }).catch(function() {});
   }
 
+  /**
+   * Enter focus mode: hide navigation, show overlay, start activity tracking.
+   */
   function enter() {
     active = true;
     startTime = Date.now();
@@ -510,6 +631,9 @@ var FocusMode = (function() {
     window.addEventListener('beforeunload', onBeforeUnload);
   }
 
+  /**
+   * Exit focus mode: restore navigation, remove overlay, cleanup event listeners.
+   */
   function exit() {
     active = false;
     clearInterval(elapsedInterval);
@@ -535,6 +659,9 @@ var FocusMode = (function() {
     window.removeEventListener('beforeunload', onBeforeUnload);
   }
 
+  /**
+   * Handle page unload during focus mode by updating server status via sendBeacon.
+   */
   function onBeforeUnload(e) {
     if (!active) return;
     // End focus session on server via beacon so FocusSession is recorded
@@ -547,6 +674,9 @@ var FocusMode = (function() {
     return e.returnValue;
   }
 
+  /**
+   * Update elapsed time display during focus mode.
+   */
   function updateElapsed() {
     var secs = Math.floor((Date.now() - startTime) / 1000);
     var m = Math.floor(secs / 60);
@@ -555,11 +685,17 @@ var FocusMode = (function() {
     if (el) el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
+  /**
+   * Record user activity and dismiss inactivity warning if shown.
+   */
   function onActivity() {
     lastActivity = Date.now();
     if (warningShown) dismissWarning();
   }
 
+  /**
+   * Check for user inactivity and show warning if idle threshold exceeded.
+   */
   function checkInactivity() {
     if (!active) return;
     var idle = Date.now() - lastActivity;
@@ -568,6 +704,9 @@ var FocusMode = (function() {
     }
   }
 
+  /**
+   * Display inactivity warning overlay with sound notification.
+   */
   function showWarning() {
     warningShown = true;
     var warn = document.getElementById('warnOverlay');
@@ -575,12 +714,18 @@ var FocusMode = (function() {
     playWarning();
   }
 
+  /**
+   * Hide inactivity warning overlay.
+   */
   function dismissWarning() {
     warningShown = false;
     var warn = document.getElementById('warnOverlay');
     if (warn) warn.style.display = 'none';
   }
 
+  /**
+   * Initialize focus mode module with button event listeners.
+   */
   function init() {
     var btn = document.getElementById('focusModeBtn');
     var exitBtn = document.getElementById('focusExitBtn');
@@ -599,9 +744,9 @@ var FocusMode = (function() {
   return { init: init };
 })();
 
-
-/* Word Count (for note_edit) */
-
+/**
+ * Initialize live word counter for note editing textarea.
+ */
 function initWordCount() {
   var textarea = document.getElementById('id_content');
   var counter = document.getElementById('wordCount');
@@ -619,7 +764,6 @@ function initWordCount() {
 
 
 /* Init */
-
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('pomoPanel')) Pomodoro.init();
   FocusMode.init();

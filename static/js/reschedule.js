@@ -1,5 +1,13 @@
+/**
+ * Event Rescheduling Management
+ * Handles AI-powered event rescheduling suggestions, user acceptance, and deadline completion/dismissal.
+ */
+
 let _rescheduleData = null;
 
+/**
+ * Reset rescheduling modal to loading state with event title.
+ */
 function _resetRescheduleModal(title) {
   document.getElementById('rescheduleEventName').textContent = '"' + title + '"';
   document.getElementById('rescheduleTime').textContent = '';
@@ -9,12 +17,18 @@ function _resetRescheduleModal(title) {
   document.getElementById('rescheduleAcceptBtn').style.display = 'none';
 }
 
+/**
+ * Display error message in rescheduling modal.
+ */
 function _showRescheduleError(msg) {
   document.getElementById('rescheduleLoadingMsg').style.display = 'none';
   document.getElementById('rescheduleErrorMsg').textContent = msg;
   document.getElementById('rescheduleErrorMsg').style.display = '';
 }
 
+/**
+ * Display the suggested rescheduling details and store for later acceptance.
+ */
 function _displayRescheduleSuggestion(s, eventId, reason) {
   document.getElementById('rescheduleLoadingMsg').style.display = 'none';
   s._originalEventId = eventId;
@@ -25,6 +39,9 @@ function _displayRescheduleSuggestion(s, eventId, reason) {
   document.getElementById('rescheduleAcceptBtn').style.display = '';
 }
 
+/**
+ * Fetch rescheduling suggestion for an event and display it in modal.
+ */
 function suggestReschedule(eventId, title, durationMinutes, reason) {
   _rescheduleData = null;
   var modal = new bootstrap.Modal(document.getElementById('rescheduleResultModal'));
@@ -44,6 +61,9 @@ function suggestReschedule(eventId, title, durationMinutes, reason) {
   .catch(function() { _showRescheduleError('Network error. Please try again.'); });
 }
 
+/**
+ * Create a hidden form with given action and field values for submission.
+ */
 function _buildHiddenForm(action, fields) {
   var form = document.createElement('form');
   form.method = 'POST';
@@ -58,6 +78,9 @@ function _buildHiddenForm(action, fields) {
   return form;
 }
 
+/**
+ * Accept the suggested reschedule and create new event with updated time.
+ */
 function acceptReschedule() {
   if (!_rescheduleData) return;
   var s = _rescheduleData;
@@ -85,6 +108,9 @@ function acceptReschedule() {
   form.submit();
 }
 
+/**
+ * Mark a deadline as complete and remove its rescheduling banner.
+ */
 function markBannerComplete(eventId, btn) {
   btn.disabled = true;
   btn.textContent = '...';
@@ -108,6 +134,9 @@ function markBannerComplete(eventId, btn) {
   });
 }
 
+/**
+ * Dismiss a rescheduling banner and cancel the suggestion if it was for a missed event.
+ */
 function dismissReschedule(eventId, reason) {
   var banner = document.getElementById('reschedule-banner-' + eventId);
   if (banner) banner.remove();

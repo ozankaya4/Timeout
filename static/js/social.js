@@ -1,4 +1,11 @@
-// CSRF token helper
+/**
+ * Social Feed Interactions
+ * Handles user search, messaging, feed interactions (likes, bookmarks, follows), event dropdowns, and modal management.
+ */
+
+/**
+ * Retrieve CSRF token from browser cookies for secure form submissions.
+ */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -18,6 +25,9 @@ function getCookie(name) {
 
 const csrftoken = getCookie('csrftoken');
 
+/**
+ * Populate custom dropdown menu with options from native select element.
+ */
 function _createDropdownOptions(nativeSelect, dropdown, trigger) {
     Array.from(nativeSelect.options).forEach((opt) => {
         const item = document.createElement('div');
@@ -38,6 +48,9 @@ function _createDropdownOptions(nativeSelect, dropdown, trigger) {
     });
 }
 
+/**
+ * Attach click and scroll listeners to toggle custom dropdown visibility.
+ */
 function _attachDropdownListeners(trigger, dropdown) {
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -57,6 +70,9 @@ function _attachDropdownListeners(trigger, dropdown) {
     }, { passive: true });
 }
 
+/**
+ * Position custom dropdown below trigger element with matching width.
+ */
 function _positionEventDropdown(trigger, dropdown) {
     const rect = trigger.getBoundingClientRect();
     dropdown.style.position = 'fixed';
@@ -65,6 +81,9 @@ function _positionEventDropdown(trigger, dropdown) {
     dropdown.style.width = rect.width + 'px';
 }
 
+/**
+ * Initialize custom event type dropdown replacing native select element.
+ */
 function initEventDropdown() {
     const nativeSelect = document.getElementById('id_event');
     if (!nativeSelect) return;
@@ -89,6 +108,9 @@ function initEventDropdown() {
     nativeSelect.insertAdjacentElement('afterend', wrapper);
 }
 
+/**
+ * Update follow button appearance and text based on follow state.
+ */
 function applyFollowState(btn, following, requested) {
     btn.classList.remove('btn-primary', 'btn-secondary', 'btn-warning');
     if (following) {
@@ -105,8 +127,9 @@ function applyFollowState(btn, following, requested) {
     btn.dataset.requested = requested;
 }
 
-// --- User Search ---
-
+/**
+ * Position search results dropdown below input field with matching width.
+ */
 function _positionSearchDropdown(input, results) {
     const rect = input.getBoundingClientRect();
     results.style.position = 'fixed';
@@ -116,6 +139,9 @@ function _positionSearchDropdown(input, results) {
     results.style.zIndex = '9999';
 }
 
+/**
+ * Generate HTML for a single user search result row with avatar and info.
+ */
 function _renderSearchResult(u) {
     const avatar = u.profile_picture
         ? `<img src="${u.profile_picture}" class="search-avatar" alt="">`
@@ -130,6 +156,9 @@ function _renderSearchResult(u) {
     </a>`;
 }
 
+/**
+ * Render all search results or empty state and position dropdown.
+ */
 function _handleSearchResults(data, results, input) {
     results.innerHTML = '';
     if (!data.users.length) {
@@ -141,6 +170,9 @@ function _handleSearchResults(data, results, input) {
     results.hidden = false;
 }
 
+/**
+ * Initialize user search with debounced API calls and click-outside dismissal.
+ */
 function initUserSearch() {
     const input = document.getElementById('userSearchInput');
     const results = document.getElementById('userSearchResults');
@@ -174,8 +206,9 @@ function initUserSearch() {
     window.addEventListener('resize', () => _positionSearchDropdown(input, results), { passive: true });
 }
 
-// --- Messaging ---
-
+/**
+ * Append message to conversation container and auto-scroll to bottom.
+ */
 function _appendMessage(container, msg) {
     const empty = container.querySelector('.convo-empty');
     if (empty) empty.remove();
@@ -192,6 +225,9 @@ function _appendMessage(container, msg) {
     container.scrollTop = container.scrollHeight;
 }
 
+/**
+ * Send message via API and update UI on success.
+ */
 function _sendMessage(config, input, sendBtn, container, state) {
     const content = input.value.trim();
     if (!content) return;
@@ -213,6 +249,9 @@ function _sendMessage(config, input, sendBtn, container, state) {
     .finally(() => { sendBtn.disabled = false; input.focus(); });
 }
 
+/**
+ * Fetch new messages from server and append to conversation.
+ */
 function _pollMessages(config, container, state) {
     fetch(`${config.pollUrl}?last_id=${state.lastMessageId}`)
         .then(r => r.json())
@@ -225,6 +264,9 @@ function _pollMessages(config, container, state) {
         .catch(err => console.error('Poll error:', err));
 }
 
+/**
+ * Initialize messaging interface with send/poll handlers and auto-scroll.
+ */
 function initMessaging() {
     const config = window.CONVO_CONFIG;
     if (!config) return;
@@ -248,8 +290,9 @@ function initMessaging() {
     container.scrollTop = container.scrollHeight;
 }
 
-// --- Feed Interactions ---
-
+/**
+ * Initialize like button handlers with API calls and UI updates.
+ */
 function initLikeButtons() {
     document.querySelectorAll('.like-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -272,6 +315,9 @@ function initLikeButtons() {
     });
 }
 
+/**
+ * Apply bookmarked visual state to button if previously bookmarked.
+ */
 function _initBookmarkState(button) {
     const icon = button.querySelector('.bookmark-icon');
     if (button.dataset.bookmarked === 'true') {
@@ -280,6 +326,9 @@ function _initBookmarkState(button) {
     }
 }
 
+/**
+ * Initialize bookmark button handlers with API calls and state management.
+ */
 function initBookmarkButtons() {
     document.querySelectorAll('.bookmark-btn').forEach(button => {
         _initBookmarkState(button);
@@ -301,6 +350,9 @@ function initBookmarkButtons() {
     });
 }
 
+/**
+ * Initialize follow button handlers with follow/unfollow toggle functionality.
+ */
 function initFollowButtons() {
     document.querySelectorAll('.follow-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -316,6 +368,9 @@ function initFollowButtons() {
     });
 }
 
+/**
+ * Initialize event subscription button handlers with success feedback.
+ */
 function initSubscribeButtons() {
     document.querySelectorAll('.btn-subscribe-event').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -340,6 +395,9 @@ function initSubscribeButtons() {
     });
 }
 
+/**
+ * Scroll to and highlight a post based on URL parameter.
+ */
 function initHighlightPost() {
     const params = new URLSearchParams(window.location.search);
     const highlightId = params.get("highlight_post");
@@ -353,6 +411,9 @@ function initHighlightPost() {
     }
 }
 
+/**
+ * Initialize FAB (floating action button) modal with open/close handlers.
+ */
 function initFabModal() {
     const fab     = document.getElementById("fabBtn");
     const overlay = document.getElementById("cpOverlay");

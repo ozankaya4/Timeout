@@ -1,8 +1,11 @@
-// Password Toggle Functionality for Authentication Pages
 /**
- * Toggles password visibility for a given input field
- * @param {string} inputId - The ID of the password input field
- * @param {string} iconId - The ID of the eye icon SVG element
+ * Authentication Page Scripts
+ * Handles password visibility toggling for login and registration forms.
+ */
+
+/**
+ * Toggle password field visibility between plain text and masked input.
+ * Updates the eye icon to reflect the current state.
  */
 function togglePassword(inputId, iconId) {
     const passwordInput = document.getElementById(inputId);

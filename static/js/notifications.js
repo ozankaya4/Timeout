@@ -1,3 +1,9 @@
+/**
+ * Notification List Management
+ * Handles notification interaction, marking as read, deleting, accepting/rejecting follow requests,
+ * and navigating to associated content (messages, posts, events).
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const notifList = document.querySelector(".notifications-list");
@@ -7,6 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!notifList) return;
 
+    /**
+     * Decrease unread count in both page and navigation badge elements.
+     */
     function decreaseUnread() {
         if (pageUnread && parseInt(pageUnread.textContent) > 0) {
             pageUnread.textContent = parseInt(pageUnread.textContent) - 1;
@@ -18,6 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * Send a POST request with CSRF token for notification actions.
+     */
     function _postRequest(url) {
         return fetch(url, {
             method: "POST",
@@ -25,12 +37,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    /**
+     * Show "no notifications" message if the notification list is now empty.
+     */
     function _hideIfEmpty() {
         if (!document.querySelectorAll(".notification-item").length) {
             document.getElementById("no-notifications").style.display = "block";
         }
     }
 
+    /**
+     * Mark a notification as read and update UI.
+     */
     async function _handleMarkRead(notifItem, notificationId, target) {
         try {
             var res = await _postRequest("/notifications/read/" + notificationId + "/");
@@ -43,6 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("Read error:", err); }
     }
 
+    /**
+     * Handle accepting or rejecting a follow request and remove the notification.
+     */
     async function _handleFollowAction(notifItem, target) {
         var username = target.dataset.username;
         var action = target.classList.contains("accept-follow-btn") ? "accept" : "reject";
@@ -54,6 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("Follow request error:", err); }
     }
 
+    /**
+     * Delete a notification and update badge if needed.
+     */
     async function _handleDelete(notifItem, notificationId) {
         try {
             var res = await _postRequest("/notifications/delete/" + notificationId + "/");
@@ -65,6 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("Delete error:", err); }
     }
 
+    /**
+     * Auto-mark notification as read on click if it was unread.
+     */
     async function _handleAutoRead(notifItem, notificationId) {
         try {
             if (notifItem.classList.contains("notification-unread")) {
@@ -80,6 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("Auto read error:", err); }
     }
 
+    /**
+     * Navigate to the relevant content associated with a notification (message, post, or event).
+     */
     function _navigateNotification(notifItem) {
         if (notifItem.dataset.type === "message") {
             var convoId = notifItem.dataset.convoId;

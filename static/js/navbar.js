@@ -1,3 +1,8 @@
+/**
+ * Navigation Bar Management
+ * Handles Bootstrap tooltips, notification badges, real-time polling, and focus mode state.
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
 
   /* Bootstrap tooltips */
@@ -10,6 +15,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentUnread = parseInt(_nav?.dataset.unreadCount) || 0;
 
+  /**
+   * Update notification badge display with the current unread count.
+   */
   function updateNotifBadge(count) {
     if (!badge) return;
     currentUnread = count;
@@ -24,6 +32,9 @@ document.addEventListener("DOMContentLoaded", function () {
     updateNotifBadge(currentUnread);
   }
 
+  /**
+   * Display a temporary tooltip near the notification badge announcing a new notification.
+   */
   function showNewNotificationTooltip() {
     if (!badge) return;
     badge.classList.add("new-notif-pulse");
@@ -45,13 +56,13 @@ document.addEventListener("DOMContentLoaded", function () {
       badge.classList.remove("new-notif-pulse");
     }, 3000);}
 
-  /*
-     Real-time polling for new notifications
-     Start lastNotifId from latest known ID so first
-     poll only catches genuinely new notifications
-  */
+
   let lastNotifId = parseInt(_nav?.dataset.latestNotifId) || 0;
 
+  /**
+   * Poll for new notifications and update badge/tooltip if any exist.
+   * Skips polling when user is in focus mode.
+   */
   function pollNotifications() {
     if (document.body.dataset.userStatus === 'focus') {
       fetch(`/notifications/poll/?last_id=${lastNotifId}`).catch(() => {});

@@ -1,3 +1,13 @@
+/**
+ * AI Calendar Event Creation
+ * Handles user input validation, API calls, and UI feedback for AI-powered event creation.
+ */
+
+
+
+/**
+ * Reset the AI input UI to loading state with spinners and hidden result elements.
+ */
 function _resetAiUI() {
   document.getElementById('aiSubmitBtn').disabled = true;
   document.getElementById('aiSpinner').classList.remove('d-none');
@@ -6,12 +16,18 @@ function _resetAiUI() {
   document.getElementById('aiResult').classList.remove('d-none');
 }
 
+/**
+ * Display an error message in the AI result panel.
+ */
 function _showAiError(msg) {
   var el = document.getElementById('aiError');
   el.textContent = msg;
   el.classList.remove('d-none');
 }
 
+/**
+ * Process AI event creation response and show success or error message.
+ */
 function _handleAiResult(data) {
   if (data.success) {
     var el = document.getElementById('aiSuccess');
@@ -24,6 +40,9 @@ function _handleAiResult(data) {
   }
 }
 
+/**
+ * Submit user input to AI event creation API and handle the response.
+ */
 async function submitAiEvent() {
   var input = document.getElementById('aiUserInput').value.trim();
   if (!input) return;
