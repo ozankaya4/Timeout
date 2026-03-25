@@ -164,6 +164,38 @@ class BanUserViewTest(TestCase):
         response = self.client.get(self.ban_url(self.regular.username))
         self.assertEqual(response.status_code, 405)
 
+    # AJAX: staff gets JSON ok response
+    def test_ajax_ban_returns_json(self):
+        self.login(self.staff)
+        response = self.client.post(
+            self.ban_url(self.regular.username),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"ok": True})
+        self.regular.refresh_from_db()
+        self.assertTrue(self.regular.is_banned)
+
+    # AJAX: non-staff gets 403 JSON
+    def test_ajax_non_staff_gets_403_json(self):
+        self.login(self.regular)
+        response = self.client.post(
+            self.ban_url(self.regular.username),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("error", response.json())
+
+    # AJAX: cannot ban staff member returns 400 JSON
+    def test_ajax_cannot_ban_staff_returns_400_json(self):
+        self.login(self.staff)
+        response = self.client.post(
+            self.ban_url(self.other_staff.username),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
 
 class UnbanUserViewTest(TestCase):
     """Tests for the unban_user view."""
@@ -226,6 +258,28 @@ class UnbanUserViewTest(TestCase):
         self.login(self.staff)
         response = self.client.get(self.unban_url(self.regular.username))
         self.assertEqual(response.status_code, 405)
+
+    # AJAX: staff gets JSON ok response
+    def test_ajax_unban_returns_json(self):
+        self.login(self.staff)
+        response = self.client.post(
+            self.unban_url(self.regular.username),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"ok": True})
+        self.regular.refresh_from_db()
+        self.assertFalse(self.regular.is_banned)
+
+    # AJAX: non-staff gets 403 JSON
+    def test_ajax_non_staff_gets_403_json(self):
+        self.login(self.other)
+        response = self.client.post(
+            self.unban_url(self.regular.username),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("error", response.json())
 
 
 class BannedUserMiddlewareTest(TestCase):

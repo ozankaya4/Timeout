@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from timeout.models import Event
 from datetime import datetime
+from django.utils import timezone
 
 
 @login_required
@@ -18,8 +19,8 @@ def event_edit(request, pk):
 
     if request.method == "POST":
         try:
-            start_dt = datetime.fromisoformat(request.POST.get("start_datetime"))
-            end_dt = datetime.fromisoformat(request.POST.get("end_datetime"))
+            start_dt = timezone.make_aware(datetime.fromisoformat(request.POST.get("start_datetime")))
+            end_dt = timezone.make_aware(datetime.fromisoformat(request.POST.get("end_datetime")))
         except (ValueError, TypeError):
             messages.error(request, "Invalid date/time format.")
             return redirect("calendar")
