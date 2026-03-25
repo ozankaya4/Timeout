@@ -29,6 +29,7 @@ urlpatterns = [
     path('event/<int:pk>/edit/', edit_views.event_edit, name='event_edit'),
     path('event/<int:pk>/delete/', delete_views.event_delete, name='event_delete'),
     path('deadlines/<int:event_id>/complete/', deadline_views.deadline_mark_complete, name='deadline_mark_complete'),
+    path('deadlines/<int:event_id>/incomplete/', deadline_views.deadline_mark_incomplete, name='deadline_mark_incomplete'),
     path("notifications/", notifications_view, name="notifications"),
     path("notifications/read/<int:notification_id>/", mark_notification_read, name="mark_notification_read"),
     path('notifications/poll/', poll_notifications, name='poll_notifications'),

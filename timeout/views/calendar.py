@@ -109,7 +109,7 @@ def index_events(events_qs, last_visible):
         events_by_date.setdefault(ev.start_datetime.date(), []).append(data) # add the event to the list for its start date
 
         if ev.recurrence != 'none':
-            _expand_recurrence(ev, last_visible, now_date, events_by_date) # if the event is recurring, expand it into future occurrences within the visible range
+            create_recurrence(ev, last_visible, now_date, events_by_date) # if the event is recurring, expand it into future occurrences within the visible range
         
     return events_by_date # return the indexed events
 
@@ -135,12 +135,12 @@ def create_dict(ev, start_dt, end_dt, now_date):
 
 # to-do add recurrence helpers
 # ask expand_recurrence and advance_date
-def _expand_recurrence(ev, last_visible, now_date, events_by_date):
+def create_recurrence(ev, last_visible, now_date, events_by_date):
     """Generate pseudo-event dicts for recurring occurrences within the visible range."""
     current_date = ev.start_datetime.date()
  
     while True:
-        current_date = _advance_date(current_date, ev.recurrence)
+        current_date = advance_date(current_date, ev.recurrence)
         if current_date is None or current_date > last_visible:
             break
  
@@ -154,8 +154,8 @@ def _expand_recurrence(ev, last_visible, now_date, events_by_date):
         events_by_date.setdefault(current_date, []).append(data)
  
  
-def _advance_date(current_date, recurrence):
-    """Return the next occurrence date, or None if recurrence is unrecognised."""
+def advance_date(current_date, recurrence):
+    """Return the next occurrence date. Returns None if the recurrence is not recognized."""
     if recurrence == 'daily':
         return current_date + timedelta(days=1)
     if recurrence == 'weekly':
@@ -190,7 +190,7 @@ def build_day(day, month, today, events_by_date):
 
 # helpers to gather data
 def get_data(request):
-    """Gelper function to gather data needed for upcoming deadlines and reschedule prompts"""
+    """Helper function to gather data needed for upcoming deadlines and reschedule prompts"""
     now = timezone.now()
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,

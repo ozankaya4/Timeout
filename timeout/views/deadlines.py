@@ -74,3 +74,18 @@ def deadline_mark_complete(request, event_id):
         'is_completed': True,
         'title': event.title,
     })
+
+@login_required
+@require_POST
+def deadline_mark_incomplete(request, event_id):
+    """AJAX endpoint to mark a deadline back to incomplete."""
+    event = DeadlineService.mark_incomplete(request.user, event_id)
+
+    if event is None:
+        return JsonResponse({'error': 'Deadline not found.'}, status=404)
+
+    return JsonResponse({
+        'id': event.pk,
+        'is_completed': False,
+        'title': event.title,
+    })

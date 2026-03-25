@@ -47,6 +47,22 @@ class DeadlineService:
         except Event.DoesNotExist:
             return None
         
+
+    @staticmethod
+    def mark_incomplete(user, event_id):
+        """Mark a single event as incomplete."""
+        try:
+            event = Event.objects.get(
+                pk=event_id,
+                creator=user,
+                is_completed=True,
+            )
+            event.is_completed = False
+            event.save(update_fields=['is_completed', 'updated_at'])
+            return event
+        except Event.DoesNotExist:
+            return None
+        
 def create_filter_query(user, status_filter, event_type, sort_order):
     """Build a queryset applying filters.
     Takes parameters from get_filtered_deadlines function and applies them"""
