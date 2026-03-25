@@ -1,7 +1,7 @@
 """
 Tests for DeadlineService.get_active_deadlines, DeadlineService.mark_complete,
-DeadlineService.get_filtered_deadlines, DeadlineService.get_all_active_events,
-and the helper functions _format_timedelta and _format_elapsed.
+DeadlineService.get_filtered_deadlines, and the helper functions
+time_string and time_passed.
 
 All time-dependent tests mock timezone.now() for deterministic results.
 """
@@ -17,8 +17,8 @@ from django.utils import timezone
 from timeout.models import Event
 from timeout.services.deadline_service import (
     DeadlineService,
-    _format_timedelta,
-    _format_elapsed,
+    time_string,
+    time_passed,
 )
 
 User = get_user_model()
@@ -30,95 +30,86 @@ def _patch_now():
     return patch("timeout.services.deadline_service.timezone.now", return_value=MOCK_NOW)
 
 
-# ======================================================================
-# _format_timedelta tests
-# ======================================================================
-
+# time_string tests
 
 class FormatTimedeltaTests(TestCase):
-    """Cover every branch in _format_timedelta."""
+    """Cover every branch in time_string."""
 
-    # -- Positive (time remaining) branches --------------------------
+    # Positive (time remaining) branches 
 
     def test_days_and_hours_left(self):
         td = timedelta(days=3, hours=5, minutes=20)
-        self.assertEqual(_format_timedelta(td), "3d 5h left")
+        self.assertEqual(time_string(td), "3d 5h left")
 
     def test_hours_and_minutes_left(self):
         td = timedelta(hours=2, minutes=45)
-        self.assertEqual(_format_timedelta(td), "2h 45m left")
+        self.assertEqual(time_string(td), "2h 45m left")
 
     def test_minutes_only_left(self):
         td = timedelta(minutes=30)
-        self.assertEqual(_format_timedelta(td), "30m left")
+        self.assertEqual(time_string(td), "30m left")
 
     def test_zero_time_left(self):
         td = timedelta(seconds=0)
-        self.assertEqual(_format_timedelta(td), "0m left")
+        self.assertEqual(time_string(td), "0m left")
 
-    # -- Negative (overdue) branches ---------------------------------
+    # Negative (overdue) branches
 
     def test_overdue_days_and_hours(self):
-        td = timedelta(days=-2, hours=-3)  # roughly -2d -3h
-        result = _format_timedelta(td)
+        td = timedelta(days=-2, hours=-3)
+        result = time_string(td)
         self.assertIn("overdue", result)
         self.assertIn("d", result)
 
     def test_overdue_hours_and_minutes(self):
         td = timedelta(hours=-5, minutes=-15)
-        result = _format_timedelta(td)
+        result = time_string(td)
         self.assertIn("overdue", result)
         self.assertIn("h", result)
 
     def test_overdue_minutes_only(self):
         td = timedelta(minutes=-10)
-        result = _format_timedelta(td)
+        result = time_string(td)
         self.assertEqual(result, "10m overdue")
 
     def test_overdue_seconds_only_shows_zero_minutes(self):
         td = timedelta(seconds=-30)
-        result = _format_timedelta(td)
+        result = time_string(td)
         self.assertEqual(result, "0m overdue")
 
 
-# ======================================================================
-# _format_elapsed tests
-# ======================================================================
-
+# time_passed tests
 
 class FormatElapsedTests(TestCase):
-    """Cover every branch in _format_elapsed."""
+    """Cover every branch in time_passed."""
 
     def test_days_ago_singular(self):
-        self.assertEqual(_format_elapsed(timedelta(days=1, hours=5)), "Added 1 day ago")
+        self.assertEqual(time_passed(timedelta(days=1, hours=5)), "Added 1 day ago")
 
     def test_days_ago_plural(self):
-        self.assertEqual(_format_elapsed(timedelta(days=3)), "Added 3 days ago")
+        self.assertEqual(time_passed(timedelta(days=3)), "Added 3 days ago")
 
     def test_hours_ago_singular(self):
-        self.assertEqual(_format_elapsed(timedelta(hours=1, minutes=20)), "Added 1 hour ago")
+        self.assertEqual(time_passed(timedelta(hours=1, minutes=20)), "Added 1 hour ago")
 
     def test_hours_ago_plural(self):
-        self.assertEqual(_format_elapsed(timedelta(hours=5)), "Added 5 hours ago")
+        self.assertEqual(time_passed(timedelta(hours=5)), "Added 5 hours ago")
 
     def test_minutes_ago(self):
-        self.assertEqual(_format_elapsed(timedelta(minutes=15)), "Added 15 min ago")
+        self.assertEqual(time_passed(timedelta(minutes=15)), "Added 15 min ago")
 
     def test_seconds_ago_shows_just_now(self):
-        self.assertEqual(_format_elapsed(timedelta(seconds=30)), "Added just now")
+        self.assertEqual(time_passed(timedelta(seconds=30)), "Added just now")
 
     def test_zero_elapsed_shows_just_now(self):
-        self.assertEqual(_format_elapsed(timedelta(seconds=0)), "Added just now")
+        self.assertEqual(time_passed(timedelta(seconds=0)), "Added just now")
 
     def test_negative_elapsed_shows_just_now(self):
         """Negative timedelta (clock skew edge case) → 'Added just now'."""
-        self.assertEqual(_format_elapsed(timedelta(seconds=-5)), "Added just now")
+        self.assertEqual(time_passed(timedelta(seconds=-5)), "Added just now")
 
 
-# ======================================================================
 # DeadlineService.get_active_deadlines tests
-# ======================================================================
-
 
 class GetActiveDeadlinesTests(TestCase):
     """Test DeadlineService.get_active_deadlines with mocked time."""
@@ -136,16 +127,12 @@ class GetActiveDeadlinesTests(TestCase):
             is_completed=completed,
         )
 
-    # ------------------------------------------------------------------
-    # Unauthenticated user → empty list
-    # ------------------------------------------------------------------
+    # Unauthenticated user to empty list
     def test_unauthenticated_returns_empty(self):
         result = DeadlineService.get_active_deadlines(AnonymousUser())
         self.assertEqual(result, [])
 
-    # ------------------------------------------------------------------
     # Urgency classification
-    # ------------------------------------------------------------------
     @_patch_now()
     def test_overdue_status(self, _mock):
         self._create_deadline("Overdue", timedelta(days=-5), timedelta(hours=-1))
@@ -175,9 +162,7 @@ class GetActiveDeadlinesTests(TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["urgency_status"], "normal")
 
-    # ------------------------------------------------------------------
     # Ordering & filtering
-    # ------------------------------------------------------------------
     @_patch_now()
     def test_completed_excluded(self, _mock):
         self._create_deadline("Done", timedelta(days=-1), timedelta(days=2), completed=True)
@@ -192,9 +177,7 @@ class GetActiveDeadlinesTests(TestCase):
         self.assertEqual(results[0]["event"].title, "Earlier")
         self.assertEqual(results[1]["event"].title, "Later")
 
-    # ------------------------------------------------------------------
     # Display fields populated
-    # ------------------------------------------------------------------
     @_patch_now()
     def test_result_dict_structure(self, _mock):
         self._create_deadline("Check", timedelta(days=-1), timedelta(days=3))
@@ -206,9 +189,7 @@ class GetActiveDeadlinesTests(TestCase):
         self.assertIn("time_remaining_display", r)
         self.assertIn("time_elapsed_display", r)
 
-    # ------------------------------------------------------------------
     # Different user sees only own deadlines
-    # ------------------------------------------------------------------
     @_patch_now()
     def test_user_isolation(self, _mock):
         other = User.objects.create_user(username="other", password="pass1234")
@@ -217,11 +198,7 @@ class GetActiveDeadlinesTests(TestCase):
         self.assertEqual(len(results), 0)
 
 
-# ======================================================================
 # DeadlineService.mark_complete tests
-# ======================================================================
-
-
 class MarkCompleteServiceTests(TestCase):
     """Test DeadlineService.mark_complete."""
 
@@ -271,11 +248,7 @@ class MarkCompleteServiceTests(TestCase):
         self.assertTrue(result.is_completed)
 
 
-# ======================================================================
 # DeadlineService.get_filtered_deadlines tests
-# ======================================================================
-
-
 class GetFilteredDeadlinesTests(TestCase):
     """Cover every branch in get_filtered_deadlines."""
 
@@ -293,12 +266,12 @@ class GetFilteredDeadlinesTests(TestCase):
             is_completed=completed,
         )
 
-    # -- Unauthenticated user ----------------------------------------
+    # Unauthenticated user
     def test_unauthenticated_returns_empty(self):
         result = DeadlineService.get_filtered_deadlines(AnonymousUser())
         self.assertEqual(result, [])
 
-    # -- Status filters ----------------------------------------------
+    # Status filters
     @_patch_now()
     def test_active_filter_excludes_completed(self, _m):
         self._create_event("Active", completed=False)
@@ -324,7 +297,7 @@ class GetFilteredDeadlinesTests(TestCase):
         results = DeadlineService.get_filtered_deadlines(self.user, status_filter='all')
         self.assertEqual(len(results), 2)
 
-    # -- Event type filter -------------------------------------------
+    # Event type filter
     @_patch_now()
     def test_event_type_filter(self, _m):
         self._create_event("Deadline", event_type="deadline")
@@ -340,7 +313,7 @@ class GetFilteredDeadlinesTests(TestCase):
         results = DeadlineService.get_filtered_deadlines(self.user, status_filter='all', event_type=None)
         self.assertEqual(len(results), 2)
 
-    # -- Sort order --------------------------------------------------
+    # Sort order
     @_patch_now()
     def test_sort_asc(self, _m):
         self._create_event("Later", end_offset=timedelta(days=5))
@@ -357,7 +330,7 @@ class GetFilteredDeadlinesTests(TestCase):
         self.assertEqual(results[0]['event'].title, "Later")
         self.assertEqual(results[1]['event'].title, "Sooner")
 
-    # -- Urgency classification --------------------------------------
+    # Urgency classification
     @_patch_now()
     def test_completed_urgency_status(self, _m):
         self._create_event("Done", completed=True)
@@ -383,11 +356,7 @@ class GetFilteredDeadlinesTests(TestCase):
         self.assertEqual(results[0]['urgency_status'], 'normal')
 
 
-# ======================================================================
 # DeadlineService.get_all_active_events tests
-# ======================================================================
-
-
 class GetAllActiveEventsTests(TestCase):
     """Cover get_all_active_events including type-specific logic."""
 
@@ -406,12 +375,12 @@ class GetAllActiveEventsTests(TestCase):
             status=status,
         )
 
-    # -- Unauthenticated ---------------------------------------------
+    # Unauthenticated
     def test_unauthenticated_returns_empty_dict(self):
         result = DeadlineService.get_all_active_events(AnonymousUser())
         self.assertEqual(result, {})
 
-    # -- Deadline urgency branches -----------------------------------
+    # Deadline urgency branches
     @_patch_now()
     def test_deadline_overdue(self, _m):
         self._create_event("Overdue DL", event_type="deadline", end_offset=timedelta(hours=-2))
@@ -434,7 +403,7 @@ class GetAllActiveEventsTests(TestCase):
         items = result.get('deadline', [])
         self.assertEqual(items[0]['urgency_status'], 'normal')
 
-    # -- Non-deadline: missed vs upcoming ----------------------------
+    # Non-deadline: missed vs upcoming
     @_patch_now()
     def test_study_session_missed(self, _m):
         self._create_event("Missed SS", event_type="study_session", end_offset=timedelta(hours=-1))
@@ -451,7 +420,7 @@ class GetAllActiveEventsTests(TestCase):
         items = result.get('study_session', [])
         self.assertEqual(items[0]['urgency_status'], 'upcoming')
 
-    # -- Completed and cancelled excluded ----------------------------
+    # Completed and cancelled excluded
     @_patch_now()
     def test_completed_excluded(self, _m):
         self._create_event("Completed", completed=True)
@@ -464,7 +433,7 @@ class GetAllActiveEventsTests(TestCase):
         result = DeadlineService.get_all_active_events(self.user)
         self.assertEqual(result, {})
 
-    # -- Past non-deadline/non-study-session excluded ----------------
+    # Past non-deadline/non-study-session excluded         
     @_patch_now()
     def test_past_exam_excluded(self, _m):
         self._create_event("Past Exam", event_type="exam", end_offset=timedelta(hours=-1))
@@ -478,7 +447,7 @@ class GetAllActiveEventsTests(TestCase):
         result = DeadlineService.get_all_active_events(self.user)
         self.assertIn('exam', result)
 
-    # -- Grouping by type --------------------------------------------
+    # Grouping by type                       
     @_patch_now()
     def test_grouped_by_type(self, _m):
         self._create_event("DL", event_type="deadline", end_offset=timedelta(days=3))

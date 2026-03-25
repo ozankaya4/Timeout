@@ -36,7 +36,7 @@ def make_user(username='testuser', password='TestPass1!', **kwargs):
     return User.objects.create_user(username=username, password=password, **kwargs)
 
 
-# ─── Calendar View ──────────────────────────────────────────────────
+# Calendar View 
 
 class CalendarViewTests(TestCase):
 
@@ -125,7 +125,7 @@ class CalendarViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-# ─── Event Create ───────────────────────────────────────────────────
+#  Event Create 
 
 class EventCreateTests(TestCase):
 
@@ -175,7 +175,7 @@ class EventCreateTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-# ─── Event Delete ───────────────────────────────────────────────────
+#  Event Delete 
 
 class EventDeleteTests(TestCase):
 
@@ -201,7 +201,7 @@ class EventDeleteTests(TestCase):
         self.assertTrue(Event.objects.filter(pk=self.event.pk).exists())
 
 
-# ─── Deadline Service ───────────────────────────────────────────────
+#  Deadline Service 
 
 class DeadlineServiceTests(TestCase):
 
@@ -313,7 +313,7 @@ class DeadlineServiceTests(TestCase):
         self.assertEqual(result, 'Added just now')
 
 
-# ─── Deadline Views ─────────────────────────────────────────────────
+#  Deadline Views 
 
 class DeadlineViewTests(TestCase):
 
@@ -353,7 +353,7 @@ class DeadlineViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-# ─── Settings View ──────────────────────────────────────────────────
+#  Settings View 
 
 class SettingsViewTests(TestCase):
 
@@ -420,7 +420,7 @@ class SettingsViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-# ─── Profile Edit View ──────────────────────────────────────────────
+#  Profile Edit View 
 
 class ProfileEditViewTests(TestCase):
 
@@ -460,7 +460,7 @@ class ProfileEditViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-# ─── Profile Edit Form ──────────────────────────────────────────────
+#  Profile Edit Form 
 
 class ProfileEditFormTests(TestCase):
 
@@ -552,7 +552,7 @@ class ProfileEditFormTests(TestCase):
             self.assertEqual(user.university, 'Existing')
 
 
-# ─── AI Calendar ────────────────────────────────────────────────────
+#  AI Calendar 
 
 class AICalendarTests(TestCase):
 
@@ -681,7 +681,7 @@ class AICalendarTests(TestCase):
         self.assertEqual(resp.status_code, 405)
 
 
-# ─── Social API Endpoints ───────────────────────────────────────────
+#  Social API Endpoints 
 
 class SocialAPITests(TestCase):
 
@@ -739,7 +739,7 @@ class SocialAPITests(TestCase):
         self.assertNotIn('alice', usernames)
 
 
-# ─── Profile View with Events ───────────────────────────────────────
+#  Profile View with Events 
 
 class ProfileEventTests(TestCase):
 
@@ -781,7 +781,7 @@ class ProfileEventTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-# ─── Event Edit Edge Cases ──────────────────────────────────────────
+#  Event Edit Edge Cases 
 
 class EventEditEdgeCases(TestCase):
 
