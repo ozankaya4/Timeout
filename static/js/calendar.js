@@ -25,16 +25,6 @@ function openAddEvent(dateStr) {
   });
 })();
 
-window.AI_ADD_URL = '{% url "ai_event_create" %}';
-window.AI_CSRF_TOKEN = '{{ csrf_token }}';
-window.SP_PLAN_URL = '{% url "study_planner_plan" %}';
-window.SP_CONFIRM_URL = '{% url "study_planner_confirm" %}';
-window.RESCHEDULE_URL = '{% url "ai_reschedule" %}';
-window.RESCHEDULE_CANCEL_URL_TPL = '/calendar/{id}/cancel/';
-window.EVENT_CREATE_URL = '{% url "event_create" %}';
-window.RS_SUGGEST_URL = '{% url "reschedule_study_sessions" %}';
-window.RS_APPLY_URL = '{% url "apply_session_schedule" %}';
-
 function openDayEvents(dateStr, dateLabel, el) {
   const cell = el.closest('td');
   const chips = cell.querySelectorAll('.cal-chip');
