@@ -33,10 +33,10 @@
   <a class="nav-link" href="{% url 'notifications' %}" id="nav-notifications-link">
     Notifications
     <span id="nav-notif-badge" 
-      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-      {% if unread_count == 0 or user.status == 'focus' %}style="display:none"{% endif %}>
-  {{ unread_count }}
-</span>
+        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+        {% if unread_count == 0 or user.status == 'focus' %}style="display:none"{% endif %}>
+        {% if unread_count > 99 %}99+{% else %}{{ unread_count }}{% endif %}
+    </span>
   </a>
 </li>
 
