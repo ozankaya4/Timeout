@@ -22,7 +22,7 @@ urlpatterns = [
     path('deadlines/', deadline_views.deadline_list_view, name='deadline_list'),
     path('deadlines/<int:event_id>/complete/', deadline_views.deadline_mark_complete, name='deadline_mark_complete'),
     
-    # Event CRUD – click an event to view/edit/delete
+    # Event CRUD, click an event to view/edit/delete
     path('event/<int:event_id>/', detail_views.event_details, name='event_details'),
     path('event/<int:pk>/edit/', edit_views.event_edit, name='event_edit'),
     path('event/<int:pk>/delete/', delete_views.event_delete, name='event_delete'),

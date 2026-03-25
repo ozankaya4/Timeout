@@ -7,26 +7,10 @@ from django.core.paginator import Paginator
 from timeout.services.notification_service import NotificationService
 
 
-@login_required
-def notifications_view(request):
-    notifications_qs = Notification.objects.filter(
-        user=request.user,
-        is_dismissed=False
-    ).order_by('-created_at')
-
-    unread_count = notifications_qs.filter(is_read=False).count()
-
-    # Filter by unread if requested
-    filter_param = request.GET.get('filter')
-    if filter_param == 'unread':
-        notifications_qs = notifications_qs.filter(is_read=False)
-
-    paginator = Paginator(notifications_qs, 10)
-    page_number = request.GET.get('page')
-    notifications = paginator.get_page(page_number)
-
+def _annotate_follow_requests(user, notifications):
+    """Annotate notifications with follow request usernames for pending requests."""
     pending_usernames = set(
-        FollowRequest.objects.filter(to_user=request.user)
+        FollowRequest.objects.filter(to_user=user)
         .values_list('from_user__username', flat=True)
     )
     for n in notifications:
@@ -36,6 +20,20 @@ def notifications_view(request):
             if username in pending_usernames:
                 n.follow_request_username = username
 
+
+@login_required
+def notifications_view(request):
+    """Display paginated list of user's notifications with optional unread filter."""
+    notifications_qs = Notification.objects.filter(
+        user=request.user, is_dismissed=False
+    ).order_by('-created_at')
+    unread_count = notifications_qs.filter(is_read=False).count()
+    filter_param = request.GET.get('filter')
+    if filter_param == 'unread':
+        notifications_qs = notifications_qs.filter(is_read=False)
+    paginator = Paginator(notifications_qs, 10)
+    notifications = paginator.get_page(request.GET.get('page'))
+    _annotate_follow_requests(request.user, notifications)
     return render(request, 'pages/notifications.html', {
         'notifications': notifications,
         'unread_count': unread_count,
@@ -45,6 +43,7 @@ def notifications_view(request):
 
 @login_required
 def mark_notification_read(request, notification_id):
+    """Mark a notification as read for the authenticated user."""
     try:
         n = Notification.objects.get(id=notification_id, user=request.user)
         n.is_read = True
@@ -55,6 +54,7 @@ def mark_notification_read(request, notification_id):
 
 @login_required
 def delete_notification(request, notification_id):
+    """Dismiss a notification and mark it as read."""
     try:
         n = Notification.objects.get(id=notification_id, user=request.user)
         n.is_dismissed = True
@@ -66,35 +66,24 @@ def delete_notification(request, notification_id):
 
 @login_required
 def poll_notifications(request):
+    """Poll for new notifications created after last_id and return unread count."""
     try:
         last_id = int(request.GET.get('last_id', 0))
     except (ValueError, TypeError):
         last_id = 0
-
     NotificationService.create_deadline_notifications(request.user)
-    NotificationService.create_event_notifications(request.user)  # ADD THIS
-
+    NotificationService.create_event_notifications(request.user)
     notifications = Notification.objects.filter(
-        user=request.user,
-        id__gt=last_id,
-        is_dismissed=False
+        user=request.user, id__gt=last_id, is_dismissed=False
     ).order_by('id')
-
     data = [
         {
-            'id': n.id,
-            'title': n.title,
-            'message': n.message,
-            'created_at': n.created_at.strftime('%H:%M'),
-            'is_read': bool(n.is_read),
+            'id': n.id, 'title': n.title, 'message': n.message,
+            'created_at': n.created_at.strftime('%H:%M'), 'is_read': bool(n.is_read),
         }
         for n in notifications
     ]
-
     unread_count = Notification.objects.filter(
-        user=request.user,
-        is_read=False,
-        is_dismissed=False
+        user=request.user, is_read=False, is_dismissed=False
     ).count()
-
     return JsonResponse({'notifications': data, 'unread_count': unread_count})
