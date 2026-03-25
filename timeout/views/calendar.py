@@ -191,18 +191,13 @@ def build_day(day, month, today, events_by_date):
 def get_data(request, events_by_date=None):
     """Helper function to gather data needed for upcoming deadlines and reschedule prompts"""
     now = timezone.now()
-    upcoming_deadlines = Event.objects.filter(
-        creator=request.user,
-        event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
+    upcoming_deadlines = Event.objects.filter(creator=request.user,event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
         start_datetime__gte=now,
     ).order_by('start_datetime')[:20]
-    missed_sessions = Event.objects.filter(
-        creator=request.user,
-        event_type=Event.EventType.STUDY_SESSION,
+    missed_sessions = Event.objects.filter(creator=request.user,event_type=Event.EventType.STUDY_SESSION,
         status=Event.EventStatus.UPCOMING,
         end_datetime__lt=now,
-        is_completed=False,
-    )
+        is_completed=False,)
     reschedule_prompts = [
         {
             'id': e.pk,
@@ -210,8 +205,7 @@ def get_data(request, events_by_date=None):
             'duration_minutes': int((e.end_datetime - e.start_datetime).total_seconds() / 60),
             'reason': 'missed',
         }
-        for e in missed_sessions
-    ]
+        for e in missed_sessions]
     reschedule_prompts += request.session.pop('reschedule_prompts', [])
     today_events = (events_by_date or {}).get(now.date(), [])
     return {
@@ -249,8 +243,10 @@ def apply_session_schedule(request):
                 creator=request.user,
                 event_type=Event.EventType.STUDY_SESSION,
             )
-            event.start_datetime = s['start']
-            event.end_datetime = s['end']
+            #event.start_datetime = s['start']
+            #event.end_datetime = s['end']
+            event.start_datetime = timezone.make_aware(datetime.fromisoformat(s['start'])) #added datetime format to clear the warnings
+            event.end_datetime = timezone.make_aware(datetime.fromisoformat(s['end']))
             event.save()
             updated += 1
         except (Event.DoesNotExist, KeyError):
