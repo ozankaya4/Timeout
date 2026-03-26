@@ -7,8 +7,14 @@
   var form = document.getElementById('settingsForm');
   var statusEl = document.getElementById('autosaveStatus');
   var statusText = document.getElementById('autosaveText');
-  var saveUrl = '{% url "settings_save" %}';
-  var csrfToken = '{{ csrf_token }}';
+  var saveUrl = '/settings/save/';
+  var csrfToken = (function() {
+    for (var c of document.cookie.split(';')) {
+      var parts = c.trim().split('=');
+      if (parts[0] === 'csrftoken') return decodeURIComponent(parts[1]);
+    }
+    return '';
+  })();
   var saveTimer = null;
 
   /**
