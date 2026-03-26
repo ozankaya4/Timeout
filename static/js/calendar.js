@@ -1,3 +1,14 @@
+/**
+ * Calendar event management: Add events, view day details, mark ongoing status.
+ * Handles modal interactions for creating new events, viewing events by day,
+ * and highlighting currently active events.
+ */
+
+
+/**
+ * Open add event modal prefilled with start and end times for a specific date.
+ * @param {string} dateStr - Date string in YYYY-MM-DD format.
+ */
 function openAddEvent(dateStr) {
     document.getElementById('eventStart').value = dateStr + 'T09:00';
     document.getElementById('eventEnd').value = dateStr + 'T10:00';
@@ -5,6 +16,10 @@ function openAddEvent(dateStr) {
     modal.show();
 }
 
+/**
+ * Handle opening a specific event from URL parameter.
+ * If ?open_event=ID is present, scroll to and highlight the event chip.
+ */
 (function () {
     const params = new URLSearchParams(window.location.search);
     const openId = params.get("open_event");
@@ -34,6 +49,12 @@ window.EVENT_CREATE_URL = document.querySelector('meta[name="event-create-url"]'
 window.RS_SUGGEST_URL = document.querySelector('meta[name="rs-suggest-url"]').content;
 window.RS_APPLY_URL = document.querySelector('meta[name="rs-apply-url"]').content;
 
+/**
+ * Open modal displaying all events for a selected day with titles and times.
+ * @param {string} dateStr - Date string in YYYY-MM-DD format.
+ * @param {string} dateLabel - Human-readable date label for modal title.
+ * @param {HTMLElement} el - Clicked element (used to find parent cell).
+ */
 function openDayEvents(dateStr, dateLabel, el) {
     const cell = el.closest('td');
     const chips = cell.querySelectorAll('.cal-chip');
@@ -71,7 +92,9 @@ function openDayEvents(dateStr, dateLabel, el) {
     new bootstrap.Modal(document.getElementById('dayEventsModal')).show();
 }
 
-// Highlight currently ongoing events
+/**
+ * Mark calendar event chips as 'ongoing' based on their data-event-status attribute.
+ */
 document.querySelectorAll('.cal-chip').forEach(chip => {
     const status = chip.getAttribute('data-event-status');
     if (status === 'Ongoing') {

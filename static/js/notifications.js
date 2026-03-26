@@ -167,9 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
         _navigateNotification(notifItem);
     });
 
-    /* ─────────────────────────────────────────
-       MARK ALL READ
-    ───────────────────────────────────────── */
+    /* MARK ALL READ */
 
     document.getElementById("mark-all-read-btn")?.addEventListener("click", async () => {
         try {
@@ -214,9 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("Mark all unread error:", err); }
     });
 
-    /* ─────────────────────────────────────────
-       INFINITE SCROLL
-    ───────────────────────────────────────── */
+    /* INFINITE SCROLL*/
 
     const sentinel = document.getElementById("scroll-sentinel");
     const loadingIndicator = document.getElementById("loading-indicator");

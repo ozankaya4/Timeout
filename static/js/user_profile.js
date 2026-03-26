@@ -93,6 +93,10 @@
   setupModal('friendsModal', FRIENDS_URL, 'friends-list', 'friends-list');
 })();
 
+/**
+ * Initialize block/unblock button handlers on user profile.
+ * Toggles block status via API, updates button text, styling, and reloads page.
+ */
 document.querySelectorAll('.block-btn').forEach(btn => {
   btn.addEventListener('click', function () {
     const username = this.dataset.username;

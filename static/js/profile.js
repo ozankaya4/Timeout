@@ -268,6 +268,10 @@ function _initModalSearch(input, listEl) {
   };
 }
 
+/**
+ * Load and render followers list when followers modal is opened.
+ * Fetches followers, renders with follow-back options, and initializes search.
+ */
 document.getElementById('followersModal')?.addEventListener('show.bs.modal', () => {
   const input = document.querySelector('[data-modal-search="followers-list"]');
   input.value = '';
@@ -282,6 +286,10 @@ document.getElementById('followersModal')?.addEventListener('show.bs.modal', () 
     });
 });
 
+/**
+ * Load and render following list when following modal is opened.
+ * Fetches following list, renders with unfollow options, and initializes search.
+ */
 document.getElementById('followingModal')?.addEventListener('show.bs.modal', () => {
   const input = document.querySelector('[data-modal-search="following-list"]');
   input.value = '';
@@ -296,6 +304,10 @@ document.getElementById('followingModal')?.addEventListener('show.bs.modal', () 
     });
 });
 
+/**
+ * Load and render mutual friends list when friends modal is opened.
+ * Fetches friends, renders list, and initializes search filter.
+ */
 document.getElementById('friendsModal')?.addEventListener('show.bs.modal', () => {
   const input = document.querySelector('[data-modal-search="friends-list"]');
   input.value = '';
@@ -309,6 +321,10 @@ document.getElementById('friendsModal')?.addEventListener('show.bs.modal', () =>
     });
 });
 
+/**
+ * Load and render blocked users list when blocked modal is opened.
+ * Fetches blocked list, renders with unblock buttons, and initializes search.
+ */
 document.getElementById('blockedModal')?.addEventListener('show.bs.modal', () => {
   const input = document.querySelector('[data-modal-search="blocked-list"]');
   input.value = '';
@@ -323,6 +339,11 @@ document.getElementById('blockedModal')?.addEventListener('show.bs.modal', () =>
     });
 });
 
+/**
+ * Render HTML for blocked users list with unblock buttons.
+ * @param {Array} users - Array of blocked user objects.
+ * @returns {string} HTML string of blocked users with action buttons.
+ */
 function _renderBlockedList(users) {
   if (users.length === 0) return '<p class="text-center text-muted py-3">No blocked users.</p>';
   return users.map(u => `
@@ -338,6 +359,11 @@ function _renderBlockedList(users) {
     </div>`).join('');
 }
 
+/**
+ * Attach unblock button click handlers to blocked users list.
+ * Sends unblock request, removes user from list, and updates empty state.
+ * @param {HTMLElement} container - Container element with unblock buttons.
+ */
 function attachUnblockHandlers(container) {
   container.querySelectorAll('.unblock-btn').forEach(btn => {
     btn.addEventListener('click', function () {
