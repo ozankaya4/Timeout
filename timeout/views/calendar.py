@@ -148,7 +148,7 @@ def calendar_view(request):
             pseudo_event = {
                 'original': ev,
                 'recurrence_instance': True,
-                'id': ev.id,
+                'id': ev.id, 
                 'title': ev.title,
                 'start_datetime': start_dt,
                 'end_datetime': end_dt,
@@ -158,7 +158,7 @@ def calendar_view(request):
                 'location': ev.location,
                 'description': ev.description,
                 'is_all_day': ev.is_all_day,
-                'instance_date': current_date,
+                'instance_date': current_date, 
                 'visibility': ev.visibility,
                 'allow_conflict': ev.allow_conflict,
                 'color': getattr(ev, 'color', ''),
@@ -189,13 +189,13 @@ def calendar_view(request):
     # Get today's events for AI workload warning
     today_events = events_by_date.get(timezone.now().date(), [])
     workload_warning = get_ai_workload_warning(request.user, today_events)
-
+    
     upcoming_deadlines = Event.objects.filter(
         creator=request.user,
         event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
         start_datetime__gte=timezone.now(),
     ).order_by('start_datetime')[:20]
-
+    
     # Missed study sessions: past events still in UPCOMING status
     now = timezone.now()
     missed_sessions = Event.objects.filter(
