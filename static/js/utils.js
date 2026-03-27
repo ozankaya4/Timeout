@@ -28,6 +28,15 @@ function postJSON(url, { headers = {}, body } = {}) {
 }
 
 /**
+ * Perform a GET request, returning parsed JSON.
+ * @param {string} url - The endpoint URL.
+ * @returns {Promise<Object>} Parsed JSON response.
+ */
+function getJSON(url) {
+    return fetch(url).then(function(r) { return r.json(); });
+}
+
+/**
  * Play a beep tone at specified frequency, duration, and volume.
  */
 function playBeep(freq, duration, volume) {

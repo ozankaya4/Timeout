@@ -77,8 +77,7 @@
       var input = document.querySelector('[data-modal-search="' + searchAttr + '"]');
       if (input) { input.value = ''; input.oninput = null; }
 
-      fetch(url)
-        .then(function (r) { return r.json(); })
+      getJSON(url)
         .then(function (data) {
           var listEl = document.getElementById(listId);
           if (!listEl) return;

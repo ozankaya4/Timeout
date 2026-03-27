@@ -114,10 +114,7 @@ var DailyGoals = (function() {
   function refresh() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.goalsProgressUrl) return;
-    fetch(cfg.goalsProgressUrl)
-      .then(function(r) { return r.json(); })
-      .then(render)
-      .catch(function() {});
+    getJSON(cfg.goalsProgressUrl).then(render).catch(function() {});
   }
 
   /**
@@ -248,10 +245,7 @@ var Heatmap = (function() {
   function load() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.heatmapUrl) return;
-    fetch(cfg.heatmapUrl)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { render(data.days); })
-      .catch(function() {});
+    getJSON(cfg.heatmapUrl).then(function(data) { render(data.days); }).catch(function() {});
   }
 
   return { init: load };

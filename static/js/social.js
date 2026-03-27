@@ -163,8 +163,7 @@ function initUserSearch() {
         const query = this.value.trim();
         if (!query) { results.hidden = true; results.innerHTML = ''; return; }
         debounceTimer = setTimeout(function() {
-            fetch(`/social/search/?q=${encodeURIComponent(query)}`)
-                .then(r => r.json())
+            getJSON(`/social/search/?q=${encodeURIComponent(query)}`)
                 .then(data => _handleSearchResults(data, results, input))
                 .catch(() => { results.hidden = true; });
         }, 300);});

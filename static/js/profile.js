@@ -270,8 +270,7 @@ function _initUserModal(modalId, listId, url, options = {}) {
     const input = document.querySelector(`[data-modal-search="${listId}"]`);
     input.value = '';
     input.oninput = null;
-    fetch(url)
-      .then(r => r.json())
+    getJSON(url)
       .then(data => {
         const list = document.getElementById(listId);
         list.innerHTML = renderUserList(data.users, options.listOptions || {});
