@@ -28,28 +28,36 @@ def plan_sessions(request):
         return JsonResponse({'success': False, 'error': 'Invalid hours or session length.'}, status=400)
 
     deadline = get_object_or_404(Event, id=event_id, creator=request.user)
-    now = timezone.now()
-    free_slots = get_free_slots(request.user, now, deadline.start_datetime, session_length)
-    if not free_slots:
+    candidates = _find_candidate_slots(request.user, deadline, hours_needed, session_length)
+
+    if candidates is None:
         return JsonResponse({'success': False, 'error': 'No free time found before this deadline.'}, status=400)
 
+    return _schedule_with_gpt(deadline, hours_needed, session_length, candidates)
+
+
+def _find_candidate_slots(user, deadline, hours_needed, session_length):
+    """Find evenly spaced free slots for the deadline. Returns None if none found."""
+    now = timezone.now()
+    free_slots = get_free_slots(user, now, deadline.start_datetime, session_length)
+    if not free_slots:
+        return None
     num_sessions = max(1, int(hours_needed / session_length))
-    candidates = pick_evenly_spaced_slots(free_slots, num_sessions, now, deadline.start_datetime)
+    return pick_evenly_spaced_slots(free_slots, num_sessions, now, deadline.start_datetime)
 
-    gpt_sessions = call_gpt(deadline, hours_needed, session_length, candidates)
-    if gpt_sessions:
-        sessions = gpt_sessions
-    else:
-        title = f'Study for {deadline.title}'
-        sessions = [
-            {
-                'title': title,
-                'start': slot['start'].strftime('%Y-%m-%dT%H:%M'),
-                'end': slot['end'].strftime('%Y-%m-%dT%H:%M'),
-            }
-            for slot in candidates
-        ]
 
+def _schedule_with_gpt(deadline, hours_needed, session_length, candidates):
+    """Call GPT to schedule sessions and return the JSON response."""
+    if not getattr(settings, 'OPENAI_API_KEY', ''):
+        return JsonResponse({'success': False, 'error': 'OpenAI API key not configured.'}, status=500)
+    try:
+        sessions = call_gpt(deadline, hours_needed, session_length, candidates)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'AI returned invalid response. Try again.'}, status=500)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'AI error: {str(e)}'}, status=500)
+    if not sessions:
+        return JsonResponse({'success': False, 'error': 'AI could not generate sessions. Try again.'}, status=500)
     return JsonResponse({'success': True, 'sessions': sessions})
 
 
@@ -81,37 +89,45 @@ def confirm_sessions(request):
     except (json.JSONDecodeError, ValueError):
         return JsonResponse({'success': False, 'error': 'Invalid session data.'}, status=400)
 
-    created, errors = 0, []
-    for i, s in enumerate(sessions):
-        try:
-            _create_study_session(request.user, s)
-            created += 1
-        except (ValidationError, KeyError, ValueError) as e:
-            errors.append({'index': i, 'error': str(e)})
-    return JsonResponse({'success': True, 'count': created, 'errors': errors})
+    created = sum(1 for s in sessions if _create_session(request.user, s))
+    return JsonResponse({'success': True, 'count': created})
 
 
-def call_gpt(deadline, hours_needed, session_length, candidates):
-    """Call GPT to schedule sessions based on the deadline and free slots."""
-    prompt = build_prompt(deadline, hours_needed, session_length, candidates)
+def _create_session(user, s):
+    """Create a single study session event. Returns True on success."""
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        response = client.chat.completions.create(
-            model='gpt-4o-mini',
-            messages=[{'role': 'user', 'content': prompt}],
-            temperature=0,
-            max_tokens=600,
+        start = timezone.make_aware(datetime.fromisoformat(s['start']))
+        end = timezone.make_aware(datetime.fromisoformat(s['end']))
+        event = Event(
+            creator=user, title=s['title'],
+            event_type=Event.EventType.STUDY_SESSION,
+            start_datetime=start, end_datetime=end,
+            visibility=Event.Visibility.PRIVATE, allow_conflict=True,
         )
-        raw = response.choices[0].message.content.strip()
-        if raw.startswith('```'):
-            raw = raw.split('```')[1]
-            if raw.startswith('json'):
-                raw = raw[4:]
-        return json.loads(raw)
-    except Exception as e:
-        logger.exception("GPT scheduling failed")
-        return None
+        event.full_clean()
+        event.save()
+        return True
+    except (ValidationError, KeyError, TypeError, ValueError):
+        return False
+
+
+def call_gpt(deadline, hours_needed, session_length, free_slots):
+    """Call GPT to schedule sessions based on the deadline and free slots."""
+    from openai import OpenAI
+    prompt = build_prompt(deadline, hours_needed, session_length, free_slots)
+    client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model='gpt-4o-mini',
+        messages=[{'role': 'user', 'content': prompt}],
+        temperature=0,
+        max_tokens=600,
+    )
+    raw = response.choices[0].message.content.strip()
+    if raw.startswith('```'):
+        raw = raw.split('```')[1]
+        if raw.startswith('json'):
+            raw = raw[4:]
+    return json.loads(raw)
 
 
 def build_prompt(deadline, hours_needed, session_length, candidates):

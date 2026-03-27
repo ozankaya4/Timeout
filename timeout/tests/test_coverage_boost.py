@@ -613,7 +613,7 @@ class DeadlineWarningTests(TestCase):
         )
         warnings = get_deadline_study_warnings(self.user)
         self.assertEqual(len(warnings), 1)
-        self.assertIn('Essay Due', warnings[0])
+        self.assertIn('Essay Due', warnings[0]['message'])
 
     def test_deadline_with_study_sessions(self):
         from timeout.views.deadline_warning import get_deadline_study_warnings
@@ -988,15 +988,15 @@ class CallGptTests(TestCase):
         self.assertIsInstance(result, list)
 
     @patch('timeout.views.study_planner.settings')
-    def test_call_gpt_exception_returns_none(self, mock_settings):
+    def test_call_gpt_exception_raises(self, mock_settings):
         from timeout.views.study_planner import call_gpt
         mock_settings.OPENAI_API_KEY = 'test-key'
         deadline = MagicMock()
         deadline.title = 'Essay'
         deadline.start_datetime = timezone.now() + timedelta(days=5)
         with patch.dict('sys.modules', {'openai': MagicMock(OpenAI=MagicMock(side_effect=Exception('fail')))}):
-            result = call_gpt(deadline, 4, 2, [])
-        self.assertIsNone(result)
+            with self.assertRaises(Exception):
+                call_gpt(deadline, 4, 2, [])
 
     @patch('timeout.views.study_planner.settings')
     def test_call_gpt_markdown_fence(self, mock_settings):
