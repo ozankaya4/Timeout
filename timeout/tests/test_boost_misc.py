@@ -193,7 +193,7 @@ class NoteAutosaveTests(TestCase):
         })
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
-        self.assertEqual(data['status'], 'ok')
+        self.assertTrue(data['success'])
 
     def test_autosave_with_count_edit(self):
         """Test that the note autosave endpoint updates the note successfully with count_edit."""

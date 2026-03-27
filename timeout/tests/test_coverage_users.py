@@ -76,7 +76,7 @@ class SettingsViewTests(TestCase):
         })
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
-        self.assertTrue(data['ok'])
+        self.assertTrue(data['success'])
 
     def test_settings_save_ajax_invalid(self):
         """Test that saving settings via AJAX with invalid data returns an error."""

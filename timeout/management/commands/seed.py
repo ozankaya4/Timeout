@@ -78,6 +78,24 @@ UNIVERSITIES = [
     'University of Kent',
 ]
 
+COMMENT_TEMPLATES = [
+    'This is so relatable! 😂',
+    'Good luck! You got this 💪',
+    'Same here, let me know if you find a solution!',
+    'Totally agree with this',
+    'Thanks for sharing!',
+    'I needed to hear this today',
+    'Can I join? 🙋',
+    'This is great advice honestly',
+    'Felt this on a spiritual level 😅',
+    'Keep going, almost there!',
+    'Legend for posting this 🙌',
+    'Me every single week lol',
+    'Anyone want to meet up and study together?',
+    'I had the same experience, it gets easier!',
+    'Following this for updates',
+]
+
 INTERESTS = [
     'Computer Science',
     'Mathematics',
@@ -332,10 +350,7 @@ class Command(BaseCommand):
         secret = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 
         if not client_id or not secret:
-            self.stdout.write(self.style.WARNING(
-                '  GOOGLE_CLIENT_ID and/or GOOGLE_CLIENT_SECRET not set.\n'
-                '  Skipping Google SocialApp creation.'
-            ))
+            self.stdout.write(self.style.WARNING('  GOOGLE_CLIENT_ID and/or GOOGLE_CLIENT_SECRET not set.\n  Skipping Google SocialApp creation.'))
             return
 
         # get_or_create to avoid duplicate SocialApp records on repeated seeding
@@ -469,27 +484,10 @@ class Command(BaseCommand):
         self.stdout.write('\n[8] Creating comments...')
         count = 0
         total_posts = len(posts)
-        comment_templates = [
-            'This is so relatable! 😂',
-            'Good luck! You got this 💪',
-            'Same here, let me know if you find a solution!',
-            'Totally agree with this',
-            'Thanks for sharing!',
-            'I needed to hear this today',
-            'Can I join? 🙋',
-            'This is great advice honestly',
-            'Felt this on a spiritual level 😅',
-            'Keep going, almost there!',
-            'Legend for posting this 🙌',
-            'Me every single week lol',
-            'Anyone want to meet up and study together?',
-            'I had the same experience, it gets easier!',
-            'Following this for updates',
-        ]
         for i, post in enumerate(posts, 1):
             post_comments = 0
             for _ in range(random.randint(0, 8)):
-                content = random.choice(comment_templates) if random.random() < 0.5 else fake.sentence(nb_words=random.randint(5, 15))
+                content = random.choice(COMMENT_TEMPLATES) if random.random() < 0.5 else fake.sentence(nb_words=random.randint(5, 15))
                 Comment.objects.create(
                     author=random.choice(users), post=post,
                     content=content,

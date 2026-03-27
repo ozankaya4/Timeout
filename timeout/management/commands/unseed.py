@@ -34,8 +34,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Database is already empty.'))
             return
 
-        # Delete notes and logs before users so counts can be captured 
-        # cascade would remove them automatically but wouldn't return the totals.
         if keep_super:
             self.stdout.write('Mode: Removing seeded data (keeping @johndoe)')
             excluded_users = User.objects.filter(username=SUPERUSER_USERNAME)

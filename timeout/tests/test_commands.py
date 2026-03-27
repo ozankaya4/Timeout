@@ -29,6 +29,8 @@ class SeedCommandTests(TestCase):
         self._call_seed()
         self.assertEqual(User.objects.count(), 81)
         self.assertEqual(User.objects.filter(is_superuser=False).count(), 80)
+        self.assertEqual(User.objects.count(), 81)
+        self.assertEqual(User.objects.filter(is_superuser=False).count(), 80)
 
     def test_seed_creates_follow_relationships(self):
         """Test that the seed command creates follow relationships between users."""
