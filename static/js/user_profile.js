@@ -20,15 +20,6 @@
   }
 
   /**
-   * Generate avatar HTML - image if available, otherwise initial badge.
-   */
-  function _userAvatar(pic, username) {
-    if (pic) return '<img src="' + escapeHtml(pic) + '" class="rounded-circle" width="40" height="40" style="object-fit:cover;">';
-    return '<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;">' +
-      escapeHtml(username.charAt(0).toUpperCase() || '?') + '</div>';
-  }
-
-  /**
    * Generate complete user card HTML with avatar, username, and full name.
    */
   function _userCard(u) {
@@ -39,7 +30,7 @@
     var fullNameHtml = fullName ? '<div class="text-muted small">' + escapeHtml(fullName) + '</div>' : '';
     return '<div class="user-item">' +
       '<a href="' + href + '" class="d-flex align-items-center gap-3 mb-3 text-decoration-none text-dark">' +
-        _userAvatar(pic, username) +
+        userAvatarHtml(pic, username) +
         '<div><div class="fw-semibold">@' + escapeHtml(username) + '</div>' + fullNameHtml + '</div>' +
       '</a></div>';
   }
@@ -50,20 +41,6 @@
   function renderUserList(users) {
     if (!users || users.length === 0) return '<p class="text-center text-muted py-3">No users yet.</p>';
     return users.map(_userCard).join('');
-  }
-
-  /**
-   * Attach real-time search filter to user list input field.
-   */
-  function _attachSearchFilter(input, listEl) {
-    if (!input) return;
-    input.oninput = function () {
-      var query = (this.value || '').toLowerCase().trim();
-      listEl.querySelectorAll('.user-item').forEach(function (item) {
-        var text = item.textContent.replace(/\s+/g, ' ').toLowerCase();
-        item.style.display = text.includes(query) ? '' : 'none';
-      });
-    };
   }
 
   /**
@@ -82,7 +59,7 @@
           var listEl = document.getElementById(listId);
           if (!listEl) return;
           listEl.innerHTML = renderUserList((data && data.users) ? data.users : []);
-          _attachSearchFilter(input, listEl);
+          attachUserSearchFilter(input, listEl);
         });
     });
   }

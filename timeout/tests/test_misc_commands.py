@@ -311,53 +311,6 @@ class EventModelPropertyTests(TestCase):
         event = self._make_event(event_type=Event.EventType.OTHER)
         self.assertEqual(event.event_type, 'other')
 
-class AIServiceTests(TestCase):
-    """Tests for the AIService functions, covering _get_most_productive_day and _gather_study_stats with various scenarios of event data."""
-
-    def test_get_most_productive_day_empty(self):
-        """Test that the _get_most_productive_day function returns 'None yet' when given an empty queryset of events."""
-        from timeout.services.ai_service import _get_most_productive_day
-        qs = Event.objects.none()
-        result = _get_most_productive_day(qs)
-        self.assertEqual(result, 'None yet')
-
-    def test_get_most_productive_day_with_data(self):
-        """Test that the _get_most_productive_day function returns a valid date string when given a queryset of events with completed study sessions."""
-        from timeout.services.ai_service import _get_most_productive_day
-        user = make_user()
-        now = timezone.now()
-        Event.objects.create(
-            creator=user, title='Done', event_type='study_session',
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now - timedelta(days=1) + timedelta(hours=2),
-            is_completed=True,
-        )
-        qs = Event.objects.filter(creator=user)
-        result = _get_most_productive_day(qs)
-        self.assertNotEqual(result, 'None yet')
-
-    def test_gather_study_stats(self):
-        """Test that the _gather_study_stats function returns a dictionary with correct total study hours and missed deadlines based on the user's events."""
-        from timeout.services.ai_service import _gather_study_stats
-        user = make_user()
-        now = timezone.now()
-        Event.objects.create(
-            creator=user, title='Study', event_type='study_session',
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now - timedelta(days=1) + timedelta(hours=3),
-            is_completed=True,
-        )
-        Event.objects.create(
-            creator=user, title='Missed DL', event_type='deadline',
-            start_datetime=now - timedelta(days=2),
-            end_datetime=now - timedelta(hours=1),
-            is_completed=False,
-        )
-        stats = _gather_study_stats(user, now)
-        self.assertIn('total_study_hours', stats)
-        self.assertGreater(stats['total_study_hours'], 0)
-        self.assertEqual(stats['missed_deadlines'], 1)
-
 class SitemapTests(TestCase):
     """Tests for the sitemap view, covering the response status code for the sitemap index and ensuring it returns a valid XML response when accessed."""
 

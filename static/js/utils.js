@@ -37,6 +37,33 @@ function getJSON(url) {
 }
 
 /**
+ * Generate avatar HTML for a user — image if available, initial badge otherwise.
+ * @param {string} pic - Profile picture URL (may be empty).
+ * @param {string} username - Username for initial fallback.
+ */
+function userAvatarHtml(pic, username) {
+    if (pic) return '<img src="' + pic + '" class="rounded-circle" width="40" height="40" style="object-fit:cover;">';
+    var initial = (username && username[0]) ? username[0].toUpperCase() : '?';
+    return '<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;">' + initial + '</div>';
+}
+
+/**
+ * Attach a real-time text search filter to a user list inside a modal.
+ * @param {HTMLElement} input - The search input element.
+ * @param {HTMLElement} listEl - The container holding .user-item elements.
+ */
+function attachUserSearchFilter(input, listEl) {
+    if (!input) return;
+    input.oninput = function () {
+        var query = (this.value || '').toLowerCase().trim();
+        listEl.querySelectorAll('.user-item').forEach(function (item) {
+            var text = item.textContent.replace(/\s+/g, ' ').toLowerCase();
+            item.style.display = text.includes(query) ? '' : 'none';
+        });
+    };
+}
+
+/**
  * Play a beep tone at specified frequency, duration, and volume.
  */
 function playBeep(freq, duration, volume) {
