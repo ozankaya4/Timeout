@@ -49,7 +49,7 @@ def _find_candidate_slots(user, deadline, hours_needed, session_length):
 def _schedule_with_gpt(deadline, hours_needed, session_length, candidates):
     """Call GPT to schedule sessions and return the JSON response."""
     if not getattr(settings, 'OPENAI_API_KEY', ''):
-        return JsonResponse({'success': False, 'error': 'OpenAI API key not configured.'}, status=500)
+        return JsonResponse({'success': True, 'sessions': candidates})
     try:
         sessions = call_gpt(deadline, hours_needed, session_length, candidates)
     except json.JSONDecodeError:
@@ -57,26 +57,8 @@ def _schedule_with_gpt(deadline, hours_needed, session_length, candidates):
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'AI error: {str(e)}'}, status=500)
     if not sessions:
-        return JsonResponse({'success': False, 'error': 'AI could not generate sessions. Try again.'}, status=500)
+        return JsonResponse({'success': True, 'sessions': candidates})
     return JsonResponse({'success': True, 'sessions': sessions})
-
-
-def _create_study_session(user, session_data):
-    """Create a single study session event from session data dict."""
-    start_dt = datetime.fromisoformat(session_data['start'])
-    end_dt = datetime.fromisoformat(session_data['end'])
-    event = Event(
-        creator=user,
-        title=session_data['title'],
-        event_type=Event.EventType.STUDY_SESSION,
-        start_datetime=start_dt,
-        end_datetime=end_dt,
-        visibility=Event.Visibility.PRIVATE,
-        allow_conflict=True,
-    )
-    event.full_clean()
-    event.save()
-
 
 @login_required
 @require_POST
