@@ -8,7 +8,6 @@ def get_deadline_study_warnings(user):
     Returns warnings for deadlines in the next 7 days
     that have no linked study sessions.
     """
-
     now = timezone.now()
     next_week = now + timedelta(days=7)
 
