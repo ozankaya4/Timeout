@@ -15,13 +15,9 @@ from django.utils import timezone
 
 from timeout.models import Event, Post
 from timeout.services.email_service import EmailService
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials, allowing overrides."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 
 # Management Commands
@@ -31,7 +27,7 @@ class CheckNotificationsCommandTests(TestCase):
 
     def setUp(self):
         """Set up a test user for the check_notifications command tests."""
-        self.user = _make_user()
+        self.user = make_user()
 
     @patch('timeout.management.commands.check_notifications.NotificationService')
     def test_check_notifications_calls_services_for_each_user(self, mock_svc):
@@ -45,7 +41,7 @@ class CheckNotificationsCommandTests(TestCase):
     @patch('timeout.management.commands.check_notifications.NotificationService')
     def test_check_notifications_multiple_users(self, mock_svc):
         """Test that the check_notifications command calls the notification service methods for multiple users."""
-        _make_user('user2')
+        make_user('user2')
         out = StringIO()
         call_command('check_notifications', stdout=out)
         self.assertEqual(mock_svc.create_deadline_notifications.call_count, 2)
@@ -149,7 +145,7 @@ class EventModelPropertyTests(TestCase):
 
     def setUp(self):
         """Set up a test user and the current time for Event model property tests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.now = timezone.now()
 
     def _make_event(self, **kwargs):
@@ -328,7 +324,7 @@ class AIServiceTests(TestCase):
     def test_get_most_productive_day_with_data(self):
         """Test that the _get_most_productive_day function returns a valid date string when given a queryset of events with completed study sessions."""
         from timeout.services.ai_service import _get_most_productive_day
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Done', event_type='study_session',
@@ -343,7 +339,7 @@ class AIServiceTests(TestCase):
     def test_gather_study_stats(self):
         """Test that the _gather_study_stats function returns a dictionary with correct total study hours and missed deadlines based on the user's events."""
         from timeout.services.ai_service import _gather_study_stats
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Study', event_type='study_session',

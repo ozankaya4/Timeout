@@ -104,11 +104,7 @@ document.querySelectorAll('.block-btn').forEach(btn => {
     this.disabled = true;
     this.textContent = isBlocked ? 'Unblocking…' : 'Blocking…';
 
-    fetch(`/social/user/${username}/block/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCSRFToken() },
-    })
-      .then(r => r.json())
+    postJSON(`/social/user/${username}/block/`)
       .then(data => {
         if (data.blocked === true) {
           this.dataset.blocked = 'true';

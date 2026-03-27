@@ -26,11 +26,7 @@ function updatePinIcon(item, pinned) {
  * Toggle pin state for a note via API and update button.
  */
 function togglePin(noteId, btn) {
-  fetch('/notes/' + noteId + '/pin/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': getCSRFToken() },
-  })
-  .then(function(res) { return res.json(); })
+  postJSON('/notes/' + noteId + '/pin/')
   .then(function(data) {
     btn.textContent = data.pinned ? 'Unpin' : 'Pin';
     btn.dataset.pinned = data.pinned;
@@ -165,11 +161,7 @@ var DailyGoals = (function() {
       body.append('daily_pomo_goal', document.getElementById('goalInputPomo').value);
       body.append('daily_notes_goal', document.getElementById('goalInputNotes').value);
       body.append('daily_focus_goal', document.getElementById('goalInputFocus').value);
-      fetch(cfg.goalsUpdateUrl, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCSRFToken() },
-        body: body,})
-      .then(function(r) { return r.json(); })
+      postJSON(cfg.goalsUpdateUrl, { body: body })
       .then(function() {
         bootstrap.Modal.getInstance(document.getElementById('editGoalsModal')).hide();
         refresh();})

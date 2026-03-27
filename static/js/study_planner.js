@@ -13,8 +13,7 @@ async function fetchPlan() {
   body.append('event_id', document.getElementById('spDeadline').value);
   body.append('hours_needed', document.getElementById('spHours').value);
   body.append('session_length', document.getElementById('spSessionLen').value);
-  const res = await fetch(window.SP_PLAN_URL, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() }, body });
-  return res.json();
+  return postJSON(window.SP_PLAN_URL, { body });
 }
 
 /**
@@ -73,8 +72,7 @@ async function saveSessions(sessions) {
   body.append('sessions', JSON.stringify(sessions));
 
   try {
-    const res = await fetch(window.SP_CONFIRM_URL, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() }, body });
-    const data = await res.json();
+    const data = await postJSON(window.SP_CONFIRM_URL, { body });
     if (data.success) setTimeout(() => location.reload(), 500);
   } catch {
     btn.disabled = false;

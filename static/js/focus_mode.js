@@ -15,9 +15,8 @@ var FocusMode = (function() {
    * Update user status on server to reflect focus mode state.
    */
   function setServerStatus(status) {
-    fetch('/social/status/update/', {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCSRFToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+    postJSON('/social/status/update/', {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'status=' + encodeURIComponent(status),
     }).catch(function() {});
   }

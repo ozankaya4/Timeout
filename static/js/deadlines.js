@@ -46,14 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function completeDeadline(eventId, checkbox) {
   var item = document.querySelector('[data-id="' + eventId + '"]');
-  fetch('/deadlines/' + eventId + '/complete/', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCSRFToken(),
-      'Content-Type': 'application/json',},})
-  .then(function(res) {
-    if (!res.ok) throw new Error('Request failed');
-    return res.json();})
+  postJSON('/deadlines/' + eventId + '/complete/')
   .then(function(data) {
     if (data.is_completed && item) {
       checkbox.disabled = true;
@@ -78,14 +71,7 @@ function completeDeadline(eventId, checkbox) {
  */
 function incompleteDeadline(eventId, checkbox) {
   var item = document.querySelector('[data-id="' + eventId + '"]');
-  fetch('/deadlines/' + eventId + '/incomplete/', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCSRFToken(),
-      'Content-Type': 'application/json',},})
-  .then(function(res) {
-    if (!res.ok) throw new Error('Request failed');
-    return res.json();})
+  postJSON('/deadlines/' + eventId + '/incomplete/')
   .then(function(data) {
     if (data.is_completed === false && item) {
       item.classList.add('dl-item--completing');

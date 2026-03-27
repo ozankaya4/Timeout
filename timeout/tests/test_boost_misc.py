@@ -14,12 +14,9 @@ from django.utils import timezone
 
 from timeout.models import Event
 from timeout.models.message import Conversation, Message
+from timeout.tests import make_user
 
 User = get_user_model()
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 class PagesViewTests(TestCase):
     """Tests for the main page views like landing, dashboard, and banned."""
@@ -36,7 +33,7 @@ class PagesViewTests(TestCase):
 
     def test_dashboard_authenticated(self):
         """Test that the dashboard view loads successfully for authenticated users."""
-        _make_user()
+        make_user()
         self.client.login(username='testuser', password='TestPass1!')
         resp = self.client.get(reverse('dashboard'))
         self.assertEqual(resp.status_code, 200)
@@ -48,7 +45,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_deadline_notifications creates notifications for deadlines within the next hour."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Urgent DL',
@@ -64,7 +61,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_deadline_notifications creates notifications for deadlines within the next day."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Tomorrow DL',
@@ -80,7 +77,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_deadline_notifications creates notifications for deadlines within the next week."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='This Week DL',
@@ -96,7 +93,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_event_notifications creates notifications for events starting within the next hour."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Soon Meeting',
@@ -112,7 +109,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_event_notifications creates notifications for events starting tomorrow."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Tomorrow Exam',
@@ -128,7 +125,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_event_notifications creates notifications for events starting within the next week."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='This Week Class',
@@ -144,7 +141,7 @@ class NotificationServiceTests(TestCase):
         """Test that create_event_notifications does not create notifications for events starting far in the future."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         Event.objects.create(
             creator=user, title='Far Away',
@@ -160,7 +157,7 @@ class NotificationServiceTests(TestCase):
         """Test that _notify_once does not create duplicate notifications."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        user = _make_user()
+        user = make_user()
         now = timezone.now()
         event = Event.objects.create(
             creator=user, title='DL',
@@ -178,7 +175,7 @@ class NoteAutosaveTests(TestCase):
 
     def setUp(self):
         """Set up test data for NoteAutosaveTests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
         from timeout.models import Note
         self.note = Note.objects.create(
@@ -214,7 +211,7 @@ class DeadlineListFilterTests(TestCase):
 
     def setUp(self):
         """Set up test data for DeadlineListFilterTests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
         now = timezone.now()
         Event.objects.create(
@@ -268,7 +265,7 @@ class LandingPageTests(TestCase):
 
     def test_landing_authenticated_redirects_dashboard(self):
         """Test that the landing page redirects authenticated users to the dashboard."""
-        _make_user()
+        make_user()
         self.client.login(username='testuser', password='TestPass1!')
         resp = self.client.get(reverse('landing'))
         self.assertRedirects(resp, reverse('dashboard'))
@@ -278,7 +275,7 @@ class DashboardGreetingTests(TestCase):
 
     def setUp(self):
         """Set up test data for DashboardGreetingTests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
 
     @patch('timeout.views.pages.timezone')
@@ -379,8 +376,8 @@ class MessageNotificationTests(TestCase):
         """Test that the create_message_notification function creates a notification for the recipient."""
         from timeout.services.notification_service import NotificationService
         from timeout.models.notification import Notification
-        alice = _make_user('alice')
-        bob = _make_user('bob')
+        alice = make_user('alice')
+        bob = make_user('bob')
         conv = Conversation.objects.create()
         conv.participants.add(alice, bob)
         msg = Message.objects.create(conversation=conv, sender=alice, content='Hi')
@@ -390,7 +387,7 @@ class MessageNotificationTests(TestCase):
     def test_create_message_notification_no_recipient(self):
         """Test that the create_message_notification function does not create a notification if there is no recipient."""
         from timeout.services.notification_service import NotificationService
-        alice = _make_user('alice')
+        alice = make_user('alice')
         conv = Conversation.objects.create()
         conv.participants.add(alice)
         msg = Message.objects.create(conversation=conv, sender=alice, content='Solo')

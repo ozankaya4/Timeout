@@ -13,13 +13,9 @@ from django.utils import timezone
 
 from timeout.models import Event, Post, Bookmark
 from timeout.services.deadline_service import DeadlineService
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 
 def _make_post(author, content='Test post'):
@@ -31,8 +27,8 @@ class BanUnbanTests(TestCase):
 
     def setUp(self):
         """Set up test data for BanUnbanTests."""
-        self.staff = _make_user('staffuser', is_staff=True)
-        self.target = _make_user('target')
+        self.staff = make_user('staffuser', is_staff=True)
+        self.target = make_user('target')
         self.client.login(username='staffuser', password='TestPass1!')
 
     def test_ban_user(self):
@@ -44,7 +40,7 @@ class BanUnbanTests(TestCase):
 
     def test_ban_staff_forbidden(self):
         """Test that a staff user cannot ban another staff user."""
-        other_staff = _make_user('staff2', is_staff=True)
+        other_staff = make_user('staff2', is_staff=True)
         resp = self.client.post(reverse('ban_user', args=['staff2']))
         self.assertEqual(resp.status_code, 302)
         other_staff.refresh_from_db()
@@ -76,7 +72,7 @@ class MarkIncompleteTests(TestCase):
 
     def setUp(self):
         """Set up test data for MarkIncompleteTests."""
-        self.user = _make_user()
+        self.user = make_user()
         now = timezone.now()
         self.event = Event.objects.create(
             creator=self.user, title='Done Task',
@@ -110,7 +106,7 @@ class DeadlineMarkIncompleteViewTests(TestCase):
 
     def setUp(self):
         """Set up test data for DeadlineMarkIncompleteViewTests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
         now = timezone.now()
         self.event = Event.objects.create(
@@ -139,8 +135,8 @@ class FeedServiceCursorTests(TestCase):
 
     def setUp(self):
         """Set up test data for FeedServiceCursorTests."""
-        self.user = _make_user()
-        self.other = _make_user('other')
+        self.user = make_user()
+        self.other = make_user('other')
         self.user.following.add(self.other)
         self.posts = [_make_post(self.other, f'Post {i}') for i in range(3)]
 
@@ -153,7 +149,7 @@ class FeedServiceCursorTests(TestCase):
     def test_discover_feed_with_cursor(self):
         """Test that the discover feed returns results with a cursor."""
         from timeout.services.feed_service import FeedService
-        third = _make_user('third')
+        third = make_user('third')
         _make_post(third, 'Discover post')
         results = FeedService.get_discover_feed(self.user, cursor=99999)
         self.assertIsInstance(results, list)
@@ -175,8 +171,8 @@ class FeedServiceCursorTests(TestCase):
     def test_user_posts_staff_viewer(self):
         """Test that the user posts feed returns results when the viewer is staff."""
         from timeout.services.feed_service import FeedService
-        staff = _make_user('staff', is_staff=True)
-        banned = _make_user('banned', is_banned=True)
+        staff = make_user('staff', is_staff=True)
+        banned = make_user('banned', is_banned=True)
         _make_post(banned, 'Banned post')
         results = FeedService.get_user_posts(banned, staff)
         self.assertTrue(len(results) >= 1)
@@ -188,7 +184,7 @@ class AISuggestionsTests(TestCase):
     def test_no_api_key_returns_empty(self):
         """Test that get_ai_suggestions returns an empty list if no API key is set."""
         from timeout.views.ai_suggestions import get_ai_suggestions
-        user = _make_user()
+        user = make_user()
         with patch('timeout.views.ai_suggestions.settings') as mock_settings:
             mock_settings.OPENAI_API_KEY = ''
             result = get_ai_suggestions(user, [])
@@ -197,7 +193,7 @@ class AISuggestionsTests(TestCase):
     def test_no_events_returns_free_time(self):
         """Test that get_ai_suggestions returns a free time message if there are no events."""
         from timeout.views.ai_suggestions import get_ai_suggestions
-        user = _make_user()
+        user = make_user()
         with patch('timeout.views.ai_suggestions.settings') as mock_settings:
             mock_settings.OPENAI_API_KEY = 'test-key'
             with patch('timeout.views.ai_suggestions.cache') as mock_cache:
@@ -208,7 +204,7 @@ class AISuggestionsTests(TestCase):
     def test_cached_result_returned(self):
         """Test that get_ai_suggestions returns the cached result if available."""
         from timeout.views.ai_suggestions import get_ai_suggestions
-        user = _make_user()
+        user = make_user()
         with patch('timeout.views.ai_suggestions.settings') as mock_settings:
             mock_settings.OPENAI_API_KEY = 'test-key'
             with patch('timeout.views.ai_suggestions.cache') as mock_cache:
@@ -223,7 +219,7 @@ class AISuggestionsTests(TestCase):
         from timeout.views.ai_suggestions import get_ai_suggestions
         mock_settings.OPENAI_API_KEY = 'test-key'
         mock_cache.get.return_value = None
-        user = _make_user()
+        user = make_user()
         event = MagicMock()
         event.title = 'Meeting'
         event.start_datetime = timezone.now()
@@ -240,7 +236,7 @@ class AISuggestionsTests(TestCase):
         import json as _json
         mock_settings.OPENAI_API_KEY = 'test-key'
         mock_cache.get.return_value = None
-        user = _make_user()
+        user = make_user()
         event = MagicMock()
         event.title = 'Meeting'
         event.start_datetime = timezone.now()
@@ -274,14 +270,14 @@ class AIWorkloadTests(TestCase):
     def test_no_events_returns_none(self):
         """Test that get_ai_workload_warning returns None if there are no events."""
         from timeout.views.ai_workload import get_ai_workload_warning
-        user = _make_user()
+        user = make_user()
         result = get_ai_workload_warning(user, [])
         self.assertIsNone(result)
 
     def test_no_api_key_returns_none(self):
         """Test that get_ai_workload_warning returns None if no API key is set."""
         from timeout.views.ai_workload import get_ai_workload_warning
-        user = _make_user()
+        user = make_user()
         with patch('timeout.views.ai_workload.settings') as mock_settings:
             mock_settings.OPENAI_API_KEY = ''
             result = get_ai_workload_warning(user, ['event'])
@@ -290,7 +286,7 @@ class AIWorkloadTests(TestCase):
     def test_cached_result_returned(self):
         """Test that get_ai_workload_warning returns the cached result if available."""
         from timeout.views.ai_workload import get_ai_workload_warning
-        user = _make_user()
+        user = make_user()
         with patch('timeout.views.ai_workload.settings') as mock_settings:
             mock_settings.OPENAI_API_KEY = 'test-key'
             with patch('timeout.views.ai_workload.cache') as mock_cache:
@@ -305,7 +301,7 @@ class AIWorkloadTests(TestCase):
         from timeout.views.ai_workload import get_ai_workload_warning
         mock_settings.OPENAI_API_KEY = 'test-key'
         mock_cache.get.return_value = None
-        user = _make_user()
+        user = make_user()
         event = MagicMock()
         event.title = 'Meeting'
         event.start_datetime = timezone.now()
@@ -344,7 +340,7 @@ class DeadlineWarningTests(TestCase):
 
     def setUp(self):
         """Set up test data for DeadlineWarningTests."""
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_deadline_with_no_study_sessions(self):
         """Test that get_deadline_study_warnings returns a warning if there is an upcoming deadline with no linked study sessions."""

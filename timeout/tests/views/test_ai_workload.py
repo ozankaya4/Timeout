@@ -21,7 +21,7 @@ class AiWorkloadHelperTests(TestCase):
             MagicMock(title="Workout", start_datetime=now + timedelta(hours=2), end_datetime=now + timedelta(hours=3)),
         ]
 
-    @patch("timeout.views.ai_workload.OpenAI")
+    @patch("openai.OpenAI")
     def test_successful_openai_call_returns_warning(self, mock_openai):
         mock_client = mock_openai.return_value
         mock_response = MagicMock()
@@ -31,7 +31,7 @@ class AiWorkloadHelperTests(TestCase):
         warning = get_ai_workload_warning(self.user, self.events)
         self.assertIn("High workload", warning)
 
-    @patch("timeout.views.ai_workload.OpenAI")
+    @patch("openai.OpenAI")
     def test_cached_warning_is_returned(self, mock_openai):
         cache_key = f"ai_workload_warning_{self.user.id}_{datetime.now().date()}"
         cache.set(cache_key, "Cached warning", timeout=3600)
@@ -40,20 +40,20 @@ class AiWorkloadHelperTests(TestCase):
         self.assertEqual(warning, "Cached warning")
         mock_openai.assert_not_called()
 
-    @patch("timeout.views.ai_workload.OpenAI")
+    @patch("openai.OpenAI")
     def test_no_events_returns_none(self, mock_openai):
         warning = get_ai_workload_warning(self.user, [])
         self.assertIsNone(warning)
         mock_openai.assert_not_called()
 
-    @patch("timeout.views.ai_workload.OpenAI")
+    @patch("openai.OpenAI")
     @patch("django.conf.settings.OPENAI_API_KEY", new=None)
     def test_no_api_key_returns_none(self, mock_openai):
         warning = get_ai_workload_warning(self.user, self.events)
         self.assertIsNone(warning)
         mock_openai.assert_not_called()
 
-    @patch("timeout.views.ai_workload.OpenAI")
+    @patch("openai.OpenAI")
     def test_openai_exception_returns_none(self, mock_openai):
         cache.clear()
 
