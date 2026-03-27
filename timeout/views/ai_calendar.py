@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -46,12 +47,18 @@ def _build_event_from_data(user, data):
         start_str = f"{date_part}T00:00"
         end_str = f"{date_part}T23:59"
 
+    try:
+        start_dt = timezone.make_aware(datetime.fromisoformat(start_str))
+        end_dt = timezone.make_aware(datetime.fromisoformat(end_str))
+    except (ValueError, TypeError):
+        raise ValidationError('Invalid datetime format from AI.')
+
     return Event(
         creator=user,
         title=data.get('title', 'Untitled'),
         event_type=data.get('event_type', 'other'),
-        start_datetime=start_str,
-        end_datetime=end_str,
+        start_datetime=start_dt,
+        end_datetime=end_dt,
         location=data.get('location', ''),
         description=data.get('description', ''),
         recurrence=data.get('recurrence', 'none'),
@@ -140,4 +147,9 @@ def ai_create_event(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'AI error: {str(e)}'}, status=500)
 
-    return _save_and_respond(_build_event_from_data(request.user, data))
+    try:
+        event = _build_event_from_data(request.user, data)
+    except (ValidationError, ValueError, TypeError):
+        return JsonResponse({'success': False, 'error': 'AI returned invalid date. Try again.'}, status=400)
+
+    return _save_and_respond(event)
