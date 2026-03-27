@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.db import models
 from timeout.models.notification import Notification
+from timeout.models.mixins import CreatedAtMixin, notify_post_action
 from django.dispatch import receiver
 
 
-class Bookmark(models.Model):
+class Bookmark(CreatedAtMixin, models.Model):
     """
     Model representing a bookmark of a post by a user. 
     
@@ -23,7 +24,6 @@ class Bookmark(models.Model):
         on_delete=models.CASCADE,
         related_name='bookmarks',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         """
@@ -53,11 +53,5 @@ def create_bookmark_notification(sender, instance, created, **kwargs):
     - Does not notify if the user bookmarks their own post
     """
 
-    if created and instance.post.author != instance.user:
-        Notification.objects.create(
-            user=instance.post.author,
-            title="🏷️ New Bookmark",
-            message=f"{instance.user.username} bookmarked your post",
-            type=Notification.Type.BOOKMARK,
-            post=instance.post,
-        )
+    if created:
+        notify_post_action(instance, "🏷️", Notification.Type.BOOKMARK, "bookmarked")

@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.db import models
+from timeout.models.mixins import TimestampMixin, OwnedMixin
 
 
-class Post(models.Model):
+class Post(TimestampMixin, OwnedMixin, models.Model):
     """Social media post with privacy controls."""
 
     class Privacy(models.TextChoices):
@@ -29,8 +30,6 @@ class Post(models.Model):
         choices=Privacy.choices,
         default=Privacy.PUBLIC,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """Order posts by newest first and index for fast feed queries."""
@@ -75,9 +74,3 @@ class Post(models.Model):
         return self.author.followers.filter(
             id=user.id
         ).exists()
-
-    def can_delete(self, user):
-        """Check if user can delete this post."""
-        if not user.is_authenticated:
-            return False
-        return self.author == user or user.is_staff

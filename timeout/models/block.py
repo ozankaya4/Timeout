@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
+from timeout.models.mixins import CreatedAtMixin
 
 
-class Block(models.Model):
+class Block(CreatedAtMixin, models.Model):
     blocker = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='blocking',
@@ -13,7 +14,6 @@ class Block(models.Model):
         related_name='blocked_by',
         on_delete=models.CASCADE,
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('blocker', 'blocked')
