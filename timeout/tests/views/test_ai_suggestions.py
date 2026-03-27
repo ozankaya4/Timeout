@@ -12,9 +12,11 @@ User = get_user_model()
 
 
 class AiSuggestionsHelperTests(TestCase):
+    """Tests for the get_ai_suggestions helper function."""
 
     def setUp(self):
-        cache.clear() 
+        """Clear cache, create a test user, and set up two mock events."""
+        cache.clear()
         self.user = User.objects.create_user(username="testuser", password="pass123")
         now = datetime.now()
         self.events = [
@@ -24,6 +26,7 @@ class AiSuggestionsHelperTests(TestCase):
 
     @patch("timeout.views.ai_suggestions.OpenAI")
     def test_successful_openai_call_returns_suggestions(self, mock_openai):
+        """A valid OpenAI response returns the parsed list of suggestion strings."""
         mock_client = mock_openai.return_value
         mock_response = MagicMock()
         mock_response.choices = [MagicMock(message=MagicMock(content=json.dumps([
@@ -38,6 +41,7 @@ class AiSuggestionsHelperTests(TestCase):
 
     @patch("timeout.views.ai_suggestions.OpenAI")
     def test_cached_suggestions_returned(self, mock_openai):
+        """Cached suggestions are returned directly without calling OpenAI."""
         cache_key = f"ai_suggestions_{self.user.id}_{datetime.now().date()}"
         cache.set(cache_key, ["Cached suggestion"], timeout=3600)
 
@@ -46,11 +50,13 @@ class AiSuggestionsHelperTests(TestCase):
         mock_openai.assert_not_called()
 
     def test_no_events_returns_default_message(self):
+        """An empty events list returns the free-time default message."""
         suggestions = get_ai_suggestions(self.user, [])
         self.assertEqual(suggestions, ["No events today. You have free time!"])
 
     @patch("timeout.views.ai_suggestions.OpenAI")
     def test_invalid_json_returns_error_message(self, mock_openai):
+        """A non-JSON OpenAI response returns the invalid JSON error message."""
         mock_client = mock_openai.return_value
         mock_response = MagicMock()
         mock_response.choices = [MagicMock(message=MagicMock(content="Not JSON"))]
@@ -61,6 +67,7 @@ class AiSuggestionsHelperTests(TestCase):
 
     @patch("timeout.views.ai_suggestions.OpenAI")
     def test_openai_exception_returns_unavailable_message(self, mock_openai):
+        """An exception from OpenAI returns the unavailable error message."""
         mock_client = mock_openai.return_value
         mock_client.chat.completions.create.side_effect = Exception("API error")
 
