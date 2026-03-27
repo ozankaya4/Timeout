@@ -414,12 +414,14 @@ class Command(BaseCommand):
         """Establish random follow relationships between all users."""
         self.stdout.write('\n[5] Creating follow relationships...')
         all_users = list(User.objects.all())
+        total = len(all_users)
         follow_count = 0
-        for user in all_users:
+        for i, user in enumerate(all_users, 1):
             others = [u for u in all_users if u != user]
             to_follow = random.sample(others, k=min(random.randint(10, 40), len(others)))
             user.following.add(*to_follow)
             follow_count += len(to_follow)
+            self.stdout.write(f'  [{i}/{total}] @{user.username} now follows {len(to_follow)} users')
         self.stdout.write(self.style.SUCCESS(f'  Created {follow_count} follow relationships.'))
 
     def _create_events(self, users):
@@ -466,6 +468,7 @@ class Command(BaseCommand):
         """Create comments on posts."""
         self.stdout.write('\n[8] Creating comments...')
         count = 0
+        total_posts = len(posts)
         comment_templates = [
             'This is so relatable! 😂',
             'Good luck! You got this 💪',
@@ -483,7 +486,8 @@ class Command(BaseCommand):
             'I had the same experience, it gets easier!',
             'Following this for updates',
         ]
-        for post in posts:
+        for i, post in enumerate(posts, 1):
+            post_comments = 0
             for _ in range(random.randint(0, 8)):
                 content = random.choice(comment_templates) if random.random() < 0.5 else fake.sentence(nb_words=random.randint(5, 15))
                 Comment.objects.create(
@@ -491,22 +495,29 @@ class Command(BaseCommand):
                     content=content,
                 )
                 count += 1
+                post_comments += 1
+            self.stdout.write(f'  [{i}/{total_posts}] Added {post_comments} comments to post by @{post.author.username}')
         self.stdout.write(self.style.SUCCESS(f'  Created {count} comments.'))
 
     def _create_likes_and_bookmarks(self, users, posts):
         """Create likes and bookmarks."""
         self.stdout.write('\n[9] Creating likes and bookmarks...')
         like_count, bookmark_count = 0, 0
-        for post in posts:
+        total_posts = len(posts)
+        for i, post in enumerate(posts, 1):
+            post_likes, post_bookmarks = 0, 0
             likers = random.sample(users, random.randint(0, min(30, len(users))))
             for user in likers:
                 Like.objects.get_or_create(user=user, post=post)
                 like_count += 1
+                post_likes += 1
             if random.random() < 0.45:
                 bookmarkers = random.sample(users, min(random.randint(1, 8), len(users)))
                 for user in bookmarkers:
                     Bookmark.objects.get_or_create(user=user, post=post)
                     bookmark_count += 1
+                    post_bookmarks += 1
+            self.stdout.write(f'  [{i}/{total_posts}] Post by @{post.author.username}: {post_likes} likes, {post_bookmarks} bookmarks')
         self.stdout.write(self.style.SUCCESS(f'  Created {like_count} likes and {bookmark_count} bookmarks.'))
 
     def _create_focus_sessions(self, users):
@@ -514,11 +525,15 @@ class Command(BaseCommand):
         self.stdout.write('\n[10] Creating focus sessions...')
         johndoe = User.objects.filter(username=SUPERUSER_USERNAME).first()
         targets = ([johndoe] if johndoe else []) + random.sample(users, min(30, len(users)))
+        total = len(targets)
         count, now = 0, timezone.now()
-        for user in targets:
+        for i, user in enumerate(targets, 1):
+            user_sessions = 0
             for day_offset in range(14):
                 if random.random() < 0.7:
                     count += self._create_single_focus_session(user, now, day_offset)
+                    user_sessions += 1
+            self.stdout.write(f'  [{i}/{total}] Created {user_sessions} focus sessions for @{user.username}')
         self.stdout.write(self.style.SUCCESS(f'  Created {count} focus sessions.'))
 
     def _create_single_focus_session(self, user, now, day_offset):
@@ -549,11 +564,13 @@ class Command(BaseCommand):
         events.extend(self._johndoe_study_meetings(johndoe))
 
         created = 0
+        total = len(events)
         for ev in events:
             if ev['end_datetime'] <= ev['start_datetime']:
                 ev['end_datetime'] = ev['start_datetime'] + timedelta(hours=1)
             Event.objects.create(**ev)
             created += 1
+            self.stdout.write(f'  [{created}/{total}] Created schedule event: {ev["title"]}')
         self.stdout.write(self.style.SUCCESS(f'  Created {created} events for @{SUPERUSER_USERNAME}.'))
 
     def _johndoe_weekly_classes(self, johndoe):
@@ -661,13 +678,17 @@ class Command(BaseCommand):
         """Create notes with categories and time spent for all users."""
         self.stdout.write('\n[13] Creating notes for all users...')
         all_users = list(User.objects.all())
+        total = len(all_users)
         now, count = timezone.now(), 0
-        for user in all_users:
+        for i, user in enumerate(all_users, 1):
             user_events = list(user.created_events.all()[:10])
+            user_notes = 0
             for _ in range(random.randint(*NUM_NOTES_PER_USER)):
                 self._create_single_note(user, user_events, now)
                 count += 1
-        self.stdout.write(self.style.SUCCESS(f'  Created {count} notes across {len(all_users)} users.'))
+                user_notes += 1
+            self.stdout.write(f'  [{i}/{total}] Created {user_notes} notes for @{user.username}')
+        self.stdout.write(self.style.SUCCESS(f'  Created {count} notes across {total} users.'))
 
     def _create_single_note(self, user, user_events, now):
         """Create one note with random category, title, content, and metadata."""
@@ -720,11 +741,14 @@ class Command(BaseCommand):
         """Create study log entries for heatmap data."""
         self.stdout.write('\n[14] Creating study logs (heatmap data)...')
         all_users = list(User.objects.all())
+        total = len(all_users)
         today = timezone.localtime(timezone.now()).date()
         count = 0
-        for user in all_users:
+        for i, user in enumerate(all_users, 1):
             active_prob = random.choice([0.25, 0.5, 0.75])
-            count += self._create_user_study_logs(user, today, active_prob)
+            user_logs = self._create_user_study_logs(user, today, active_prob)
+            count += user_logs
+            self.stdout.write(f'  [{i}/{total}] Created {user_logs} study log entries for @{user.username}')
         self.stdout.write(self.style.SUCCESS(f'  Created {count} study log entries.'))
 
     def _create_user_study_logs(self, user, today, active_prob):
@@ -758,9 +782,12 @@ class Command(BaseCommand):
         other_users = list(User.objects.exclude(username=SUPERUSER_USERNAME))
         targets = random.sample(other_users, min(50, len(other_users)))
         conv_count, msg_count = 0, 0
+        total = len(targets)
         for i, other in enumerate(targets):
             conv_count += 1
-            msg_count += self._create_conversation(johndoe, other, i)
+            msgs = self._create_conversation(johndoe, other, i)
+            msg_count += msgs
+            self.stdout.write(f'  [{conv_count}/{total}] Conversation with @{other.username} ({msgs} messages)')
         self.stdout.write(self.style.SUCCESS(f'  Created {conv_count} conversations, {msg_count} messages.'))
 
     def _create_conversation(self, johndoe, other_user, index):
@@ -785,17 +812,18 @@ class Command(BaseCommand):
                 content=fake.sentence(nb_words=random.randint(5, 14)),
                 is_read=random.choice([True, False]),
             )
-        self.stdout.write(f'  Conversation with @{other_user.username}')
         return conv.messages.count()
 
     def _set_gamification_stats(self, users):
         """Set XP, streaks, and daily goals for all users."""
         self.stdout.write('\n[16] Setting gamification stats...')
         all_users = list(User.objects.all())
+        total = len(all_users)
         today = timezone.localtime(timezone.now()).date()
-        for user in all_users:
+        for i, user in enumerate(all_users, 1):
             self._set_user_gamification(user, today)
-        self.stdout.write(self.style.SUCCESS(f'  Set gamification stats for {len(all_users)} users.'))
+            self.stdout.write(f'  [{i}/{total}] Set stats for @{user.username} (XP: {user.xp}, streak: {user.note_streak})')
+        self.stdout.write(self.style.SUCCESS(f'  Set gamification stats for {total} users.'))
 
     def _set_user_gamification(self, user, today):
         """Set XP, streak, and goals for a single user."""
