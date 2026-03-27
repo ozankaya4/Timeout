@@ -14,9 +14,6 @@ def get_ai_suggestions(user, events_today):
     """
     if not getattr(settings, 'OPENAI_API_KEY', ''):
         return []
-
-    if not getattr(settings, 'OPENAI_API_KEY', ''):
-        return []
     cache_key = f"ai_suggestions_{user.id}_{datetime.now().date()}"
     cached = cache.get(cache_key)
     if cached:

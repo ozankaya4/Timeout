@@ -288,16 +288,9 @@ def _parse_event_datetimes(request, is_all_day):
 
     return start_datetime, end_datetime
 
-@login_required
-@require_POST
-def event_create(request):
-    """Create a new calendar event from form POST data."""
-    is_all_day = request.POST.get("is_all_day") == "on"
-    allow_conflict = request.POST.get("allow_conflict") == "on"
-    start_datetime, end_datetime = _parse_event_datetimes(request, is_all_day)
-    if start_datetime is None: return redirect("calendar")
-
-    event = Event(
+def _build_event_from_post(request, start_datetime, end_datetime, is_all_day, allow_conflict):
+    """Construct an Event from POST data and parsed datetimes."""
+    return Event(
         creator=request.user,
         title=request.POST["title"],
         event_type=request.POST.get("event_type", "other"),
@@ -309,6 +302,17 @@ def event_create(request):
         visibility=request.POST.get("visibility", "public"),
         is_all_day=is_all_day,
         recurrence=request.POST.get("recurrence", "none"))
+
+
+@login_required
+@require_POST
+def event_create(request):
+    """Create a new calendar event from form POST data."""
+    is_all_day = request.POST.get("is_all_day") == "on"
+    allow_conflict = request.POST.get("allow_conflict") == "on"
+    start_datetime, end_datetime = _parse_event_datetimes(request, is_all_day)
+    if start_datetime is None: return redirect("calendar")
+    event = _build_event_from_post(request, start_datetime, end_datetime, is_all_day, allow_conflict)
     try:
         event.full_clean()
         event.save()

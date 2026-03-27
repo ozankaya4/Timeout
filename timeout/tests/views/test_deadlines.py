@@ -27,9 +27,19 @@ class DeadlineListViewTests(TestCase):
         self.client.login(username="dluser", password="pass1234")
         self.url = reverse("deadline_list")
 
-    # 
+    def _make_deadline(self, title, start_offset, end_offset, is_completed=False, now=None):
+        now = now or timezone.now()
+        return Event.objects.create(
+            creator=self.user,
+            title=title,
+            event_type=Event.EventType.DEADLINE,
+            start_datetime=now + start_offset,
+            end_datetime=now + end_offset,
+            is_completed=is_completed,
+        )
+
     # Context data
-    # 
+
     @patch("timeout.services.deadline_service.timezone.now")
     def test_empty_deadlines(self, mock_now):
         mock_now.return_value = timezone.make_aware(datetime(2025, 4, 10, 12, 0))
@@ -45,33 +55,9 @@ class DeadlineListViewTests(TestCase):
         now = timezone.make_aware(datetime(2025, 4, 10, 12, 0))
         mock_now.return_value = now
 
-        # Overdue: end in the past
-        Event.objects.create(
-            creator=self.user,
-            title="Overdue HW",
-            event_type=Event.EventType.DEADLINE,
-            start_datetime=now - timedelta(days=3),
-            end_datetime=now - timedelta(hours=1),
-            is_completed=False,
-        )
-        # Urgent: ends within 24 hours
-        Event.objects.create(
-            creator=self.user,
-            title="Urgent HW",
-            event_type=Event.EventType.DEADLINE,
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now + timedelta(hours=6),
-            is_completed=False,
-        )
-        # Normal: ends in 5 days
-        Event.objects.create(
-            creator=self.user,
-            title="Normal HW",
-            event_type=Event.EventType.DEADLINE,
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now + timedelta(days=5),
-            is_completed=False,
-        )
+        self._make_deadline("Overdue HW", -timedelta(days=3), -timedelta(hours=1), now=now)
+        self._make_deadline("Urgent HW", -timedelta(days=1), timedelta(hours=6), now=now)
+        self._make_deadline("Normal HW", -timedelta(days=1), timedelta(days=5), now=now)
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.context["total_count"], 3)
@@ -83,15 +69,7 @@ class DeadlineListViewTests(TestCase):
         """Completed deadlines should NOT appear in the list."""
         now = timezone.make_aware(datetime(2025, 4, 10, 12, 0))
         mock_now.return_value = now
-
-        Event.objects.create(
-            creator=self.user,
-            title="Done",
-            event_type=Event.EventType.DEADLINE,
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now + timedelta(days=2),
-            is_completed=True,
-        )
+        self._make_deadline("Done", -timedelta(days=1), timedelta(days=2), is_completed=True, now=now)
         resp = self.client.get(self.url)
         self.assertEqual(resp.context["total_count"], 0)
 

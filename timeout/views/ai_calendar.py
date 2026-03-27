@@ -36,23 +36,25 @@ def _call_openai_parse_event(user_input, system_prompt):
     return json.loads(raw)
 
 
-def _build_event_from_data(user, data):
-    """Construct an Event instance from AI-parsed data dict."""
-    is_all_day = bool(data.get('is_all_day', False))
-    start_str = data.get('start_datetime', '')
-    end_str = data.get('end_datetime', '')
-
+def _parse_datetimes(is_all_day, start_str, end_str):
+    """Normalize all-day strings and parse to aware datetimes."""
     if is_all_day and start_str:
         date_part = start_str.split('T')[0]
         start_str = f"{date_part}T00:00"
         end_str = f"{date_part}T23:59"
-
     try:
-        start_dt = timezone.make_aware(datetime.fromisoformat(start_str))
-        end_dt = timezone.make_aware(datetime.fromisoformat(end_str))
+        return (
+            timezone.make_aware(datetime.fromisoformat(start_str)),
+            timezone.make_aware(datetime.fromisoformat(end_str)),
+        )
     except (ValueError, TypeError):
         raise ValidationError('Invalid datetime format from AI.')
 
+
+def _build_event_from_data(user, data):
+    """Construct an Event instance from AI-parsed data dict."""
+    is_all_day = bool(data.get('is_all_day', False))
+    start_dt, end_dt = _parse_datetimes(is_all_day, data.get('start_datetime', ''), data.get('end_datetime', ''))
     return Event(
         creator=user,
         title=data.get('title', 'Untitled'),

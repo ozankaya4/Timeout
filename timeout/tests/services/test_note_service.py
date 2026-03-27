@@ -13,12 +13,15 @@ class NoteServiceTest(TestCase):
     """Tests for NoteService query methods."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='user', password='pass123'
-        )
-        self.other = User.objects.create_user(
-            username='other', password='pass123'
-        )
+        self._create_users()
+        self._create_event()
+        self._create_notes()
+
+    def _create_users(self):
+        self.user = User.objects.create_user(username='user', password='pass123')
+        self.other = User.objects.create_user(username='other', password='pass123')
+
+    def _create_event(self):
         self.event = Event.objects.create(
             creator=self.user,
             title='Exam',
@@ -26,25 +29,20 @@ class NoteServiceTest(TestCase):
             start_datetime=timezone.now(),
             end_datetime=timezone.now() + timezone.timedelta(hours=2),
         )
+
+    def _create_notes(self):
         self.note_lecture = Note.objects.create(
-            owner=self.user,
-            title='Lecture Notes',
-            content='Chapter 1 summary',
-            category=Note.Category.LECTURE,
+            owner=self.user, title='Lecture Notes',
+            content='Chapter 1 summary', category=Note.Category.LECTURE,
         )
         self.note_todo = Note.objects.create(
-            owner=self.user,
-            title='Todo List',
-            content='Finish assignment',
-            category=Note.Category.TODO,
-            event=self.event,
-            is_pinned=True,
+            owner=self.user, title='Todo List',
+            content='Finish assignment', category=Note.Category.TODO,
+            event=self.event, is_pinned=True,
         )
         self.note_other_user = Note.objects.create(
-            owner=self.other,
-            title='Other User Note',
-            content='Private stuff',
-            category=Note.Category.PERSONAL,
+            owner=self.other, title='Other User Note',
+            content='Private stuff', category=Note.Category.PERSONAL,
         )
 
     #  get_user_notes 
