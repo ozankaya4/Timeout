@@ -2,9 +2,7 @@ import json
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-
 from timeout.models.message import Conversation, Message
-
 User = get_user_model()
 
 def make_user(username, password="testpass123"):
@@ -47,7 +45,6 @@ class ConversationModelTest(TestCase):
         ids = list(Conversation.objects.values_list('id', flat=True))
         self.assertIn(conv2.id, ids)
         self.assertIn(self.conv.id, ids)
-
 
 class MessageModelTest(TestCase):
     """Tests for the Message model."""
@@ -125,7 +122,6 @@ class InboxViewTest(TestCase):
         response = self.client.get(reverse("inbox"))
         self.assertNotContains(response, "charlie")
 
-
 class StartConversationViewTest(TestCase):
     """Tests for the start_conversation view."""
     def setUp(self):
@@ -174,7 +170,6 @@ class StartConversationViewTest(TestCase):
         response = self.client.get(reverse("start_conversation", args=["nobody"]))
         self.assertEqual(response.status_code, 404)
 
-
 class ConversationViewTest(TestCase):
     """Tests for the conversation view."""
     def setUp(self):
@@ -204,7 +199,6 @@ class ConversationViewTest(TestCase):
         response = self.client.get(reverse("conversation", args=[self.conv.id]))
         self.assertIn(response.status_code, [403, 404])
 
-
 class DeleteMessageViewTest(TestCase):
     """Tests for the staff-only delete_message view."""
 
@@ -218,8 +212,7 @@ class DeleteMessageViewTest(TestCase):
         self.conv = Conversation.objects.create()
         self.conv.participants.add(self.alice, self.bob)
         self.message = Message.objects.create(
-            conversation=self.conv, sender=self.alice, content="hello",
-        )
+            conversation=self.conv, sender=self.alice, content="hello",)
 
     def delete_url(self, message_id=None):
         """Helper method to get the URL for deleting a message."""
@@ -273,8 +266,7 @@ class DeleteMessageViewTest(TestCase):
     def test_messages_from_self_not_marked_read(self):
         """When a conversation is viewed, messages sent by the logged-in user should not be marked as read."""
         msg = Message.objects.create(
-            conversation=self.conv, sender=self.alice, content="hi", is_read=False
-        )
+            conversation=self.conv, sender=self.alice, content="hi", is_read=False)
         self.client.login(username="alice", password="testpass123")
         self.client.get(reverse("conversation", args=[self.conv.id]))
         msg.refresh_from_db()
@@ -296,10 +288,6 @@ class SendMessageViewTest(TestCase):
         self.bob   = make_user("bob")
         self.conv  = Conversation.objects.create()
         self.conv.participants.add(self.alice, self.bob)
-
-    def _url(self):
-        """Helper method to get the URL for sending a message in the conversation."""
-        return reverse("send_message", args=[self.conv.id])
 
     def test_redirects_when_not_logged_in(self):
         """The send_message view should redirect to login for unauthenticated users."""
@@ -349,7 +337,6 @@ class SendMessageViewTest(TestCase):
         self.assertIn("created_at", data)
         self.assertRegex(data["created_at"], r"^\d{2}:\d{2}$")
 
-
 class PollMessagesViewTest(TestCase):
     """Tests for the poll_messages view."""
     def setUp(self):
@@ -359,13 +346,10 @@ class PollMessagesViewTest(TestCase):
         self.bob   = make_user("bob")
         self.conv  = Conversation.objects.create()
         self.conv.participants.add(self.alice, self.bob)
-
         self.m1 = Message.objects.create(
-            conversation=self.conv, sender=self.bob, content="msg 1"
-        )
+            conversation=self.conv, sender=self.bob, content="msg 1")
         self.m2 = Message.objects.create(
-            conversation=self.conv, sender=self.bob, content="msg 2"
-        )
+            conversation=self.conv, sender=self.bob, content="msg 2")
 
     def _url(self):
         """Helper method to get the URL for polling messages in the conversation."""
@@ -413,5 +397,4 @@ class PollMessagesViewTest(TestCase):
         charlie = make_user("charlie")
         self.client.login(username="charlie", password="testpass123")
         response = self.client.get(self._url(), {"last_id": 0})
-
         self.assertIn(response.status_code, [403, 404])
