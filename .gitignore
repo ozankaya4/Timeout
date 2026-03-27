@@ -144,3 +144,9 @@ celerybeat.pid
 *.key
 secrets.json
 credentials.json
+
+# ===================
+# Scripts
+# ===================
+
+find_unused.py
