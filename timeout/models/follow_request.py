@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.db import models
+from timeout.models.mixins import CreatedAtMixin
 
 
-class FollowRequest(models.Model):
+class FollowRequest(CreatedAtMixin, models.Model):
     """
     Model representing a pending follow request from one user to another.
 
@@ -20,7 +21,6 @@ class FollowRequest(models.Model):
         on_delete=models.CASCADE,
         related_name='received_follow_requests',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         """

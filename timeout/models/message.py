@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.db import models
+from timeout.models.mixins import TimestampMixin, CreatedAtMixin
 
 
 
-class Conversation(models.Model):
+class Conversation(TimestampMixin, models.Model):
     """
     Model representing a conversation thread between two users.
 
@@ -15,8 +16,6 @@ class Conversation(models.Model):
         settings.AUTH_USER_MODEL,
         related_name='conversations',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """
@@ -39,7 +38,7 @@ class Conversation(models.Model):
         return self.messages.order_by('-created_at', '-pk').first()
 
 
-class Message(models.Model):
+class Message(CreatedAtMixin, models.Model):
     """
     Model representing a single message within a conversation.
 
@@ -64,7 +63,6 @@ class Message(models.Model):
     # The content of the message, with a 2000 character limit
     content = models.TextField(max_length=2000)
 
-    created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     class Meta:

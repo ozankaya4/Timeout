@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.db import models
+from timeout.models.mixins import CreatedAtMixin
 
 
-class PostFlag(models.Model):
+class PostFlag(CreatedAtMixin, models.Model):
     """
     Represents a user-submitted report/flag on a post.
 
@@ -34,7 +35,6 @@ class PostFlag(models.Model):
         default=Reason.OTHER,
     )
     description = models.TextField(max_length=500, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         """Ensure one flag per post-reporter pair and order by most recent first."""

@@ -2,8 +2,9 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from timeout.models.mixins import TimestampMixin
 
-class Event(models.Model):
+class Event(TimestampMixin, models.Model):
     """
     Model representing a calendar event.
 
@@ -89,8 +90,6 @@ class Event(models.Model):
     end_datetime = models.DateTimeField()
     location = models.CharField(max_length=200, blank=True)
     is_all_day = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     is_global = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False)
 

@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.db import models
 from timeout.models.notification import Notification
+from timeout.models.mixins import CreatedAtMixin, notify_post_action
 from django.dispatch import receiver
 
 
 
-class Like(models.Model):
+class Like(CreatedAtMixin, models.Model):
     """
     Model representing a like relationship between a user and a post.
 
@@ -23,7 +24,6 @@ class Like(models.Model):
         on_delete=models.CASCADE,
         related_name='likes',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         """
@@ -53,11 +53,5 @@ def create_like_notification(sender, instance, created, **kwargs):
     - Does not notify if the user likes their own post
     """
     
-    if created and instance.post.author != instance.user:
-        Notification.objects.create(
-            user=instance.post.author,
-            title="❤️ New Like",
-            message=f"{instance.user.username} liked your post",
-            type=Notification.Type.LIKE,
-            post=instance.post,
-        )
+    if created:
+        notify_post_action(instance, "❤️", Notification.Type.LIKE, "liked")

@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from timeout.models.mixins import TimestampMixin, OwnedMixin
 
 
-class Note(models.Model):
+class Note(TimestampMixin, OwnedMixin, models.Model):
     """
     Model representing a personal note for a user.
 
@@ -66,8 +67,6 @@ class Note(models.Model):
         default=0,
         help_text='Total Pomodoro minutes spent on this note',
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """
@@ -95,12 +94,6 @@ class Note(models.Model):
     def get_color(self):
         """Return the Bootstrap color class for this category."""
         return self.CATEGORY_COLORS.get(self.category, 'secondary')
-
-    def can_edit(self, user):
-        """Check if user can edit this note."""
-        if not user.is_authenticated:
-            return False
-        return self.owner == user
 
     @property
     def urgency(self):

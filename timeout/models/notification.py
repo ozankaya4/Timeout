@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from timeout.models.mixins import CreatedAtMixin
 
 
-class Notification(models.Model):
+class Notification(CreatedAtMixin, models.Model):
     """
     Represents a user notification for various activities.
 
@@ -38,7 +39,6 @@ class Notification(models.Model):
     )
     is_read = models.BooleanField(default=False)
     is_dismissed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
     conversation = models.ForeignKey(
         'Conversation',
         null=True,

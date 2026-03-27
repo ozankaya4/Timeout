@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.db import models
 from timeout.models.notification import Notification
+from timeout.models.mixins import TimestampMixin, OwnedMixin
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
 
 
-class Comment(models.Model):
+class Comment(TimestampMixin, OwnedMixin, models.Model):
     """
     Model representing comments on posts, including threaded replies.
     
@@ -33,8 +34,6 @@ class Comment(models.Model):
         related_name='replies',
     )
     content = models.TextField(max_length=1000)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """
@@ -61,11 +60,6 @@ class Comment(models.Model):
         """Return count of direct replies."""
         return self.replies.count()
 
-    def can_delete(self, user):
-        """Check if user can delete this comment."""
-        if not user.is_authenticated:
-            return False
-        return self.author == user or user.is_staff
 
 @receiver(post_save, sender=Comment)
 def create_comment_notification(sender, instance, created, **kwargs):
