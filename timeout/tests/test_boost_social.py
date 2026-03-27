@@ -14,13 +14,9 @@ from django.utils import timezone
 
 from timeout.models import Event, Post, Comment, PostFlag
 from timeout.models.focus_session import FocusSession
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 
 def _make_post(author, content='Test post'):
@@ -32,7 +28,7 @@ class FeedViewTests(TestCase):
 
     def setUp(self):
         """Create a test user and log in before each test."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
 
     def test_feed_following_tab(self):
@@ -79,8 +75,8 @@ class FeedMoreViewTests(TestCase):
 
     def setUp(self):
         """Create test users and log in before each test."""
-        self.user = _make_user()
-        self.other = _make_user('other')
+        self.user = make_user()
+        self.other = make_user('other')
         self.client.login(username='testuser', password='TestPass1!')
 
     def test_feed_more_following(self):
@@ -119,8 +115,8 @@ class DeleteCommentTests(TestCase):
 
     def setUp(self):
         """Create test users, posts, and comments before each test."""
-        self.user = _make_user()
-        self.other = _make_user('other')
+        self.user = make_user()
+        self.other = make_user('other')
         self.post = _make_post(self.user)
         self.comment = Comment.objects.create(
             post=self.post, author=self.user, content='My comment'
@@ -135,7 +131,7 @@ class DeleteCommentTests(TestCase):
 
     def test_staff_can_delete_comment(self):
         """Test that staff users can delete any comment successfully."""
-        staff = _make_user('staff', is_staff=True)
+        staff = make_user('staff', is_staff=True)
         self.client.login(username='staff', password='TestPass1!')
         resp = self.client.post(reverse('delete_comment', args=[self.comment.id]))
         self.assertEqual(resp.status_code, 302)
@@ -153,7 +149,7 @@ class UpdateStatusTests(TestCase):
 
     def setUp(self):
         """Create a test user and log in before each test."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
 
     def test_set_focus_status(self):
@@ -199,9 +195,9 @@ class SocialViewFollowersAPITests(TestCase):
 
     def setUp(self):
         """Create test users before each test."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
-        self.private = _make_user('priv', privacy_private=True)
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
+        self.private = make_user('priv', privacy_private=True)
 
     def test_followers_api(self):
         """Test the followers API endpoint."""
@@ -273,8 +269,8 @@ class FlagPostTests(TestCase):
 
     def setUp(self):
         """Create test users and a post before each test."""
-        self.user = _make_user()
-        self.other = _make_user('other')
+        self.user = make_user()
+        self.other = make_user('other')
         self.post = _make_post(self.other)
         self.client.login(username='testuser', password='TestPass1!')
 
@@ -313,7 +309,7 @@ class ProfileEventTests(TestCase):
 
     def setUp(self):
         """Create a test user and log in before each test."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
 
     def test_profile_with_active_event(self):
@@ -358,7 +354,7 @@ class EventEditEdgeCases(TestCase):
 
     def setUp(self):
         """Create a test user and an event before each test."""
-        self.user = _make_user()
+        self.user = make_user()
         self.client.login(username='testuser', password='TestPass1!')
         now = timezone.now()
         self.event = Event.objects.create(

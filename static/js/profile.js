@@ -97,15 +97,6 @@ const BLOCKED_URL   = _cfg?.dataset.blockedUrl   ?? '';
 })();
 
 /**
- * Generate HTML for user avatar image or initial badge.
- */
-function _userAvatarHtml(u) {
-  return u.profile_picture
-    ? `<img src="${u.profile_picture}" class="rounded-circle" width="40" height="40" style="object-fit:cover;">`
-    : `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;">${u.username[0].toUpperCase()}</div>`;
-}
-
-/**
  * Generate action button HTML for user item (follow, unfollow, or follow back).
  */
 function _userActionBtn(u, options) {
@@ -128,7 +119,7 @@ function _userActionBtn(u, options) {
  */
 function _userItemHtml(u, options) {
   const inner = `
-        ${_userAvatarHtml(u)}
+        ${userAvatarHtml(u.profile_picture, u.username)}
         <div>
           <div class="fw-semibold">@${u.username}</div>
           ${u.full_name ? `<div class="text-muted small">${u.full_name}</div>` : ''}
@@ -250,19 +241,6 @@ function attachFollowToggle(btn) {
 }
 
 /**
- * Initialize search filtering for user list within a modal.
- */
-function _initModalSearch(input, listEl) {
-  input.oninput = function () {
-    const query = this.value.toLowerCase().trim();
-    listEl.querySelectorAll('.user-item').forEach(item => {
-      const text = item.textContent.replace(/\s+/g, ' ').toLowerCase();
-      item.style.display = text.includes(query) ? '' : 'none';
-    });
-  };
-}
-
-/**
  * Initialize a user-list modal: fetch data on open, render list, attach handlers, and enable search.
  */
 function _initUserModal(modalId, listId, url, options = {}) {
@@ -270,13 +248,12 @@ function _initUserModal(modalId, listId, url, options = {}) {
     const input = document.querySelector(`[data-modal-search="${listId}"]`);
     input.value = '';
     input.oninput = null;
-    fetch(url)
-      .then(r => r.json())
+    getJSON(url)
       .then(data => {
         const list = document.getElementById(listId);
         list.innerHTML = renderUserList(data.users, options.listOptions || {});
         if (options.attachFn) options.attachFn(list);
-        _initModalSearch(input, list);
+        attachUserSearchFilter(input, list);
       });
   });
 }

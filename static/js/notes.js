@@ -26,11 +26,7 @@ function updatePinIcon(item, pinned) {
  * Toggle pin state for a note via API and update button.
  */
 function togglePin(noteId, btn) {
-  fetch('/notes/' + noteId + '/pin/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': getCSRFToken() },
-  })
-  .then(function(res) { return res.json(); })
+  postJSON('/notes/' + noteId + '/pin/')
   .then(function(data) {
     btn.textContent = data.pinned ? 'Unpin' : 'Pin';
     btn.dataset.pinned = data.pinned;
@@ -40,49 +36,6 @@ function togglePin(noteId, btn) {
   .catch(function(err) { console.error('Pin toggle failed:', err); });
 }
 
-/**
- * Play a beep tone at specified frequency, duration, and volume.
- */
-function playBeep(freq, duration, volume) {
-  try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = freq || 660;
-    gain.gain.value = volume || 0.3;
-    osc.start();
-    setTimeout(function() { osc.stop(); ctx.close(); }, duration || 200);
-  } catch(e) {}
-}
-
-/**
- * Check if sound notifications are enabled in config.
- */
-function isSoundEnabled() {
-  var cfg = window.NOTES_CONFIG || {};
-  return cfg.sounds !== undefined ? cfg.sounds : true;
-}
-
-/**
- * Play alarm sound sequence (two beeps followed by a higher tone).
- */
-function playAlarm() {
-  if (!isSoundEnabled()) return;
-  playBeep(880, 150, 0.35);
-  setTimeout(function() { playBeep(880, 150, 0.35); }, 250);
-  setTimeout(function() { playBeep(1100, 300, 0.4); }, 500);
-}
-
-/**
- * Play warning sound sequence (two identical beeps).
- */
-function playWarning() {
-  if (!isSoundEnabled()) return;
-  playBeep(520, 300, 0.5);
-  setTimeout(function() { playBeep(520, 300, 0.5); }, 400);
-}
 
 /**
  * Display XP reward toast notification with fade animation.
@@ -161,10 +114,7 @@ var DailyGoals = (function() {
   function refresh() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.goalsProgressUrl) return;
-    fetch(cfg.goalsProgressUrl)
-      .then(function(r) { return r.json(); })
-      .then(render)
-      .catch(function() {});
+    getJSON(cfg.goalsProgressUrl).then(render).catch(function() {});
   }
 
   /**
@@ -208,11 +158,7 @@ var DailyGoals = (function() {
       body.append('daily_pomo_goal', document.getElementById('goalInputPomo').value);
       body.append('daily_notes_goal', document.getElementById('goalInputNotes').value);
       body.append('daily_focus_goal', document.getElementById('goalInputFocus').value);
-      fetch(cfg.goalsUpdateUrl, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCSRFToken() },
-        body: body,})
-      .then(function(r) { return r.json(); })
+      postJSON(cfg.goalsUpdateUrl, { body: body })
       .then(function() {
         bootstrap.Modal.getInstance(document.getElementById('editGoalsModal')).hide();
         refresh();})
@@ -299,10 +245,7 @@ var Heatmap = (function() {
   function load() {
     var cfg = window.NOTES_CONFIG || {};
     if (!cfg.heatmapUrl) return;
-    fetch(cfg.heatmapUrl)
-      .then(function(r) { return r.json(); })
-      .then(function(data) { render(data.days); })
-      .catch(function() {});
+    getJSON(cfg.heatmapUrl).then(function(data) { render(data.days); }).catch(function() {});
   }
 
   return { init: load };

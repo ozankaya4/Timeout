@@ -13,21 +13,17 @@ from django.test import TestCase
 from timeout.admin.note_admin import NoteAdmin
 from timeout.admin.social_admin import PostFlagAdmin, PostAdmin, CommentAdmin, LikeAdmin, BookmarkAdmin
 from timeout.models import Post, Note, FollowRequest, PostFlag, Comment, Like, Bookmark
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 class FollowRequestModelTests(TestCase):
     """Tests for the FollowRequest model, covering string representation, uniqueness constraints, ordering, and reverse follow requests."""
 
     def setUp(self):
         """Set up test users for follow request tests."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
 
     def test_str(self):
         """Test the string representation of a FollowRequest instance."""
@@ -50,7 +46,7 @@ class FollowRequestModelTests(TestCase):
     def test_ordering(self):
         """Test that FollowRequest instances are ordered by created_at descending."""
         fr1 = FollowRequest.objects.create(from_user=self.alice, to_user=self.bob)
-        charlie = _make_user('charlie')
+        charlie = make_user('charlie')
         fr2 = FollowRequest.objects.create(from_user=charlie, to_user=self.bob)
         requests = list(FollowRequest.objects.all())
         self.assertEqual(requests[0], fr2)
@@ -60,15 +56,15 @@ class UserFollowerCountTests(TestCase):
 
     def test_follower_count_zero(self):
         """Test that a user with no followers has a follower_count of 0."""
-        user = _make_user()
+        user = make_user()
         self.assertEqual(user.follower_count, 0)
 
     def test_follower_count_after_follows(self):
         """Test that a user with multiple followers has the correct follower_count."""
-        target = _make_user('target')
-        f1 = _make_user('f1')
-        f2 = _make_user('f2')
-        f3 = _make_user('f3')
+        target = make_user('target')
+        f1 = make_user('f1')
+        f2 = make_user('f2')
+        f3 = make_user('f3')
         f1.following.add(target)
         f2.following.add(target)
         f3.following.add(target)
@@ -76,8 +72,8 @@ class UserFollowerCountTests(TestCase):
 
     def test_follower_count_after_unfollow(self):
         """Test that unfollowing a user decreases their follower_count."""
-        target = _make_user('target')
-        f1 = _make_user('f1')
+        target = make_user('target')
+        f1 = make_user('f1')
         f1.following.add(target)
         self.assertEqual(target.follower_count, 1)
         f1.following.remove(target)
@@ -90,7 +86,7 @@ class NoteAdminTests(TestCase):
         """Set up the NoteAdmin instance and a test user for NoteAdmin tests."""
         self.site = AdminSite()
         self.admin = NoteAdmin(Note, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_title_preview_short(self):
         """Test that a short title is returned unchanged by title_preview."""
@@ -120,7 +116,7 @@ class PostFlagAdminTests(TestCase):
         """Set up the PostFlagAdmin instance and a test user for PostFlagAdmin tests."""
         self.site = AdminSite()
         self.admin = PostFlagAdmin(PostFlag, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_post_preview_short(self):
         """Test that a short post content is returned unchanged by post_preview."""
@@ -151,7 +147,7 @@ class PostAdminTests(TestCase):
         """Set up the PostAdmin instance and a test user for PostAdmin tests."""
         self.site = AdminSite()
         self.admin = PostAdmin(Post, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_content_preview_short(self):
         """Test that a short post content is returned unchanged by content_preview."""
@@ -169,7 +165,7 @@ class PostAdminTests(TestCase):
         """Test that like_count returns the correct number of likes for a post."""
         post = Post.objects.create(author=self.user, content='Likes test')
         Like.objects.create(user=self.user, post=post)
-        user2 = _make_user('user2')
+        user2 = make_user('user2')
         Like.objects.create(user=user2, post=post)
         result = self.admin.like_count(post)
         self.assertEqual(result, 2)
@@ -189,7 +185,7 @@ class CommentAdminTests(TestCase):
         """Set up the CommentAdmin instance and a test user for CommentAdmin tests."""
         self.site = AdminSite()
         self.admin = CommentAdmin(Comment, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_post_preview_short(self):
         """Test that a short post content is returned unchanged by post_preview."""
@@ -226,7 +222,7 @@ class LikeAdminTests(TestCase):
         """Set up the LikeAdmin instance and a test user for LikeAdmin tests."""
         self.site = AdminSite()
         self.admin = LikeAdmin(Like, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_post_preview_short(self):
         """Test that a short post content is returned unchanged by post_preview."""
@@ -248,7 +244,7 @@ class BookmarkAdminTests(TestCase):
         """Set up the BookmarkAdmin instance and a test user for BookmarkAdmin tests."""
         self.site = AdminSite()
         self.admin = BookmarkAdmin(Bookmark, self.site)
-        self.user = _make_user()
+        self.user = make_user()
 
     def test_post_preview_short(self):
         """Test that a short post content is returned unchanged by post_preview."""

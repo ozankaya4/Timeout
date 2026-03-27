@@ -31,12 +31,7 @@ function _sendMessage(config, input, sendBtn, container, state) {
     if (!content) return;
     sendBtn.disabled = true;
 
-    fetch(config.sendUrl, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': config.csrfToken },
-        body: new URLSearchParams({ content }),
-    })
-    .then(r => r.json())
+    postJSON(config.sendUrl, { body: new URLSearchParams({ content }) })
     .then(msg => {
         if (msg.error) { console.error(msg.error); return; }
         _appendMessage(container, msg);

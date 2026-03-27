@@ -9,13 +9,9 @@ from django.test import TestCase
 from django.urls import reverse
 
 from timeout.models import FollowRequest
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with the given username and password, along with any additional fields."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 
 # User Profile: own profile / incoming requests
@@ -25,12 +21,12 @@ class UserProfileOwnTests(TestCase):
 
     def setUp(self):
         """Set up a test user and log them in before each test."""
-        self.user = _make_user('alice')
+        self.user = make_user('alice')
         self.client.login(username='alice', password='TestPass1!')
 
     def test_own_profile_shows_incoming_requests(self):
         """Test that the user profile view for the logged-in user includes incoming follow requests in the context when there are pending requests."""
-        bob = _make_user('bob')
+        bob = make_user('bob')
         FollowRequest.objects.create(from_user=bob, to_user=self.user)
         resp = self.client.get(reverse('user_profile', args=['alice']))
         self.assertEqual(resp.status_code, 200)
@@ -47,7 +43,7 @@ class UserProfileOwnTests(TestCase):
 
     def test_other_profile_no_incoming_requests(self):
         """Test that viewing another user's profile does not include incoming follow requests in the context."""
-        _make_user('bob')
+        make_user('bob')
         resp = self.client.get(reverse('user_profile', args=['bob']))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(list(resp.context['incoming_requests']), [])
@@ -62,7 +58,7 @@ class SearchUsersTests(TestCase):
 
     def setUp(self):
         """Set up a test user and log them in before each test."""
-        self.user = _make_user('alice')
+        self.user = make_user('alice')
         self.client.login(username='alice', password='TestPass1!')
 
     def test_search_empty_query(self):
@@ -87,7 +83,7 @@ class SearchUsersTests(TestCase):
 
     def test_search_finds_user_by_username(self):
         """Test that searching with a valid username query returns the correct user in the results."""
-        _make_user('bob', first_name='Bob', last_name='Smith')
+        make_user('bob', first_name='Bob', last_name='Smith')
         resp = self.client.get(reverse('search_users'), {'q': 'bob'})
         data = json.loads(resp.content)
         usernames = [u['username'] for u in data['users']]
@@ -95,7 +91,7 @@ class SearchUsersTests(TestCase):
 
     def test_search_finds_user_by_first_name(self):
         """Test that searching with a valid first name query returns the correct user in the results."""
-        _make_user('carol', first_name='Carol')
+        make_user('carol', first_name='Carol')
         resp = self.client.get(reverse('search_users'), {'q': 'Carol'})
         data = json.loads(resp.content)
         usernames = [u['username'] for u in data['users']]
@@ -119,8 +115,8 @@ class FollowersAPITests(TestCase):
 
     def setUp(self):
         """Set up test users and log in before each test."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
         self.client.login(username='alice', password='TestPass1!')
 
     def test_followers_api_empty(self):
@@ -164,8 +160,8 @@ class FollowingAPITests(TestCase):
 
     def setUp(self):
         """Set up test users and log in before each test."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
         self.client.login(username='alice', password='TestPass1!')
 
     def test_following_api_empty(self):
@@ -195,9 +191,9 @@ class FriendsAPITests(TestCase):
 
     def setUp(self):
         """Set up test users and log in before each test."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
-        self.charlie = _make_user('charlie')
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
+        self.charlie = make_user('charlie')
         self.client.login(username='alice', password='TestPass1!')
 
     def test_friends_api_empty(self):
@@ -235,8 +231,8 @@ class UserFollowersAPIPrivateTests(TestCase):
 
     def setUp(self):
         """Set up test users including a private user, and log in before each test."""
-        self.alice = _make_user('alice')
-        self.private_user = _make_user('private_user', privacy_private=True)
+        self.alice = make_user('alice')
+        self.private_user = make_user('private_user', privacy_private=True)
         self.client.login(username='alice', password='TestPass1!')
 
     def test_user_followers_api_private_forbidden(self):
@@ -279,13 +275,13 @@ class UserFollowersAPIPrivateTests(TestCase):
 
     def test_user_followers_api_public_always_allowed(self):
         """Test that the followers_api view returns a 200 OK status code when accessing the followers of a public user, regardless of follow status."""
-        _make_user('public_user', privacy_private=False)
+        make_user('public_user', privacy_private=False)
         resp = self.client.get(reverse('user_followers_api', args=['public_user']))
         self.assertEqual(resp.status_code, 200)
 
     def test_user_following_api_public_always_allowed(self):
         """Test that the following_api view returns a 200 OK status code when accessing the following list of a public user, regardless of follow status."""
-        _make_user('public_user', privacy_private=False)
+        make_user('public_user', privacy_private=False)
         resp = self.client.get(reverse('user_following_api', args=['public_user']))
         self.assertEqual(resp.status_code, 200)
 
@@ -294,8 +290,8 @@ class UserFriendsAPIPrivateTests(TestCase):
 
     def setUp(self):
         """Set up test users including a private user, and log in before each test."""
-        self.alice = _make_user('alice')
-        self.private_user = _make_user('private_user', privacy_private=True)
+        self.alice = make_user('alice')
+        self.private_user = make_user('private_user', privacy_private=True)
         self.client.login(username='alice', password='TestPass1!')
 
     def test_user_friends_api_private_forbidden(self):
@@ -317,7 +313,7 @@ class UserFriendsAPIPrivateTests(TestCase):
 
     def test_user_friends_api_public(self):
         """Test that the friends_api view returns a 200 OK status code when accessing the friends of a public user, regardless of follow status."""
-        _make_user('pubuser', privacy_private=False)
+        make_user('pubuser', privacy_private=False)
         resp = self.client.get(reverse('user_friends_api', args=['pubuser']))
         self.assertEqual(resp.status_code, 200)
 
@@ -326,9 +322,9 @@ class UserProfileViewTests(TestCase):
 
     def setUp(self):
         """Set up test users including a private user, and log in before each test."""
-        self.alice = _make_user('alice')
-        self.bob = _make_user('bob')
-        self.private_user = _make_user('private_carol', privacy_private=True)
+        self.alice = make_user('alice')
+        self.bob = make_user('bob')
+        self.private_user = make_user('private_carol', privacy_private=True)
         self.client.login(username='alice', password='TestPass1!')
 
     def test_view_public_user_profile(self):

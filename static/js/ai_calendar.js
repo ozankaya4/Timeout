@@ -52,9 +52,7 @@ async function submitAiEvent() {
   try {
     var formData = new FormData();
     formData.append('user_input', input);
-    formData.append('csrfmiddlewaretoken', window.AI_CSRF_TOKEN);
-    var res = await fetch(window.AI_ADD_URL, { method: 'POST', body: formData });
-    _handleAiResult(await res.json());
+    _handleAiResult(await postJSON(window.AI_ADD_URL, { body: formData }));
   } catch (err) {
     _showAiError('Network error. Please try again.');
   } finally {

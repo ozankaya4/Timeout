@@ -15,13 +15,9 @@ from django.utils import timezone
 
 from timeout.models import Event, Post
 from timeout.services.email_service import EmailService
+from timeout.tests import make_user
 
 User = get_user_model()
-
-
-def _make_user(username='testuser', password='TestPass1!', **kwargs):
-    """Helper function to create a user with default credentials, allowing overrides."""
-    return User.objects.create_user(username=username, password=password, **kwargs)
 
 
 # Management Commands
@@ -31,7 +27,7 @@ class CheckNotificationsCommandTests(TestCase):
 
     def setUp(self):
         """Set up a test user for the check_notifications command tests."""
-        self.user = _make_user()
+        self.user = make_user()
 
     @patch('timeout.management.commands.check_notifications.NotificationService')
     def test_check_notifications_calls_services_for_each_user(self, mock_svc):
@@ -45,7 +41,7 @@ class CheckNotificationsCommandTests(TestCase):
     @patch('timeout.management.commands.check_notifications.NotificationService')
     def test_check_notifications_multiple_users(self, mock_svc):
         """Test that the check_notifications command calls the notification service methods for multiple users."""
-        _make_user('user2')
+        make_user('user2')
         out = StringIO()
         call_command('check_notifications', stdout=out)
         self.assertEqual(mock_svc.create_deadline_notifications.call_count, 2)
@@ -132,7 +128,7 @@ class EventModelPropertyTests(TestCase):
 
     def setUp(self):
         """Set up a test user and the current time for Event model property tests."""
-        self.user = _make_user()
+        self.user = make_user()
         self.now = timezone.now()
 
     def _make_event(self, **kwargs):
@@ -297,53 +293,6 @@ class EventModelPropertyTests(TestCase):
         """Test that creating an event with the event_type of Event.EventType.OTHER sets the event_type field to 'other'."""
         event = self._make_event(event_type=Event.EventType.OTHER)
         self.assertEqual(event.event_type, 'other')
-
-class AIServiceTests(TestCase):
-    """Tests for the AIService functions, covering _get_most_productive_day and _gather_study_stats with various scenarios of event data."""
-
-    def test_get_most_productive_day_empty(self):
-        """Test that the _get_most_productive_day function returns 'None yet' when given an empty queryset of events."""
-        from timeout.services.ai_service import _get_most_productive_day
-        qs = Event.objects.none()
-        result = _get_most_productive_day(qs)
-        self.assertEqual(result, 'None yet')
-
-    def test_get_most_productive_day_with_data(self):
-        """Test that the _get_most_productive_day function returns a valid date string when given a queryset of events with completed study sessions."""
-        from timeout.services.ai_service import _get_most_productive_day
-        user = _make_user()
-        now = timezone.now()
-        Event.objects.create(
-            creator=user, title='Done', event_type='study_session',
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now - timedelta(days=1) + timedelta(hours=2),
-            is_completed=True,
-        )
-        qs = Event.objects.filter(creator=user)
-        result = _get_most_productive_day(qs)
-        self.assertNotEqual(result, 'None yet')
-
-    def test_gather_study_stats(self):
-        """Test that the _gather_study_stats function returns a dictionary with correct total study hours and missed deadlines based on the user's events."""
-        from timeout.services.ai_service import _gather_study_stats
-        user = _make_user()
-        now = timezone.now()
-        Event.objects.create(
-            creator=user, title='Study', event_type='study_session',
-            start_datetime=now - timedelta(days=1),
-            end_datetime=now - timedelta(days=1) + timedelta(hours=3),
-            is_completed=True,
-        )
-        Event.objects.create(
-            creator=user, title='Missed DL', event_type='deadline',
-            start_datetime=now - timedelta(days=2),
-            end_datetime=now - timedelta(hours=1),
-            is_completed=False,
-        )
-        stats = _gather_study_stats(user, now)
-        self.assertIn('total_study_hours', stats)
-        self.assertGreater(stats['total_study_hours'], 0)
-        self.assertEqual(stats['missed_deadlines'], 1)
 
 class SitemapTests(TestCase):
     """Tests for the sitemap view, covering the response status code for the sitemap index and ensuring it returns a valid XML response when accessed."""

@@ -326,8 +326,7 @@
 
     setStatus('Saving...', 'saving');
 
-    fetch(autosaveUrl, { method: 'POST', body: buildSavePayload(currentContent, currentTitle, currentPageMode) })
-      .then(function(res) { return res.json(); })
+    postJSON(autosaveUrl, { body: buildSavePayload(currentContent, currentTitle, currentPageMode) })
       .then(function(data) {
         if (data.success) {
           lastSavedContent = currentContent;

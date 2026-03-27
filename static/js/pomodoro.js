@@ -136,12 +136,7 @@ var Pomodoro = (function() {
     var noteId = getLinkedNoteId();
     if (noteId) body.append('note_id', noteId);
 
-    fetch(cfg.pomodoroCompleteUrl, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCsrfToken() },
-      body: body,
-    })
-    .then(function(r) { return r.json(); })
+    postJSON(cfg.pomodoroCompleteUrl, { body: body })
     .then(function(data) {
       updateStatsUI(data);
       showXpToast(25);

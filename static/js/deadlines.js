@@ -5,17 +5,6 @@
  */
 
 /**
- * Open add event modal prefilled with start and end times for a specific date.
- * @param {string} dateStr - Date string in YYYY-MM-DD format.
- */
-function openAddEvent(dateStr) {
-  document.getElementById('eventStart').value = dateStr + 'T09:00';
-  document.getElementById('eventEnd').value = dateStr + 'T10:00';
-  var modal = new bootstrap.Modal(document.getElementById('addEventModal'));
-  modal.show();
-}
-
-/**
  * Initialize deadline checkbox event listeners on page load.
  * Sets up handlers for marking deadlines complete and incomplete.
  */
@@ -46,14 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function completeDeadline(eventId, checkbox) {
   var item = document.querySelector('[data-id="' + eventId + '"]');
-  fetch('/deadlines/' + eventId + '/complete/', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCSRFToken(),
-      'Content-Type': 'application/json',},})
-  .then(function(res) {
-    if (!res.ok) throw new Error('Request failed');
-    return res.json();})
+  postJSON('/deadlines/' + eventId + '/complete/')
   .then(function(data) {
     if (data.is_completed && item) {
       checkbox.disabled = true;
@@ -78,14 +60,7 @@ function completeDeadline(eventId, checkbox) {
  */
 function incompleteDeadline(eventId, checkbox) {
   var item = document.querySelector('[data-id="' + eventId + '"]');
-  fetch('/deadlines/' + eventId + '/incomplete/', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCSRFToken(),
-      'Content-Type': 'application/json',},})
-  .then(function(res) {
-    if (!res.ok) throw new Error('Request failed');
-    return res.json();})
+  postJSON('/deadlines/' + eventId + '/incomplete/')
   .then(function(data) {
     if (data.is_completed === false && item) {
       item.classList.add('dl-item--completing');

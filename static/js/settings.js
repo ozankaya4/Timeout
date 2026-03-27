@@ -8,7 +8,6 @@
   var statusEl = document.getElementById('autosaveStatus');
   var statusText = document.getElementById('autosaveText');
   var saveUrl = '/settings/save/';
-  var csrfToken = getCSRFToken();
   var saveTimer = null;
 
   /**
@@ -48,12 +47,7 @@
     if (!form.querySelector('[name="auto_online"]').checked) {
       data.delete('auto_online');
     }
-    fetch(saveUrl, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrfToken },
-      body: data,
-    })
-    .then(function(r) { return r.json(); })
+    postJSON(saveUrl, { body: data })
     .then(function(d) {
       if (d.success) showStatus('Saved', 'saved');
       else showStatus('Error', 'error');

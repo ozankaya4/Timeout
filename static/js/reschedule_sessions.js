@@ -11,11 +11,7 @@ let rsSuggestions = [];
 function fetchRescheduleSuggestions() {
     rsShowLoading();
 
-    fetch(window.RS_SUGGEST_URL, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCSRFToken() },
-    })
-    .then(r => r.json())
+    postJSON(window.RS_SUGGEST_URL)
     .then(data => {
         if (!data.success) {
             rsShowError(data.error || 'Something went wrong.');
@@ -66,11 +62,7 @@ function applyReschedule() {
     btn.textContent = 'Applying…';
     const formData = new FormData();
     formData.append('sessions', JSON.stringify(rsSuggestions));
-    fetch(window.RS_APPLY_URL, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCSRFToken() },
-        body: formData,})
-    .then(r => r.json())
+    postJSON(window.RS_APPLY_URL, { body: formData })
     .then(data => {
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('rescheduleSessionsModal')).hide();
