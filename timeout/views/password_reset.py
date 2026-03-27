@@ -26,6 +26,11 @@ def forgot_password(request):
     return render(request, 'auth/forgot_password.html', {'step': 'request'})
 
 
+def _mask_email(email):
+    local, domain = email.split('@')
+    return local[:2] + '***@' + domain
+
+
 def _handle_code_request(request):
     """Look up user by email/username and send a 6-digit reset code."""
     identifier = request.POST.get('identifier', '').strip()
@@ -48,8 +53,7 @@ def _handle_code_request(request):
         messages.error(request, 'Failed to send the reset code. Please try again later.')
         return render(request, 'auth/forgot_password.html', {'step': 'request', 'identifier': identifier})
 
-    local, domain = user.email.split('@')
-    masked = local[:2] + '***@' + domain
+    masked = _mask_email(user.email)
     messages.success(request, f'A 6-digit code has been sent to {masked}.')
     return render(request, 'auth/forgot_password.html', {'step': 'verify', 'masked_email': masked})
 
