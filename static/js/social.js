@@ -5,28 +5,6 @@
  */
 
 /**
- * Retrieve CSRF token from browser cookies for secure form submissions.
- */
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-const csrftoken = getCookie('csrftoken');
-
-/**
  * Populate custom dropdown menu with options from native select element.
  */
 function _createDropdownOptions(nativeSelect, dropdown, trigger) {
@@ -216,11 +194,7 @@ function initLikeButtons() {
     document.querySelectorAll('.like-btn').forEach(button => {
         button.addEventListener('click', function() {
             const postId = this.dataset.postId;
-            fetch(`/social/post/${postId}/like/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            })
-            .then(response => response.json())
+            postJSON(`/social/post/${postId}/like/`)
             .then(data => {
                 const icon = this.querySelector('.like-icon');
                 const count = this.querySelector('.like-count');
@@ -253,11 +227,7 @@ function initBookmarkButtons() {
         _initBookmarkState(button);
         button.addEventListener('click', function() {
             const postId = this.dataset.postId;
-            fetch(`/social/post/${postId}/bookmark/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            })
-            .then(response => response.json())
+            postJSON(`/social/post/${postId}/bookmark/`)
             .then(data => {
                 const icon = this.querySelector('.bookmark-icon');
                 icon.className = data.bookmarked ? 'bi bi-bookmark-fill bookmark-icon' : 'bi bi-bookmark bookmark-icon';
@@ -279,11 +249,7 @@ function initFlagButtons() {
             const icon = this.querySelector('i');
             const alreadyFlagged = icon.className.includes('flag-fill');
             icon.className = alreadyFlagged ? 'bi bi-flag' : 'bi bi-flag-fill';
-            fetch(`/social/post/${postId}/flag/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': getCookie('csrftoken') },
-            })
-            .then(r => r.json())
+            postJSON(`/social/post/${postId}/flag/`)
             .catch(() => {
                 icon.className = alreadyFlagged ? 'bi bi-flag-fill' : 'bi bi-flag';
             });
@@ -298,11 +264,7 @@ function initFollowButtons() {
     document.querySelectorAll('.follow-btn').forEach(button => {
         button.addEventListener('click', function() {
             const username = this.dataset.username;
-            fetch(`/social/user/${username}/follow/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
+            postJSON(`/social/user/${username}/follow/`)
             .then(data => applyFollowState(this, data.following, data.requested))
             .catch(error => console.error('Error:', error));
         });
@@ -316,11 +278,7 @@ function initSubscribeButtons() {
     document.querySelectorAll('.btn-subscribe-event').forEach(btn => {
         btn.addEventListener('click', function () {
             const url = this.dataset.url;
-            fetch(url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
-            })
-            .then(r => r.json())
+            postJSON(url)
             .then(data => {
                 if (data.success) {
                     btn.textContent = '✓ Added';

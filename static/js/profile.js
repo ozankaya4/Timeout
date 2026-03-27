@@ -17,7 +17,6 @@ const BLOCKED_URL   = _cfg?.dataset.blockedUrl   ?? '';
   if (!cfg) return;
 
   const url = cfg.dataset.updateUrl;
-  const csrf = cfg.dataset.csrfToken;
 
   const navText = document.getElementById('nav-status-text');
   const navDot  = document.getElementById('nav-status-dot');
@@ -88,12 +87,10 @@ const BLOCKED_URL   = _cfg?.dataset.blockedUrl   ?? '';
   document.querySelectorAll('.status-btn').forEach((btn) => {
     btn.addEventListener('click', function () {
       const status = this.dataset.status;
-      fetch(url, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+      postJSON(url, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `status=${encodeURIComponent(status)}`
       })
-        .then((r) => r.json())
         .then(_applyStatusUpdate);
     });
   });
@@ -112,6 +109,9 @@ function _userAvatarHtml(u) {
  * Generate action button HTML for user item (follow, unfollow, or follow back).
  */
 function _userActionBtn(u, options) {
+  if (options.showUnblock) {
+    return `<button class="btn btn-sm btn-outline-secondary unblock-btn ms-2" data-username="${u.username}">Unblock</button>`;
+  }
   if (options.showUnfollow) {
     return `<button class="btn btn-sm btn-outline-danger unfollow-btn ms-2" data-username="${u.username}">Unfollow</button>`;
   }
@@ -127,15 +127,18 @@ function _userActionBtn(u, options) {
  * Generate complete user list item HTML with avatar, name, and action button.
  */
 function _userItemHtml(u, options) {
-  return `
-    <div class="user-item d-flex align-items-center justify-content-between mb-3">
-      <a href="/social/user/${u.username}/" class="d-flex align-items-center gap-3 text-decoration-none text-dark">
+  const inner = `
         ${_userAvatarHtml(u)}
         <div>
           <div class="fw-semibold">@${u.username}</div>
           ${u.full_name ? `<div class="text-muted small">${u.full_name}</div>` : ''}
-        </div>
-      </a>
+        </div>`;
+  const wrapper = options.noLink
+    ? `<div class="d-flex align-items-center gap-3">${inner}</div>`
+    : `<a href="/social/user/${u.username}/" class="d-flex align-items-center gap-3 text-decoration-none text-dark">${inner}</a>`;
+  return `
+    <div class="user-item d-flex align-items-center justify-content-between mb-3">
+      ${wrapper}
       ${_userActionBtn(u, options)}
     </div>`;
 }
@@ -144,7 +147,7 @@ function _userItemHtml(u, options) {
  * Render complete user list HTML with optional action buttons based on context.
  */
 function renderUserList(users, options = {}) {
-  if (users.length === 0) return '<p class="text-center text-muted py-3">No users yet.</p>';
+  if (users.length === 0) return `<p class="text-center text-muted py-3">${options.emptyMessage || 'No users yet.'}</p>`;
   return users.map(u => _userItemHtml(u, options)).join('');
 }
 
@@ -185,11 +188,7 @@ function attachUnfollowHandlers(container) {
       this.disabled = true;
       this.textContent = 'Unfollowing…';
 
-      fetch(`/social/user/${username}/follow/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
-      })
-        .then(r => r.json())
+      postJSON(`/social/user/${username}/follow/`)
         .then(data => _handleUnfollowResult(data, this))
         .catch(err => {
           console.error('Unfollow error:', err);
@@ -241,11 +240,7 @@ function attachFollowToggle(btn) {
     this.disabled = true;
     this.textContent = cancelling ? 'Cancelling…' : 'Following…';
 
-    fetch(`/social/user/${username}/follow/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
-    })
-      .then(r => r.json())
+    postJSON(`/social/user/${username}/follow/`)
       .then(data => _handleFollowToggleResult(data, this))
       .catch(() => {
         this.disabled = false;
@@ -268,95 +263,37 @@ function _initModalSearch(input, listEl) {
 }
 
 /**
- * Load and render followers list when followers modal is opened.
- * Fetches followers, renders with follow-back options, and initializes search.
+ * Initialize a user-list modal: fetch data on open, render list, attach handlers, and enable search.
  */
-document.getElementById('followersModal')?.addEventListener('show.bs.modal', () => {
-  const input = document.querySelector('[data-modal-search="followers-list"]');
-  input.value = '';
-  input.oninput = null;
-  fetch(FOLLOWERS_URL)
-    .then(r => r.json())
-    .then(data => {
-      const list = document.getElementById('followers-list');
-      list.innerHTML = renderUserList(data.users, { showFollowBack: true });
-      attachFollowBackHandlers(list);
-      _initModalSearch(input, list);
-    });
-});
-
-/**
- * Load and render following list when following modal is opened.
- * Fetches following list, renders with unfollow options, and initializes search.
- */
-document.getElementById('followingModal')?.addEventListener('show.bs.modal', () => {
-  const input = document.querySelector('[data-modal-search="following-list"]');
-  input.value = '';
-  input.oninput = null;
-  fetch(FOLLOWING_URL)
-    .then(r => r.json())
-    .then(data => {
-      const list = document.getElementById('following-list');
-      list.innerHTML = renderUserList(data.users, { showUnfollow: true });
-      attachUnfollowHandlers(list);
-      _initModalSearch(input, list);
-    });
-});
-
-/**
- * Load and render mutual friends list when friends modal is opened.
- * Fetches friends, renders list, and initializes search filter.
- */
-document.getElementById('friendsModal')?.addEventListener('show.bs.modal', () => {
-  const input = document.querySelector('[data-modal-search="friends-list"]');
-  input.value = '';
-  input.oninput = null;
-  fetch(FRIENDS_URL)
-    .then(r => r.json())
-    .then(data => {
-      const list = document.getElementById('friends-list');
-      list.innerHTML = renderUserList(data.users);
-      _initModalSearch(input, list);
-    });
-});
-
-/**
- * Load and render blocked users list when blocked modal is opened.
- * Fetches blocked list, renders with unblock buttons, and initializes search.
- */
-document.getElementById('blockedModal')?.addEventListener('show.bs.modal', () => {
-  const input = document.querySelector('[data-modal-search="blocked-list"]');
-  input.value = '';
-  input.oninput = null;
-  fetch(BLOCKED_URL)
-    .then(r => r.json())
-    .then(data => {
-      const list = document.getElementById('blocked-list');
-      list.innerHTML = _renderBlockedList(data.users);
-      attachUnblockHandlers(list);
-      _initModalSearch(input, list);
-    });
-});
-
-/**
- * Render HTML for blocked users list with unblock buttons.
- * @param {Array} users - Array of blocked user objects.
- * @returns {string} HTML string of blocked users with action buttons.
- */
-function _renderBlockedList(users) {
-  if (users.length === 0) return '<p class="text-center text-muted py-3">No blocked users.</p>';
-  return users.map(u => `
-    <div class="user-item d-flex align-items-center justify-content-between mb-3">
-      <div class="d-flex align-items-center gap-3">
-        ${_userAvatarHtml(u)}
-        <div>
-          <div class="fw-semibold">@${u.username}</div>
-          ${u.full_name ? `<div class="text-muted small">${u.full_name}</div>` : ''}
-        </div>
-      </div>
-      <button class="btn btn-sm btn-outline-secondary unblock-btn ms-2" data-username="${u.username}">Unblock</button>
-    </div>`).join('');
+function _initUserModal(modalId, listId, url, options = {}) {
+  document.getElementById(modalId)?.addEventListener('show.bs.modal', () => {
+    const input = document.querySelector(`[data-modal-search="${listId}"]`);
+    input.value = '';
+    input.oninput = null;
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById(listId);
+        list.innerHTML = renderUserList(data.users, options.listOptions || {});
+        if (options.attachFn) options.attachFn(list);
+        _initModalSearch(input, list);
+      });
+  });
 }
+
+_initUserModal('followersModal', 'followers-list', FOLLOWERS_URL, {
+  listOptions: { showFollowBack: true },
+  attachFn: attachFollowBackHandlers,
+});
+_initUserModal('followingModal', 'following-list', FOLLOWING_URL, {
+  listOptions: { showUnfollow: true },
+  attachFn: attachUnfollowHandlers,
+});
+_initUserModal('friendsModal', 'friends-list', FRIENDS_URL);
+_initUserModal('blockedModal', 'blocked-list', BLOCKED_URL, {
+  listOptions: { showUnblock: true, noLink: true, emptyMessage: 'No blocked users.' },
+  attachFn: attachUnblockHandlers,
+});
 
 /**
  * Attach unblock button click handlers to blocked users list.
@@ -369,11 +306,7 @@ function attachUnblockHandlers(container) {
       const username = this.dataset.username;
       this.disabled = true;
       this.textContent = 'Unblocking…';
-      fetch(`/social/user/${username}/block/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-      })
-        .then(r => r.json())
+      postJSON(`/social/user/${username}/block/`)
         .then(data => {
           if (data.blocked === false) {
             this.closest('.user-item').remove();

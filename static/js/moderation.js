@@ -4,16 +4,6 @@
  */
 
 /**
- * Retrieve CSRF token from browser cookies for secure form submissions.
- */
-function getCsrfToken() {
-    const match = document.cookie.split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('csrftoken='));
-    return match ? decodeURIComponent(match.split('=')[1]) : '';
-}
-
-/**
  * Check if current page is a user profile page.
  */
 const onProfilePage = () => window.location.pathname.match(/^\/social\/user\/[^/]+\/$/);
@@ -41,7 +31,6 @@ function transformButtons(username, toBanned) {
  * Initialize moderation handlers: flag review (approve/deny), user bans, and message deletion.
  */
 document.addEventListener('DOMContentLoaded', function () {
-    const csrf = getCsrfToken();
 
     /**
      * Handle flag approval: delete the flagged post and remove card from interface.
@@ -49,11 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.btn-approve-flag').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!confirm('Delete this post permanently?')) return;
-            fetch(this.dataset.url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrf },
-            })
-            .then(r => r.json())
+            postJSON(this.dataset.url)
             .then(data => { if (data.ok) this.closest('.flag-review-card').remove(); })
             .catch(err => console.error('Approve flag error:', err));
         });
@@ -64,11 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     document.querySelectorAll('.btn-deny-flag').forEach(btn => {
         btn.addEventListener('click', function () {
-            fetch(this.dataset.url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrf },
-            })
-            .then(r => r.json())
+            postJSON(this.dataset.url)
             .then(data => { if (data.ok) this.closest('.flag-review-card').remove(); })
             .catch(err => console.error('Deny flag error:', err));
         });
@@ -84,11 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (banBtn) {
             const username = banBtn.dataset.username;
             if (!username || !confirm(`Ban @${username}?`)) return;
-            fetch(banBtn.dataset.url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-            })
-            .then(r => r.json())
+            postJSON(banBtn.dataset.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(data => {
                 if (data.ok) {
                     if (onProfilePage()) window.location.reload();
@@ -101,11 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (unbanBtn) {
             const username = unbanBtn.dataset.username;
             if (!username || !confirm(`Unban @${username}?`)) return;
-            fetch(unbanBtn.dataset.url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-            })
-            .then(r => r.json())
+            postJSON(unbanBtn.dataset.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(data => {
                 if (data.ok) {
                     if (onProfilePage()) window.location.reload();
@@ -122,11 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.btn-delete-msg').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!confirm('Delete this message permanently?')) return;
-            fetch(this.dataset.url, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrf },
-            })
-            .then(r => r.json())
+            postJSON(this.dataset.url)
             .then(data => { if (data.ok) this.closest('.msg-bubble-row').remove(); })
             .catch(err => console.error('Delete message error:', err));
         });
