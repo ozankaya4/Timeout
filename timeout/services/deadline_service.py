@@ -5,8 +5,7 @@ marking them complete or incomplete, and computing urgency labels and time-remai
 
 
 from django.utils import timezone
-from timeout.models import Event, user
-from django.db.models import Q
+from timeout.models import Event
 
 
 class DeadlineService:

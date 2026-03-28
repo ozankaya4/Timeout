@@ -6,7 +6,7 @@ Includes tests for:
 - Subscribing to events: successful subscription, owner cannot subscribe, already subscribed, private event 404, nonexistent event 404, authentication and method guards
 """
 import json
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model

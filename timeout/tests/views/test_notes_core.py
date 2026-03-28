@@ -10,14 +10,11 @@ These tests ensure that the core logic related to notes and study tracking works
 """
 import datetime
 import json
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
-from django.urls import reverse
 from django.utils import timezone
-
-from timeout.models import Note, Post, StudyLog
+from timeout.models import Note, StudyLog
 from timeout.services import NoteService
 
 User = get_user_model()

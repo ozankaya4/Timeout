@@ -1,26 +1,4 @@
-"""
-Views for social features: feed, posts, comments, likes, bookmarks, profiles, following, blocking.
-Endpoints:
-- GET /feed: Main feed with tabs for following, discover, and bookmarks
-- POST /posts/create: Create a new post
-- POST /posts/<id>/delete: Delete a post
-- POST /posts/<id>/like: Like/unlike a post (toggle)
-- POST /posts/<id>/bookmark: Bookmark/unbookmark a post (toggle)
-- POST /posts/<id>/comments/add: Add a comment to a post
-- POST /comments/<id>/delete: Delete a comment
-- GET /bookmarks: View bookmarked posts
-- GET /users/<username>: View a user's profile and posts
-- POST /users/<username>/follow: Follow/unfollow a user, or send/cancel a request for private accounts
-- POST /users/<username>/block: Block or unblock a user (toggle)
-- GET /api/followers: List of current user's followers with follow-back status
-- GET /api/following: List of users that current user is following
-- GET /api/friends: List of mutual follows (friends) for current user
-- GET /api/users/<username>/followers: List of a specific user's followers (respects privacy)
-- GET /api/users/<username>/following: List of users that a specific user is following (respects privacy)
-- GET /api/users/<username>/friends: List of a specific user's mutual follows (respects privacy)
-- POST /update_status: Update the logged-in user's status via AJAX
-- POST /reset_focus_timer: Reset focus session timer on page load
-"""
+"""Views for social features: feed, posts, comments, likes, bookmarks, profiles, following, blocking."""
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -30,14 +8,13 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from timeout.forms import PostForm, CommentForm
-from timeout.models import Post, Comment, Like, Bookmark, User, Conversation, FocusSession, FollowRequest, PostFlag, Block
+from timeout.models import Post, Comment, Like, Bookmark, User, FocusSession, FollowRequest, PostFlag, Block
 from timeout.models.notification import Notification
 from timeout.services import FeedService
 from timeout.views.profile import get_profile_event
 from timeout.services.social_service import (_get_conversation_sidebar,
     _get_follow_request_info, _get_block_status, _can_view_profile,
     _serialize_search_result, _search_users_queryset, are_blocked)
-from django.db.models import Q
 
 def _get_user_post_relationships(user):
     """Return liked and bookmarked post ID sets for the given user."""

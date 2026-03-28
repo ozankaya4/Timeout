@@ -6,7 +6,6 @@ deadlines, events, messages, likes, comments, bookmarks, follows, exams, classes
 
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 from timeout.models.mixins import CreatedAtMixin
 
 

@@ -8,8 +8,7 @@ Endpoints:
 
 import json
 import logging
-from datetime import datetime, timedelta
-
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -17,7 +16,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
 from timeout.models import Event
 from timeout.services.study_planner import get_free_slots, pick_evenly_spaced_slots
 

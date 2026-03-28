@@ -9,7 +9,7 @@ Includes tests for:
 - Complete profile view: GET returns form, POST with valid data updates profile and redirects, POST with invalid data re-renders form with errors, requires login, redirects without session flag, clears session flag after completion
 """
 from django.contrib.sites.models import Site
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 

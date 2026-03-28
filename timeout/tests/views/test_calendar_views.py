@@ -6,15 +6,11 @@ Includes tests for:
 - Recurring events: daily, weekly, monthly recurrences, handling of end-of-month and year boundaries, non-recurring events appearing only on their start date
 These tests ensure that the calendar view correctly handles various edge cases in date parsing and navigation, accurately identifies today's date in the grid, distinguishes between days in the current month and adjacent months, and properly expands recurring events according to their recurrence rules.
 """
-import json
-from datetime import date, datetime, timedelta
-from unittest.mock import patch
-
+from datetime import date, datetime
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
-
 from timeout.models import Event
 
 User = get_user_model()
