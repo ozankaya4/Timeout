@@ -7,7 +7,14 @@
 function persistDismissAlert(key) {
     const meta = document.querySelector('meta[name="dismiss-alert-url"]');
     if (!meta) return;
-    postJSON(meta.content, { body: `key=${encodeURIComponent(key)}` }).catch(function() {});
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    const form = new FormData();
+    form.append('key', key);
+    fetch(meta.content, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf },
+        body: form
+    }).catch(function() {});
 }
 
 
