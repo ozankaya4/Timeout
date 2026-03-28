@@ -1,3 +1,9 @@
+"""
+test_notifications_delete_poll.py - Tests for notification soft-deletion (is_dismissed), bulk dismissal,
+and unread count polling via AJAX, covering auth requirements, ownership enforcement, and JSON responses.
+"""
+
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
