@@ -276,7 +276,7 @@ function initWordCount() {
 
 /* Init */
 document.addEventListener('DOMContentLoaded', function() {
-  if (document.getElementById('pomoPanel')) Pomodoro.init();
+  Pomodoro.init();
   FocusMode.init();
   initWordCount();
   DailyGoals.init();

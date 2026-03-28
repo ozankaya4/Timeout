@@ -30,23 +30,16 @@ var FocusMode = (function() {
     startTime = resumeStartTime || Date.now();
     lastActivity = Date.now();
     warningShown = false;
-
     sessionStorage.setItem('focusModeActive', 'true');
     sessionStorage.setItem('focusModeStartTime', String(startTime));
-
     setServerStatus('focus');
-
     var overlay = document.getElementById('focusOverlay');
     if (overlay) overlay.style.display = 'flex';
-
     var nav = document.querySelector('.timeout-nav');
     if (nav) nav.style.display = 'none';
-
     document.body.classList.add('nt-focus-active');
-
     elapsedInterval = setInterval(updateElapsed, 1000);
     inactivityInterval = setInterval(checkInactivity, 5000);
-
     document.addEventListener('keydown', onActivity);
     document.addEventListener('mousemove', onActivity);
     document.addEventListener('click', onActivity);
@@ -61,23 +54,16 @@ var FocusMode = (function() {
     active = false;
     clearInterval(elapsedInterval);
     clearInterval(inactivityInterval);
-
     sessionStorage.removeItem('focusModeActive');
     sessionStorage.removeItem('focusModeStartTime');
-
     setServerStatus('social');
-
     var overlay = document.getElementById('focusOverlay');
     if (overlay) overlay.style.display = 'none';
-
     var warn = document.getElementById('warnOverlay');
     if (warn) warn.style.display = 'none';
-
     var nav = document.querySelector('.timeout-nav');
     if (nav) nav.style.display = '';
-
     document.body.classList.remove('nt-focus-active');
-
     document.removeEventListener('keydown', onActivity);
     document.removeEventListener('mousemove', onActivity);
     document.removeEventListener('click', onActivity);
@@ -155,22 +141,17 @@ var FocusMode = (function() {
     var btn = document.getElementById('focusModeBtn');
     var exitBtn = document.getElementById('focusExitBtn');
     var dismissBtn = document.getElementById('warnDismissBtn');
-
     if (btn) btn.addEventListener('click', function() {
-      if (active) exit(); else enter();
-    });
+      if (active) exit(); else enter();});
     if (exitBtn) exitBtn.addEventListener('click', exit);
     if (dismissBtn) dismissBtn.addEventListener('click', function() {
       dismissWarning();
       lastActivity = Date.now();
     });
-
-    // Resume focus mode if it was active on the previous page.
     var savedActive = sessionStorage.getItem('focusModeActive');
     var savedStart = sessionStorage.getItem('focusModeStartTime');
     if (savedActive === 'true' && savedStart) {
       var savedStartTime = parseInt(savedStart, 10);
-      // Only resume if the session started within the last 8 hours.
       if (Date.now() - savedStartTime < 8 * 60 * 60 * 1000) {
         enter(savedStartTime);
       } else {
