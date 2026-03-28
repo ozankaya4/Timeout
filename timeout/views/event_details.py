@@ -1,7 +1,5 @@
 """
 View for displaying details of a specific event, including its status (past, ongoing, upcoming) and related information. Accessible only to the event creator.#
-Includes:
-- event_details: Main view function to render the event details page with appropriate context.
 """
 from timeout.models import Event
 from django.shortcuts import get_object_or_404, render

@@ -1,9 +1,5 @@
 """
 Tests for the event_details view in the timeout app, which displays the details of a specific event to its creator.
-Includes tests for:
-- Authentication requirements: ensuring that only logged-in users can access the view and that they can only view their own events
-- Successful retrieval: verifying that the event details are displayed correctly for the event creator
-- Handling of edge cases: such as attempting to view a non-existent event or an event owned by another user
 """
 from django.test import TestCase
 from django.urls import reverse

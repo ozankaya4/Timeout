@@ -1,13 +1,5 @@
 """
 notes.py - Forms for creating and editing notes in the Timeout application.
-
-Provides one form class:
-    NoteForm
-        - ModelForm based on the Note model.
-        - Exposes title, content, category, event, and page_mode fields.
-        - Applies Bootstrap-compatible widgets for title, category, and event.
-        - Scopes the event dropdown to events created by the current user.
-        - Marks event, content, and page_mode as optional fields.
 """
 
 

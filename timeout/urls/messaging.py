@@ -1,4 +1,6 @@
-"""Messaging related URL patterns for the timeout app.#"""
+"""
+Messaging related URL patterns for the timeout app.
+"""
 
 from django.urls import path
 from timeout.views import messaging

@@ -1,7 +1,5 @@
 """
 View for deleting an existing event. Handles the deletion of related objects and ensures database integrity.
-Includes:
-- event_delete: Main view function to delete an event and redirect to the calendar.
 """
 
 from django.shortcuts import get_object_or_404, redirect

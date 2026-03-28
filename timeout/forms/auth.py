@@ -1,22 +1,5 @@
 """
 auth.py - Forms for user authentication and profile setup in the Timeout application.
-
-Provides three form classes covering the full registration and login flow:
-    SignupForm
-        - Collects email and password at initial registration.
-        - Enforces password strength rules and email uniqueness.
-        - Generates a temporary username; final profile details are set later.
-    CompleteProfileForm
-        - Collects username, name, university, and year of study.
-        - Supports both social and local auth users.
-        - Handles the "Other" university free-text option.
-    LoginForm
-        - Extends Django's AuthenticationForm with Bootstrap styling.
-        - Accepts either email or username as the login identifier.
-
-Helper functions:
-    validate_password_strength  - Enforces complexity rules on a raw password.
-    check_similarity            - Rejects passwords too similar to a reference string.
 """
 
 import re

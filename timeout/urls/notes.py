@@ -1,4 +1,6 @@
-"""Note management related URL patterns for the timeout app."""
+"""
+Note management related URL patterns for the timeout app.
+"""
 
 from django.urls import path
 from timeout.views import notes

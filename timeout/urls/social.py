@@ -1,4 +1,6 @@
-"""URL patterns for the timeout app's social features."""
+"""
+URL patterns for the timeout app's social features.
+"""
 
 from django.urls import path
 from timeout.views import social, social_api, moderation

@@ -1,14 +1,5 @@
 """
 Views for user notifications, including listing, marking as read/unread, and deleting notifications.
-Endpoints:
-- GET /notifications: Render the notifications page with pagination and filtering options.
-- POST /notifications/mark_read/<id>: Mark a specific notification as read.
-- POST /notifications/mark_unread/<id>: Mark a specific notification as unread.
-- POST /notifications/mark_all_read: Mark all notifications as read.
-- POST /notifications/mark_all_unread: Mark all notifications as unread.
-- POST /notifications/delete/<id>: Dismiss a specific notification.
-- POST /notifications/delete_all: Dismiss all notifications for the user.
-- GET /notifications/poll: AJAX endpoint to poll for new notifications since last check.
 """
 
 from django.contrib.auth.decorators import login_required

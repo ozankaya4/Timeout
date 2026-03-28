@@ -1,4 +1,6 @@
-"""URL patterns for the timeout app's main pages."""
+"""
+URL patterns for the timeout app's main pages.
+"""
 
 from django.urls import path
 from timeout.views import pages
