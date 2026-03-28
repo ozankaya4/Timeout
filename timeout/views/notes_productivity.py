@@ -1,3 +1,6 @@
+"""
+Views for notes and productivity features: note management, Pomodoro tracking, and gamification stats.
+"""
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
