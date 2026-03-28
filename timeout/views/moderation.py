@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
+from timeout.decorators import staff_required
 from timeout.models import Post, User, PostFlag
 from timeout.services.notification_service import NotificationService
 
@@ -29,12 +30,10 @@ def flag_post(request, post_id):
 
 
 @login_required
+@staff_required
 @require_POST
 def approve_flag(request, flag_id):
     """Approve a flag: delete the post and notify its author (staff only)."""
-    if denied := _deny_non_staff(request):
-        return denied
-
     flag = get_object_or_404(PostFlag, id=flag_id)
     author = flag.post.author
     NotificationService.notify_post_removed(author)
@@ -43,12 +42,10 @@ def approve_flag(request, flag_id):
 
 
 @login_required
+@staff_required
 @require_POST
 def deny_flag(request, flag_id):
     """Deny a flag: dismiss it and keep the post (staff only)."""
-    if denied := _deny_non_staff(request):
-        return denied
-
     flag = get_object_or_404(PostFlag, id=flag_id)
     flag.delete()
     return JsonResponse({'success': True})
@@ -59,22 +56,11 @@ def _is_ajax(request):
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 
-def _deny_non_staff(request):
-    """Return a 403 response if user is not staff, else None."""
-    if request.user.is_staff:
-        return None
-    if _is_ajax(request):
-        return JsonResponse({'error': 'Staff access required.'}, status=403)
-    return HttpResponseForbidden('Staff access required.')
-
-
 @login_required
+@staff_required
 @require_POST
 def ban_user(request, username):
     """Ban a user (staff only). Returns JSON for AJAX calls, redirect otherwise."""
-    if denied := _deny_non_staff(request):
-        return denied
-
     target = get_object_or_404(User, username=username)
 
     if target.is_staff:
@@ -96,12 +82,10 @@ def ban_user(request, username):
 
 
 @login_required
+@staff_required
 @require_POST
 def unban_user(request, username):
     """Unban a user (staff only). Returns JSON for AJAX calls, redirect otherwise."""
-    if denied := _deny_non_staff(request):
-        return denied
-
     target = get_object_or_404(User, username=username)
     target.is_banned = False
     target.ban_reason = ''
