@@ -90,7 +90,7 @@ def _create_session(user, s):
             creator=user, title=s['title'],
             event_type=Event.EventType.STUDY_SESSION,
             start_datetime=start, end_datetime=end,
-            visibility=Event.Visibility.PRIVATE, allow_conflict=True,
+            visibility=Event.Visibility.PRIVATE,
         )
         event.full_clean()
         event.save()

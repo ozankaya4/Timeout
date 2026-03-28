@@ -30,7 +30,6 @@ class EventEditViewTests(TestCase):
             description='Initial description',
             location='Test Location',
             event_type='meeting',
-            allow_conflict=False,
             creator=self.user,
         )
         self.url = reverse('event_edit', args=[self.event.pk])
@@ -44,7 +43,6 @@ class EventEditViewTests(TestCase):
             'description':    'Updated description',
             'location':       'Updated Location',
             'event_type':     'deadline',
-            'allow_conflict': 'on',
         }
         data.update(overrides)
         return data
@@ -114,20 +112,6 @@ class EventEditViewTests(TestCase):
         self.client.post(self.url, self._post_data(event_type='exam'))
         self.event.refresh_from_db()
         self.assertEqual(self.event.event_type, 'exam')
-
-    def test_post_sets_allow_conflict_true(self):
-        """If allow_conflict is included in the POST data, it should be set to True."""
-        self.client.post(self.url, self._post_data(allow_conflict='on'))
-        self.event.refresh_from_db()
-        self.assertTrue(self.event.allow_conflict)
-
-    def test_post_sets_allow_conflict_false_when_omitted(self):
-        """If allow_conflict is omitted from the POST data, it should be set to False."""
-        data = self._post_data()
-        data.pop('allow_conflict')
-        self.client.post(self.url, data)
-        self.event.refresh_from_db()
-        self.assertFalse(self.event.allow_conflict)
 
     def test_post_redirects_to_calendar(self):
         """After a successful POST, should redirect to the calendar."""

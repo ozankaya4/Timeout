@@ -39,7 +39,6 @@ def _make_event(creator, title, start, end, event_type=None, **kwargs):
         start_datetime=start,
         end_datetime=end,
         visibility=Event.Visibility.PRIVATE,
-        allow_conflict=True,
         **kwargs,
     )
 
@@ -332,14 +331,13 @@ class ConfirmSessionsViewTests(TestCase):
         self.assertEqual(Event.objects.filter(creator=self.user, event_type=Event.EventType.STUDY_SESSION).count(), 2)
 
     def test_created_events_have_correct_fields(self):
-        """Events created by confirming sessions should have the correct title, start and end datetimes, event type set to STUDY_SESSION, visibility set to PRIVATE, and allow_conflict set to True regardless of what other fields were included in the session dictionaries provided in the POST data."""
+        """Events created by confirming sessions should have the correct title, start and end datetimes, event type set to STUDY_SESSION, visibility set to PRIVATE"""
         self.client.login(username='confirmer', password='pass')
         sessions = json.dumps([{'title': 'Study for Calculus', 'start': '2026-04-05T08:00', 'end': '2026-04-05T10:00'}])
         self.client.post(self.url, {'sessions': sessions})
         event = Event.objects.get(creator=self.user, title='Study for Calculus')
         self.assertEqual(event.event_type, Event.EventType.STUDY_SESSION)
         self.assertEqual(event.visibility, Event.Visibility.PRIVATE)
-        self.assertTrue(event.allow_conflict)
 
     def test_missing_keys_skipped(self):
         """If some session dictionaries in the list provided in the POST data are missing required keys (e.g. title, start, or end), the view should skip those sessions and still create events for the valid ones rather than failing the entire request."""

@@ -43,7 +43,6 @@ def make_event(user, event_type, hours_ago=3, duration_hours=2, is_completed=Fal
         start_datetime=start,
         end_datetime=end,
         is_completed=is_completed,
-        allow_conflict=True,
     )
 
 

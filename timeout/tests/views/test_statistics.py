@@ -41,7 +41,6 @@ def make_event(user, event_type=Event.EventType.OTHER, hours_from_now=24, durati
         event_type=event_type,
         start_datetime=start,
         end_datetime=start + timedelta(hours=duration_hours),
-        allow_conflict=True,
         **kwargs,
     )
 
@@ -141,7 +140,6 @@ class EventsLastNWeeksTests(TestCase):
             event_type=Event.EventType.OTHER,
             start_datetime=now - timedelta(days=2),
             end_datetime=now - timedelta(days=2) + timedelta(hours=1),
-            allow_conflict=True,
         )
         events = get_user_events(self.user)
         result = events_last_n_weeks(events, n=4)
@@ -156,7 +154,6 @@ class EventsLastNWeeksTests(TestCase):
             event_type=Event.EventType.OTHER,
             start_datetime=now - timedelta(weeks=10),
             end_datetime=now - timedelta(weeks=10) + timedelta(hours=1),
-            allow_conflict=True,
         )
         events = get_user_events(self.user)
         result = events_last_n_weeks(events, n=8)
@@ -183,7 +180,6 @@ class EventsLastNMonthsTests(TestCase):
             event_type=Event.EventType.OTHER,
             start_datetime=now - timedelta(days=3),
             end_datetime=now - timedelta(days=3) + timedelta(hours=1),
-            allow_conflict=True,
         )
         events = get_user_events(self.user)
         result = events_last_n_months(events, n=6)
