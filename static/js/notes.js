@@ -259,6 +259,10 @@ function initWordCount() {
   var counter = document.getElementById('wordCount');
   if (!textarea || !counter) return;
 
+  /**
+   * Recount words in the textarea and update the counter element.
+   * Splits on whitespace to count words, displaying singular or plural label.
+   */
   function update() {
     var text = textarea.value.trim();
     var words = text ? text.split(/\s+/).length : 0;

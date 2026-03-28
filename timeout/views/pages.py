@@ -1,8 +1,20 @@
+"""
+Views for the main pages of the Timeout app, including dashboard, profile, calendar, statistics, and social feed.
+Includes:
+- dashboard: Main user dashboard with upcoming events, notes, deadlines, and social feed
+- profile: User profile page showing their info, posts, and current/upcoming events
+- calendar: Calendar view of user's events
+- statistics: Insights into user's event patterns and focus sessions
+- social: Social feed of followed users' posts and activities
+"""
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from timeout.models import User, Note, Message, Conversation
+from timeout.models.like import Like
+from timeout.models.bookmark import Bookmark
 from timeout.models.event import Event
 from timeout.services import FeedService, DeadlineService
 from timeout.views.statistics import get_focus_stats, build_context
@@ -11,6 +23,7 @@ from timeout.services.ai_service import AIService
 
 
 def banned(request):
+    """Banned page view."""
     return render(request, 'banned.html')
 
 
@@ -76,6 +89,8 @@ def profile(request):
         'event': event,
         'event_status': event_status,
         'friends_count': friends_count,
+        'liked_ids': set(Like.objects.filter(user=request.user).values_list('post_id', flat=True)),
+        'bookmarked_ids': set(Bookmark.objects.filter(user=request.user).values_list('post_id', flat=True)),
     }
     return render(request, 'pages/profile.html', context)
 

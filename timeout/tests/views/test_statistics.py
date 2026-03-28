@@ -1,3 +1,10 @@
+"""
+test_statistics.py - Tests for the statistics view and helper functions, covering duration formatting,
+event counting by type, weekly/monthly breakdowns, urgency filtering, focus stats calculation,
+friend leaderboard sorting, login requirements, and correct context data in the statistics view.
+"""
+
+
 from datetime import timedelta
 from unittest.mock import patch
 
@@ -342,6 +349,7 @@ class StatisticsViewTests(TestCase):
         self.assertEqual(response.context['total_events'], 2)
 
 class StatisticsViewDirectTests(TestCase):
+    """Tests for the statistics_view function that directly call the view with a request object, allowing for testing the view's behavior without going through the URL routing and template rendering, and enabling the use of mocks to verify that the view calls the render function with the correct parameters."""
 
     def setUp(self):
         """Set up a test user and request factory for testing the statistics_view function directly, allowing for testing the view's behavior without going through the URL routing and template rendering, and enabling the use of mocks to verify that the view calls the render function with the correct parameters."""

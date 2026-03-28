@@ -1,3 +1,9 @@
+"""
+test_ai_service.py - Defines AIServiceTests for testing the AIService's get_dashboard_briefing method, including caching behavior, OpenAI interactions,
+handling of unauthenticated users, and correct inclusion of user stats in the prompt sent to OpenAI.
+"""
+
+
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
@@ -171,6 +177,7 @@ class AIServiceTests(TestCase):
         captured = {}
 
         def fake_create(**kwargs):
+            """Fake OpenAI create method to capture prompt."""
             captured['prompt'] = kwargs['messages'][1]['content']
             resp = MagicMock()
             resp.choices[0].message.content = BRIEFING_TEXT

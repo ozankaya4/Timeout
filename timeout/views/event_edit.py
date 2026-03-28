@@ -1,3 +1,7 @@
+"""
+View for editing an existing event. Handles both GET (show form) and POST (process form submission) requests. Includes helper functions to parse datetimes and apply form data to the event model.
+"""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect

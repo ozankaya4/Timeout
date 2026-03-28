@@ -1,3 +1,11 @@
+"""
+test_study_planner.py - Tests for the study planner helper functions (get_busy_slots, get_free_slots,
+pick_evenly_spaced_slots, _day_slots, _nearest_slot) and views (plan_sessions, confirm_sessions),
+covering scheduling edge cases (overlapping events, minimum gap enforcement, other users' events),
+GPT integration, invalid input handling, and authentication checks.
+"""
+
+
 import json
 from datetime import date, datetime, timedelta
 from unittest.mock import patch
@@ -356,7 +364,9 @@ class ConfirmSessionsViewTests(TestCase):
 
 class BuildPromptTests(TestCase):
     """Tests for the build_prompt function that generates a prompt string for the GPT scheduling model based on a deadline event and parameters for hours needed, session length, and candidate free slots."""
+
     def setUp(self):
+        """Create a test user for the build_prompt tests."""
         self.user = User.objects.create_user(username='prompt_u', password='pass')
 
     def test_returns_string_with_deadline_info(self):

@@ -1,3 +1,27 @@
+"""
+Views for social features: feed, posts, comments, likes, bookmarks, profiles, following, blocking.
+Endpoints:
+- GET /feed: Main feed with tabs for following, discover, and bookmarks
+- POST /posts/create: Create a new post
+- POST /posts/<id>/delete: Delete a post
+- POST /posts/<id>/like: Like/unlike a post (toggle)
+- POST /posts/<id>/bookmark: Bookmark/unbookmark a post (toggle)
+- POST /posts/<id>/comments/add: Add a comment to a post
+- POST /comments/<id>/delete: Delete a comment
+- GET /bookmarks: View bookmarked posts
+- GET /users/<username>: View a user's profile and posts
+- POST /users/<username>/follow: Follow/unfollow a user, or send/cancel a request for private accounts
+- POST /users/<username>/block: Block or unblock a user (toggle)
+- GET /api/followers: List of current user's followers with follow-back status
+- GET /api/following: List of users that current user is following
+- GET /api/friends: List of mutual follows (friends) for current user
+- GET /api/users/<username>/followers: List of a specific user's followers (respects privacy)
+- GET /api/users/<username>/following: List of users that a specific user is following (respects privacy)
+- GET /api/users/<username>/friends: List of a specific user's mutual follows (respects privacy)
+- POST /update_status: Update the logged-in user's status via AJAX
+- POST /reset_focus_timer: Reset focus session timer on page load
+"""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
@@ -70,6 +94,7 @@ def feed(request):
 
 @login_required
 def feed_more(request):
+    """AJAX endpoint to load more posts for infinite scrolling in the feed."""
     from timeout.services.feed_service import PAGE_SIZE
     tab = request.GET.get('tab', 'following')
     try: cursor = int(request.GET.get('cursor', 0))
@@ -299,6 +324,17 @@ def update_status(request):
     return JsonResponse({'status': status, 'status_display': request.user.get_status_display(),
         'focus_started_at': int(request.user.focus_started_at.timestamp()) if request.user.focus_started_at else None})
   
+
+@login_required
+@require_POST
+def reset_focus_timer(request):
+    """Reset focus session timer on page load. Creates a new session with timer at 0."""
+    user = request.user
+    if user.status == 'focus':
+        user.focus_started_at = timezone.now()
+        user.save()
+    return JsonResponse({'success': True})
+
 
 @login_required
 def search_users(request):

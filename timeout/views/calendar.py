@@ -1,3 +1,27 @@
+"""
+View for rendering the main calendar page, including logic to fetch and display events, handle month navigation, and provide data for AI-generated workload warnings and suggestions. Accessible only to logged-in users.
+Includes:
+- calendar_view: Main view function to render the calendar page with events and related data.
+- Helper functions to parse dates, fetch events, build context, and handle AJAX requests for applying AI-suggested schedules and dismissing alerts.
+Helper functions:
+- calendar_context: Build context dict for the calendar template
+- get_date: Parse month and year from request, with fallback to current date
+- check_month_year: Validate and adjust month/year values for navigation
+- get_months: Calculate previous and next month/year for navigation links
+- visible_events: Fetch events for the visible date range, including recurring events
+- index_events: Index events by date for easy lookup in the template
+- create_dict: Create a consistent dict representation of an event for the template
+- create_recurrence: Generate pseudo-event dicts for recurring occurrences within the visible range
+- advance_date: Calculate the next occurrence date based on recurrence pattern
+- build_weeks: Convert raw weeks from calendar into a structure for the template
+- build_day: Build a dict for each day in the calendar grid
+- get_data: Gather data needed for upcoming deadlines and reschedule prompts
+- event_status: Derive a human-readable status for an event based on current time
+- apply_session_schedule: AJAX endpoint to bulk-update study session times after AI reschedule confirmation
+- subscribe_event: AJAX endpoint to subscribe to a public event by creating a private copy for the user
+- _parse_event_datetimes: Parse and validate start/end datetimes from POST data
+- _build_event_from_post: Construct an Event from POST data and parsed datetimes
+"""
 import calendar as cal
 import json
 import os
@@ -324,6 +348,7 @@ def event_create(request):
 @login_required
 @require_POST
 def dismiss_alert(request):
+    """AJAX endpoint to dismiss a specific alert by key."""
     from timeout.models import DismissedAlert
     key = request.POST.get('key', '').strip()
     if not key:

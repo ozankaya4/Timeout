@@ -10,6 +10,14 @@ function persistDismissAlert(key) {
     postJSON(meta.content, { body: `key=${encodeURIComponent(key)}` }).catch(function() {});
 }
 
+
+/**
+ * Dismiss an alert element from the DOM and persist the dismissal to the server.
+ * Removes the closest `.alert` ancestor of the clicked button, then calls
+ * persistDismissAlert so the dismissal is remembered across page loads.
+ * @param {string} key - Unique key identifying the alert to dismiss.
+ * @param {HTMLElement} btn - The button element that triggered the dismissal.
+ */
 function dismissAlert(key, btn) {
     const alertEl = btn.closest('.alert');
     if (alertEl) alertEl.remove();

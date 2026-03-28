@@ -1,3 +1,15 @@
+"""
+Views for the social API, providing endpoints for followers, following, and friends (mutual follows).
+Endpoints:
+- GET /api/followers: List of current user's followers with follow-back status
+- GET /api/following: List of users that current user is following
+- GET /api/friends: List of mutual follows (friends) for current user
+- GET /api/users/<username>/followers: List of a specific user's followers (respects privacy)
+- GET /api/users/<username>/following: List of users that a specific user is following (respects privacy)
+- GET /api/users/<username>/friends: List of a specific user's mutual follows (respects privacy)
+"""
+
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404

@@ -1,3 +1,11 @@
+"""
+Views for the study planner feature, allowing users to plan study sessions before a deadline using GPT for scheduling.
+Endpoints:
+- POST /plan_sessions: Given an event ID and hours needed, find free slots and call GPT to schedule sessions.
+- POST /confirm_sessions: After GPT returns proposed sessions, confirm and create them in the calendar.
+"""
+
+
 import json
 import logging
 from datetime import datetime, timedelta

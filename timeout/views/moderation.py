@@ -1,3 +1,16 @@
+"""
+Views for moderation actions like flagging posts and banning users. Staff-only actions return JSON for AJAX calls and redirect with messages for regular requests.
+Includes:
+- flag_post: Allow users to flag a post for review, providing a reason and optional description.
+- approve_flag: Staff can approve a flag, which deletes the post and notifies the author.
+- deny_flag: Staff can deny a flag, which simply dismisses it without affecting the post.
+- ban_user: Staff can ban a user, providing an optional reason. Banned users cannot log in.
+- unban_user: Staff can unban a user, restoring their access.
+Helper functions:
+- _is_ajax: Check if a request is an AJAX call by examining the X-Requested-With header.
+- _deny_non_staff: Return a 403 response if the user is not staff, or None if they are.
+"""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
