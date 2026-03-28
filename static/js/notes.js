@@ -41,8 +41,12 @@ function togglePin(noteId, btn) {
  */
 function deleteNote(noteId, deleteUrl) {
   if (!confirm('Delete this note?')) return;
-  postJSON(deleteUrl, {})
-    .then(function() {
+  fetch(deleteUrl, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCSRFToken() },
+  })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Server error');
       var item = document.getElementById('note-' + noteId);
       if (item) item.remove();
     })
