@@ -1,4 +1,5 @@
-"""Calendar and event management related URL patterns for the timeout app.
+"""
+Calendar and event management related URL patterns for the timeout app.
 """
 from django.urls import path
 from timeout.views import calendar as cal_views

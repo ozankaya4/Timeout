@@ -1,8 +1,6 @@
 """
 Views for the password reset flow, allowing users to request a reset code, verify it, and set a new password.
-Includes:
-- forgot_password: Handles both the initial code request and code verification steps.
-- reset_password: Allows users to set a new password after successful code verification."""
+"""
 
 import random
 import time

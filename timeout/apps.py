@@ -1,6 +1,5 @@
 """
 apps.py - Application configuration for the Timeout Django app.
-
 Registers the app and imports signal handlers on startup.
 """
 

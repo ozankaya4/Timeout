@@ -1,12 +1,6 @@
 """
-Views for AI-powered calendar event parsing. Accessible only to logged-in users. Uses OpenAI to parse natural language input into structured event data, which can then be saved to the user's calendar. Handles the serialization of existing events for conflict context and parsing of AI responses.
-Includes:
-- _call_openai_parse_event: Helper function to call OpenAI and parse user input into event JSON.
-- _parse_datetimes: Helper function to normalize and parse datetime strings.
-- _build_event_from_data: Helper function to construct an Event instance from AI-parsed data.
-- _get_events_context: Helper function to get upcoming events for conflict context.
-- _build_system_prompt: Helper function to build the system prompt for OpenAI.
-- _save_and_respond: Helper function to validate, save, and respond with the event.
+Views for AI-powered calendar event parsing. 
+Accessible only to logged-in users. Uses OpenAI to parse natural language input into structured event data, which can then be saved to the user's calendar. Handles the serialization of existing events for conflict context and parsing of AI responses.
 """
 import json
 from datetime import datetime

@@ -1,9 +1,5 @@
 """
 Views for the user profile page, allowing users to view and edit their profile information.
-Includes:
-- profile_edit: View and edit user profile information, including profile picture and bio.
-- change_username: Handle username change requests from the profile edit page.
-- get_profile_event: Utility function to find the most relevant event for display on the profile (current, upcoming, or recent).
 """
 
 from django.utils import timezone
@@ -17,7 +13,7 @@ from timeout.forms import ProfileEditForm, ChangeUsernameForm
 
 def _find_event(user, status, **filters):
     """Query for a single event matching filters; return (event, status) or None."""
-    event = Event.objects.filter(creator=user, **filters).first()
+    event = Event.objects.filter(creator=user, **filters).exclude(event_type=Event.EventType.DEADLINE).first()
     return (event, status) if event else None
 
 

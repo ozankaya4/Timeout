@@ -1,7 +1,5 @@
 """
 View for generating warnings about upcoming deadlines that have no linked study sessions. Accessible only to logged-in users.
-Includes:
-- get_deadline_study_warnings: Main function to retrieve warnings for deadlines in the next 7 days without study sessions.
 """
 from datetime import timedelta
 from django.utils import timezone

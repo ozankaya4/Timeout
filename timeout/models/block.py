@@ -1,4 +1,6 @@
-"""block.py - Defines the Block model representing a user blocking another user."""
+"""
+block.py - Defines the Block model representing a user blocking another user.
+"""
 
 
 from django.db import models

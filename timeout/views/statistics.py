@@ -1,9 +1,5 @@
 """
 Views for the statistics page, showing event and focus session insights to the user.
-Includes:
-- Event type counts- Weekly and monthly event trends
-- Urgent upcoming events
-- Focus session stats and friend leaderboard
 """
 
 from django.contrib.auth.decorators import login_required
