@@ -1,6 +1,4 @@
-import json
-from datetime import date, datetime, timedelta
-from unittest.mock import patch
+from datetime import date, datetime
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client

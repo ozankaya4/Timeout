@@ -36,7 +36,7 @@ class FollowRequestTest(TestCase):
         """Following a public user should immediately create a follower relationship."""
         self.login(self.alice)
         res = self.client.post(self.follow_url(self.alice.username[0:0] or "alice"), follow=False)
-        pub = User.objects.create_user(username="pub", password="pass")
+        User.objects.create_user(username="pub", password="pass")
         res = self.client.post(self.follow_url("pub"))
         data = json.loads(res.content)
         self.assertTrue(data["following"])

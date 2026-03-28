@@ -17,6 +17,18 @@ class AIService:
     CACHE_TIMEOUT = 60 * 60 * 24  # 24 hours in seconds, timed to update once per day
 
     @staticmethod
+    def get_suggestions(user, events_today):
+        """Generate AI productivity suggestions for today's events."""
+        from timeout.views.ai_suggestions import get_ai_suggestions
+        return get_ai_suggestions(user, events_today)
+
+    @staticmethod
+    def get_workload_warning(user, events):
+        """Generate an AI workload warning for today's events."""
+        from timeout.views.ai_workload import get_ai_workload_warning
+        return get_ai_workload_warning(user, events)
+
+    @staticmethod
     def get_dashboard_briefing(user):
         """Generate a short AI 'Weekly Insight' summary for the dashboard.
         Results are updated every 24 hours."""

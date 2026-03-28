@@ -1,6 +1,5 @@
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-from django.contrib import messages
 
 
 class BannedUserMiddleware:

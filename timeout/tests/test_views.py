@@ -1,5 +1,5 @@
 from django.contrib.sites.models import Site
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 

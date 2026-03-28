@@ -1,6 +1,6 @@
 from django.utils import timezone
-from timeout.models import Event, user
-from django.db.models import Q
+from timeout.models import Event
+from timeout.utils import urgency_label, time_string, time_passed
 
 
 class DeadlineService:
@@ -118,68 +118,5 @@ def build_event(event, now):
     }
 
 
-def urgency_label(event, time_remaining):
-    """Determine the urgency label for an event."""
-    if event.is_completed:
-        return 'completed'
- 
-    remaining_seconds = time_remaining.total_seconds()
-    if remaining_seconds < 0:
-        return 'overdue'
-    if remaining_seconds <= 86400:
-        return 'urgent'
-    return 'normal'
-
-def time_string(td):
-    """Human-readable string for time remaining or overdue."""
-    total_seconds = int(td.total_seconds())
-    if total_seconds < 0:
-        return overdue_time(abs(total_seconds))
-    return remaining_time(total_seconds)
- 
- 
-def overdue_time(total_seconds):
-    """Format a positive seconds value as 'Xd Yh overdue'."""
-    days, remainder = divmod(total_seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes = remainder // 60
-    if days > 0:
-        return f"{days}d {hours}h overdue"
-    if hours > 0:
-        return f"{hours}h {minutes}m overdue"
-    return f"{minutes}m overdue"
- 
- 
-def remaining_time(total_seconds):
-    """Format a positive seconds value as 'Xd Yh left'."""
-    days, remainder = divmod(total_seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes = remainder // 60
-    if days > 0:
-        return f"{days}d {hours}h left"
-    if hours > 0:
-        return f"{hours}h {minutes}m left"
-    return f"{minutes}m left"
- 
- 
-def time_passed(td):
-    """Format elapsed time since creation as 'Added X ago'."""
-    total_seconds = int(td.total_seconds())
-    if total_seconds < 0:
-        return "Added just now"
- 
-    days = total_seconds // 86400
-    if days > 0:
-        return f"Added {days} day{'s' if days != 1 else ''} ago"
- 
-    hours = total_seconds // 3600
-    if hours > 0:
-        return f"Added {hours} hour{'s' if hours != 1 else ''} ago"
- 
-    minutes = total_seconds // 60
-    if minutes > 0:
-        return f"Added {minutes} min ago"
- 
-    return "Added just now"
 
 

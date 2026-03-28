@@ -45,7 +45,7 @@ class FollowRequestModelTests(TestCase):
 
     def test_ordering(self):
         """Test that FollowRequest instances are ordered by created_at descending."""
-        fr1 = FollowRequest.objects.create(from_user=self.alice, to_user=self.bob)
+        FollowRequest.objects.create(from_user=self.alice, to_user=self.bob)
         charlie = make_user('charlie')
         fr2 = FollowRequest.objects.create(from_user=charlie, to_user=self.bob)
         requests = list(FollowRequest.objects.all())

@@ -1,5 +1,5 @@
 from django.contrib.admin.sites import AdminSite
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 
 from timeout.admin import UserAdmin

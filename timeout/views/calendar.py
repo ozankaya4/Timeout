@@ -1,6 +1,5 @@
 import calendar as cal
 import json
-import os
 from datetime import timedelta, date, datetime, time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -8,16 +7,13 @@ from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.conf import settings
 from timeout.models import Event
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from timeout.views.ai_workload import get_ai_workload_warning
-from timeout.views.ai_suggestions import get_ai_suggestions
 from timeout.views.deadline_warning import get_deadline_study_warnings
 from timeout.models import DismissedAlert
 from timeout.utils import parse_aware_dt
-from timeout.services import DeadlineService, EventService
+from timeout.services import DeadlineService, EventService, AIService
 
 MONTH_NAMES = [ 
     "", "January", "February", "March", "April", "May", "June",
@@ -186,9 +182,9 @@ def _get_workload_and_suggestions(user, events_by_date, now, dismissed_keys):
     today_str = now.date().isoformat()
     workload_key = f'workload_{user.id}_{today_str}'
     today_events = (events_by_date or {}).get(now.date(), [])
-    raw_workload = get_ai_workload_warning(user, today_events)
+    raw_workload = AIService.get_workload_warning(user, today_events)
     workload_warning = raw_workload if raw_workload and workload_key not in dismissed_keys else None
-    return workload_warning, workload_key, get_ai_suggestions(user, today_events)
+    return workload_warning, workload_key, AIService.get_suggestions(user, today_events)
 
 
 def get_data(request, events_by_date=None):

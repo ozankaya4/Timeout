@@ -131,7 +131,7 @@ class DeleteCommentTests(TestCase):
 
     def test_staff_can_delete_comment(self):
         """Test that staff users can delete any comment successfully."""
-        staff = make_user('staff', is_staff=True)
+        make_user('staff', is_staff=True)
         self.client.login(username='staff', password='TestPass1!')
         resp = self.client.post(reverse('delete_comment', args=[self.comment.id]))
         self.assertEqual(resp.status_code, 302)

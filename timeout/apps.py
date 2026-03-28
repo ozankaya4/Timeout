@@ -7,4 +7,3 @@ class TimeoutConfig(AppConfig):
 
     def ready(self):
         """Import signal handlers to ensure they are registered."""
-        import timeout.signals

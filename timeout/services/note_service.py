@@ -1,7 +1,6 @@
 import datetime
 
-from django.db.models import Q, Count
-from django.db.models.functions import TruncDate
+from django.db.models import Q
 from django.utils import timezone
 
 from timeout.models import Note, StudyLog
