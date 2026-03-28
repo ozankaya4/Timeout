@@ -3,22 +3,22 @@ URL patterns for the timeout app's social features.
 """
 
 from django.urls import path
-from timeout.views import social, social_api, moderation
+from timeout.views import social_posts, social_profile, social_follow, social_api, moderation
 
 urlpatterns = [
     # Feed
-    path('feed/', social.feed, name='social_feed'),
-    path('feed/more/', social.feed_more, name='feed_more'),
+    path('feed/', social_posts.feed, name='social_feed'),
+    path('feed/more/', social_posts.feed_more, name='feed_more'),
 
     # Posts
-    path('post/create/', social.create_post, name='create_post'),
-    path('post/<int:post_id>/delete/', social.delete_post, name='delete_post'),
-    path('post/<int:post_id>/like/', social.like_post, name='like_post'),
-    path('post/<int:post_id>/bookmark/', social.bookmark_post, name='bookmark_post'),
+    path('post/create/', social_posts.create_post, name='create_post'),
+    path('post/<int:post_id>/delete/', social_posts.delete_post, name='delete_post'),
+    path('post/<int:post_id>/like/', social_posts.like_post, name='like_post'),
+    path('post/<int:post_id>/bookmark/', social_posts.bookmark_post, name='bookmark_post'),
 
     # Comments
-    path('post/<int:post_id>/comment/', social.add_comment, name='add_comment'),
-    path('comment/<int:comment_id>/delete/', social.delete_comment, name='delete_comment'),
+    path('post/<int:post_id>/comment/', social_posts.add_comment, name='add_comment'),
+    path('comment/<int:comment_id>/delete/', social_posts.delete_comment, name='delete_comment'),
 
     # Flagging & moderation
     path('post/<int:post_id>/flag/', moderation.flag_post, name='flag_post'),
@@ -28,7 +28,7 @@ urlpatterns = [
     path('user/<str:username>/unban/', moderation.unban_user, name='unban_user'),
 
     # Bookmarks
-    path('bookmarks/', social.bookmarks, name='bookmarks'),
+    path('bookmarks/', social_posts.bookmarks, name='bookmarks'),
 
     # User profiles and following
     path('user/<str:username>/follow/accept/', social.accept_follow_request, name='accept_follow_request'),
@@ -43,10 +43,10 @@ urlpatterns = [
     path('friends/', social_api.friends_api, name='friends_api'),
     path('followers/', social_api.followers_api, name='followers_api'),
     path('following/', social_api.following_api, name='following_api'),
-    path('blocked/', social.blocked_users_api, name='blocked_users_api'),
+    path('blocked/', social_follow.blocked_users_api, name='blocked_users_api'),
 
     # User search
-    path('search/', social.search_users, name='search_users'),
+    path('search/', social_follow.search_users, name='search_users'),
 
     # Friends & follow lists (other users)
     path('user/<str:username>/friends/', social_api.user_friends_api, name='user_friends_api'),

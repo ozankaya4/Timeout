@@ -267,7 +267,6 @@ class LoginForm(AuthenticationForm):
     def clean(self):
         """Looks up the user by email and swaps it for their username before auth."""
         identifier = self.cleaned_data.get('username')
-        email = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
         if identifier and password:

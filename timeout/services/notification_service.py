@@ -112,6 +112,47 @@ class NotificationService:
             )
 
     @staticmethod
+    def notify_new_message(receiver, sender, content, conversation):
+        """Create a notification for a new incoming message."""
+        Notification.objects.create(
+            user=receiver,
+            title=f"💬 {sender.username} sent you a message",
+            message=content[:80],
+            type=Notification.Type.MESSAGE,
+            conversation=conversation,
+        )
+
+    @staticmethod
+    def notify_follow_request(to_user, from_user):
+        """Create a notification for a new follow request."""
+        Notification.objects.create(
+            user=to_user,
+            title="New Follow Request",
+            message=f"{from_user.username} requested to follow you",
+            type=Notification.Type.FOLLOW,
+        )
+
+    @staticmethod
+    def notify_follow_accepted(requester, acceptor):
+        """Create a notification telling requester their follow was accepted."""
+        Notification.objects.create(
+            user=requester,
+            title="Follow Request Accepted",
+            message=f"{acceptor.username} accepted your follow request",
+            type=Notification.Type.FOLLOW,
+        )
+
+    @staticmethod
+    def notify_post_removed(author):
+        """Create a notification telling a user their post was removed."""
+        Notification.objects.create(
+            user=author,
+            title='⚠️ Post Removed',
+            message='Your post was removed by a moderator.',
+            type=Notification.Type.EVENT,
+        )
+
+    @staticmethod
     def _get_notification_type(event_type):
         """Map event type to notification type."""
         mapping = {

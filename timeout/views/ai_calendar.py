@@ -3,7 +3,6 @@ Views for AI-powered calendar event parsing.
 Accessible only to logged-in users. Uses OpenAI to parse natural language input into structured event data, which can then be saved to the user's calendar. Handles the serialization of existing events for conflict context and parsing of AI responses.
 """
 import json
-from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -12,6 +11,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from timeout.models import Event
+from timeout.utils import parse_aware_dt
+from timeout.services import EventService
 
 
 def _call_openai_parse_event(user_input, system_prompt):
@@ -33,10 +34,7 @@ def _parse_datetimes(is_all_day, start_str, end_str):
         start_str = f"{date_part}T00:00"
         end_str = f"{date_part}T23:59"
     try:
-        return (
-            timezone.make_aware(datetime.fromisoformat(start_str)),
-            timezone.make_aware(datetime.fromisoformat(end_str)),
-        )
+        return parse_aware_dt(start_str), parse_aware_dt(end_str)
     except (ValueError, TypeError):
         raise ValidationError('Invalid datetime format from AI.')
 
@@ -45,18 +43,18 @@ def _build_event_from_data(user, data):
     """Construct an Event instance from AI-parsed data dict."""
     is_all_day = bool(data.get('is_all_day', False))
     start_dt, end_dt = _parse_datetimes(is_all_day, data.get('start_datetime', ''), data.get('end_datetime', ''))
-    return Event(
-        creator=user,
-        title=data.get('title', 'Untitled'),
-        event_type=data.get('event_type', 'other'),
-        start_datetime=start_dt,
-        end_datetime=end_dt,
-        location=data.get('location', ''),
-        description=data.get('description', ''),
-        recurrence=data.get('recurrence', 'none'),
-        is_all_day=is_all_day,
-        visibility=data.get('visibility', 'private'),
-    )
+    return EventService.build_from_data(user, {
+        'title': data.get('title', 'Untitled'),
+        'event_type': data.get('event_type', 'other'),
+        'start_datetime': start_dt,
+        'end_datetime': end_dt,
+        'location': data.get('location', ''),
+        'description': data.get('description', ''),
+        'recurrence': data.get('recurrence', 'none'),
+        'is_all_day': is_all_day,
+        'visibility': data.get('visibility', 'private'),
+        'allow_conflict': False,
+    })
 
 
 def _get_events_context(user, now):

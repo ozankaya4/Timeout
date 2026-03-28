@@ -196,7 +196,7 @@ class ConversationViewTest(TestCase):
 
     def test_403_or_404_for_non_participant(self):
         """"The conversation view should return a 403 or 404 error for users who are not participants in the conversation."""
-        charlie = make_user("charlie")
+        make_user("charlie")
         self.client.login(username="charlie", password="testpass123")
         response = self.client.get(reverse("conversation", args=[self.conv.id]))
         self.assertIn(response.status_code, [403, 404])

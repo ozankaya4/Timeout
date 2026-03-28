@@ -131,7 +131,7 @@ class DeadlineMarkCompleteViewTests(TestCase):
 
     def test_mark_complete_wrong_user(self):
         """Another user cannot complete someone else's deadline."""
-        other = User.objects.create_user(username="other", password="pass1234")
+        User.objects.create_user(username="other", password="pass1234")
         self.client.login(username="other", password="pass1234")
         resp = self.client.post(self._url(self.deadline.pk))
         self.assertEqual(resp.status_code, 404)

@@ -4,6 +4,7 @@ View for generating AI-based workload warnings based on the user's daily events.
 from datetime import datetime
 from django.conf import settings
 from django.core.cache import cache
+from timeout.utils import ai_cache_key
 
 
 def get_ai_workload_warning(user, events):
@@ -11,7 +12,7 @@ def get_ai_workload_warning(user, events):
     if not events or not settings.OPENAI_API_KEY:
         return None
 
-    cache_key = f"ai_workload_warning_{user.id}_{datetime.now().date()}"
+    cache_key = ai_cache_key("workload_warning", user.id)
     cached = cache.get(cache_key)
     if cached:
         return cached

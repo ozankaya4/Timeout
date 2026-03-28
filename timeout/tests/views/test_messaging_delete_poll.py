@@ -140,7 +140,7 @@ class SendMessageViewTest(TestCase):
 
     def test_non_participant_cannot_send(self):
         """A user who is not a participant in the conversation should not be able to send a message and should receive a 403 or 404 error."""
-        charlie = make_user("charlie")
+        make_user("charlie")
         self.client.login(username="charlie", password="testpass123")
         response = self.client.post(self._url(), {"content": "intruder"})
         self.assertIn(response.status_code, [403, 404])
@@ -210,7 +210,7 @@ class PollMessagesViewTest(TestCase):
 
     def test_non_participant_cannot_poll(self):
         """A user who is not a participant in the conversation should not be able to poll messages and should receive a 403 or 404 error."""
-        charlie = make_user("charlie")
+        make_user("charlie")
         self.client.login(username="charlie", password="testpass123")
         response = self.client.get(self._url(), {"last_id": 0})
         self.assertIn(response.status_code, [403, 404])

@@ -15,4 +15,4 @@ from .dismissed_alert import DismissedAlert
 
 
 
-__all__ = ['User', 'Event', 'Post', 'Comment', 'Like', 'Bookmark', 'Conversation', 'Message', 'Note', 'FocusSession', 'StudyLog', 'FollowRequest', 'PostFlag']
+__all__ = ['User', 'Event', 'Post', 'Comment', 'Like', 'Bookmark', 'Conversation', 'Message', 'Note', 'FocusSession', 'StudyLog', 'FollowRequest', 'PostFlag', 'Block', 'DismissedAlert']

@@ -6,6 +6,7 @@ marking them complete or incomplete, and computing urgency labels and time-remai
 
 from django.utils import timezone
 from timeout.models import Event
+from timeout.utils import urgency_label, time_string, time_passed
 
 
 class DeadlineService:
@@ -37,6 +38,26 @@ class DeadlineService:
         qs = create_filter_query(user, status_filter, event_type, sort_order)
         return filter_events(qs)
     
+    @staticmethod
+    def get_upcoming_deadlines(user, limit=None, until=None):
+        """Get upcoming deadlines and exams ordered by due date.
+
+        Args:
+            limit: max number of results (None = no limit)
+            until: optional upper bound for start_datetime
+        """
+        now = timezone.now()
+        qs = Event.objects.filter(
+            creator=user,
+            event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
+            start_datetime__gte=now,
+        ).order_by('start_datetime')
+        if until is not None:
+            qs = qs.filter(start_datetime__lte=until)
+        if limit is not None:
+            qs = qs[:limit]
+        return qs
+
     @staticmethod
     def mark_complete(user, event_id):
         """Mark a single event as completed."""
@@ -103,68 +124,5 @@ def build_event(event, now):
     }
 
 
-def urgency_label(event, time_remaining):
-    """Determine the urgency label for an event."""
-    if event.is_completed:
-        return 'completed'
- 
-    remaining_seconds = time_remaining.total_seconds()
-    if remaining_seconds < 0:
-        return 'overdue'
-    if remaining_seconds <= 86400:
-        return 'urgent'
-    return 'normal'
-
-def time_string(td):
-    """Human-readable string for time remaining or overdue."""
-    total_seconds = int(td.total_seconds())
-    if total_seconds < 0:
-        return overdue_time(abs(total_seconds))
-    return remaining_time(total_seconds)
- 
- 
-def overdue_time(total_seconds):
-    """Format a positive seconds value as 'Xd Yh overdue'."""
-    days, remainder = divmod(total_seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes = remainder // 60
-    if days > 0:
-        return f"{days}d {hours}h overdue"
-    if hours > 0:
-        return f"{hours}h {minutes}m overdue"
-    return f"{minutes}m overdue"
- 
- 
-def remaining_time(total_seconds):
-    """Format a positive seconds value as 'Xd Yh left'."""
-    days, remainder = divmod(total_seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes = remainder // 60
-    if days > 0:
-        return f"{days}d {hours}h left"
-    if hours > 0:
-        return f"{hours}h {minutes}m left"
-    return f"{minutes}m left"
- 
- 
-def time_passed(td):
-    """Format elapsed time since creation as 'Added X ago'."""
-    total_seconds = int(td.total_seconds())
-    if total_seconds < 0:
-        return "Added just now"
- 
-    days = total_seconds // 86400
-    if days > 0:
-        return f"Added {days} day{'s' if days != 1 else ''} ago"
- 
-    hours = total_seconds // 3600
-    if hours > 0:
-        return f"Added {hours} hour{'s' if hours != 1 else ''} ago"
- 
-    minutes = total_seconds // 60
-    if minutes > 0:
-        return f"Added {minutes} min ago"
- 
-    return "Added just now"
 
 

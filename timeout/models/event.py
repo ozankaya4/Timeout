@@ -163,20 +163,17 @@ class Event(TimestampMixin, models.Model):
     @property
     def is_past(self):
         """Check if the event has already occurred."""
-        from django.utils import timezone
         return self.end_datetime < timezone.now()
 
     @property
     def is_ongoing(self):
         """Check if the event is currently happening."""
-        from django.utils import timezone
         now = timezone.now()
         return self.start_datetime <= now <= self.end_datetime
 
     @property
     def is_upcoming(self):
         """Check if the event is in the future."""
-        from django.utils import timezone
         return self.start_datetime > timezone.now()
     
     def mark_completed(self):

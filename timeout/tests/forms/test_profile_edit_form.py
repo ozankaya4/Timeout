@@ -10,8 +10,6 @@ from django.contrib.auth import get_user_model
 from timeout.forms.profileEditForm import (
     ChangeUsernameForm,
     ProfileEditForm,
-    UNIVERSITY_CHOICES,
-    _KNOWN_UNIVERSITIES,
 )
 
 User = get_user_model()

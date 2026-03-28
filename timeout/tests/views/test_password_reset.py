@@ -101,7 +101,7 @@ class ForgotPasswordViewTests(TestCase):
     @patch('timeout.views.password_reset.EmailService.send_reset_code', return_value=True)
     def test_successful_code_send_stores_session_data(self, mock_send):
         """When the reset code is successfully sent, the session should store the reset code, user ID, and timestamp for later verification."""
-        response = self.client.post(self.url, {'step': 'request', 'identifier': 'testuser@example.com'})
+        self.client.post(self.url, {'step': 'request', 'identifier': 'testuser@example.com'})
         session = self.client.session
         self.assertIn('reset_code', session)
         self.assertIn('reset_user_id', session)
