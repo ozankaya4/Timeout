@@ -220,6 +220,7 @@ def user_profile(request, username):
     return render(request, 'social/user_profile.html', context)
 
 def _handle_private_follow(from_user, to_user):
+    """Handle follow request logic for private accounts. Returns True if a request was created, False if an existing request was canceled."""
     notif_filter = Notification.objects.filter(
         user=to_user,
         type=Notification.Type.FOLLOW,
