@@ -1,3 +1,6 @@
+"""
+Views for calendar event actions: creating events, subscribing to public events, applying AI-suggested schedules, and dismissing alerts.
+"""
 import json
 
 from django.contrib import messages
