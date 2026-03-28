@@ -93,6 +93,7 @@ def feed(request):
 
 @login_required
 def feed_more(request):
+    """AJAX endpoint to load more posts for infinite scrolling in the feed."""
     from timeout.services.feed_service import PAGE_SIZE
     tab = request.GET.get('tab', 'following')
     try: cursor = int(request.GET.get('cursor', 0))
