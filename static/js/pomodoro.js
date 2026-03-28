@@ -68,7 +68,6 @@ var Pomodoro = (function() {
     state.remaining          = 0;
     state.running            = false;
     _processPhaseEnd(false);
-    if (saved.phase !== 'work') _showBreakEndedPopup();
   }
 
   /** Apply a saved state snapshot that still has time remaining. */
@@ -329,36 +328,6 @@ var Pomodoro = (function() {
     window.addEventListener('beforeunload', function() {
       if (state.running) saveState();
     });
-  }
-
-  //  Break-ended popup 
-
-  /**
-   * Show an overlay popup when a break expired while the user was on another page.
-   * Only displayed when we are NOT already on a notes page.
-   */
-  function _showBreakEndedPopup() {
-    if (window.location.pathname.startsWith('/notes')) return;
-    var overlay = document.createElement('div');
-    overlay.id = 'pomoBreakEndedOverlay';
-    overlay.style.cssText = [
-      'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center',
-      'background:rgba(0,0,0,0.55)',
-    ].join(';');
-    overlay.innerHTML =
-      '<div style="background:#fff;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)">' +
-        '<div style="font-size:2.5rem;margin-bottom:8px">🍅</div>' +
-        '<h3 style="margin:0 0 8px;font-size:1.3rem">Break\'s over!</h3>' +
-        '<p style="color:#666;margin:0 0 24px;font-size:.95rem">Your Pomodoro break has ended.<br>Ready to get back to work?</p>' +
-        '<button id="pomoBreakGoBtn" style="background:#5B73E8;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:1rem;cursor:pointer;margin-right:12px">Return to Notes</button>' +
-        '<button id="pomoBreakNoBtn" style="background:#f1f3f7;color:#333;border:none;border-radius:8px;padding:10px 20px;font-size:1rem;cursor:pointer">End Session</button>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    document.getElementById('pomoBreakGoBtn').addEventListener('click', function() {
-      window.location.href = '/notes/';});
-    document.getElementById('pomoBreakNoBtn').addEventListener('click', function() {
-      sessionStorage.removeItem('pomo_state');
-      overlay.remove();});
   }
 
   //  Note-select population 
