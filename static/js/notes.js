@@ -281,4 +281,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initWordCount();
   DailyGoals.init();
   Heatmap.init();
+
+  if (new URLSearchParams(window.location.search).get('add') === 'true') {
+    new bootstrap.Modal(document.getElementById('newNoteModal')).show();
+  }
 });

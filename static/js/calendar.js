@@ -42,6 +42,9 @@ function openAddEvent(dateStr) {
 (function () {
     const params = new URLSearchParams(window.location.search);
     const openId = params.get("open_event");
+    if (params.get('add') === 'true') {
+        openAddEvent(new Date().toISOString().slice(0, 10));
+    }
     if (openId) {
         const chip = document.querySelector(`[data-event-id="${openId}"]`);
         if (chip) {
