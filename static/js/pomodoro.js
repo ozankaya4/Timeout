@@ -4,9 +4,9 @@
  */
 var Pomodoro = (function() {
   var cfg = window.NOTES_CONFIG || {};
-  var WORK        = (cfg.pomoWork  || 25) * 60;
-  var SHORT_BREAK = (cfg.pomoShort ||  5) * 60;
-  var LONG_BREAK  = (cfg.pomoLong  || 15) * 60;
+  var WORK        = Math.max(10, cfg.pomoWork  || 25) * 60;
+  var SHORT_BREAK = Math.min((cfg.pomoShort ||  5) * 60, WORK);
+  var LONG_BREAK  = Math.min((cfg.pomoLong  || 15) * 60, Math.floor(WORK * 1.5));
   var CIRCUMFERENCE = 2 * Math.PI * 54;
 
   // Minimum seconds actually worked before XP is awarded (50 % of the configured work session).

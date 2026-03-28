@@ -38,3 +38,26 @@ class AppearanceForm(forms.ModelForm):
             }),
             'auto_online': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def clean_pomo_work_minutes(self):
+        """Clamp work session to a minimum of 10 minutes."""
+        value = self.cleaned_data.get('pomo_work_minutes')
+        if value is None:
+            return value
+        return max(10, value)
+
+    def clean_pomo_short_break(self):
+        """Clamp short break to [1, work duration]."""
+        value = self.cleaned_data.get('pomo_short_break')
+        if value is None:
+            return value
+        work = self.cleaned_data.get('pomo_work_minutes') or 10
+        return max(1, min(value, work))
+
+    def clean_pomo_long_break(self):
+        """Clamp long break to [1, 1.5× work duration]."""
+        value = self.cleaned_data.get('pomo_long_break')
+        if value is None:
+            return value
+        work = self.cleaned_data.get('pomo_work_minutes') or 10
+        return max(1, min(value, int(work * 1.5)))
