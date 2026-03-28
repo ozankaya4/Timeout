@@ -17,6 +17,7 @@ var Pomodoro = (function() {
     remaining: WORK,
     total: WORK,
     running: false,
+    started: false,  // true once started; only cleared by reset()
     session: 0,
     todayCount: 0,
     intervalId: null,
@@ -34,6 +35,7 @@ var Pomodoro = (function() {
       remaining: state.remaining,
       total: state.total,
       running: state.running,
+      started: state.started,
       session: state.session,
       todayCount: state.todayCount,
       elapsedWorkSeconds: state.elapsedWorkSeconds,
@@ -75,6 +77,7 @@ var Pomodoro = (function() {
     state.remaining          = remaining;
     state.total              = saved.total;
     state.running            = false;
+    state.started            = saved.started || true;
     state.session            = saved.session;
     state.todayCount         = saved.todayCount;
     state.elapsedWorkSeconds = saved.elapsedWorkSeconds || 0;
@@ -174,7 +177,10 @@ var Pomodoro = (function() {
       dot.classList.toggle('nt-pomo-dot--active', i === state.session && state.phase === 'work');});
     var miniBar = document.getElementById('pomoMiniBar');
     if (miniBar) {
-      miniBar.style.display = state.running ? 'flex' : 'none';
+      // On note_edit (no full panel), keep mini-bar visible while a session is active, even if paused.
+      var hasPanel = !!document.getElementById('pomoPanel');
+      var showMini = state.running || (state.started && !hasPanel);
+      miniBar.style.display = showMini ? 'flex' : 'none';
       var miniPhase = document.getElementById('pomoMiniPhase');
       var miniTime  = document.getElementById('pomoMiniTime');
       if (miniPhase) miniPhase.textContent = getPhaseLabel(state.phase);
@@ -254,6 +260,7 @@ var Pomodoro = (function() {
   function start() {
     if (state.running) return;
     state.running = true;
+    state.started = true;
     state.intervalId = setInterval(tick, 1000);
     saveState();
     render();
@@ -285,6 +292,7 @@ var Pomodoro = (function() {
   function reset() {
     clearInterval(state.intervalId);
     state.running = false;
+    state.started = false;
     state.phase   = 'work';
     state.session = 0;
     state.total   = WORK;
@@ -312,8 +320,7 @@ var Pomodoro = (function() {
       // Warn before leaving the notes ecosystem.
       e.preventDefault();
       if (window.confirm('You have an active work session. Leaving will end your Pomodoro. Are you sure?')) {
-        sessionStorage.removeItem('pomo_state');
-        clearInterval(state.intervalId);
+        reset();  // clears state + sessionStorage; sets running=false so beforeunload won't re-save
         window.location.href = href;
       }
     });

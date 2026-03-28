@@ -93,12 +93,10 @@
 </div>
 
 <!-- Pomodoro Mini-Bar (visible only when a session is active and was started on the notes page) -->
-<div id="pomoMiniBar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1050;
-     background:#fff;border-top:2px solid #5B73E8;padding:10px 24px;
-     align-items:center;gap:18px;box-shadow:0 -2px 12px rgba(0,0,0,0.10);">
+<div id="pomoMiniBar" class="pomo-mini-bar" style="display:none;">
   <span style="font-size:1.3rem">&#127813;</span>
-  <span id="pomoMiniPhase" style="font-weight:600;font-size:.95rem;">Work Session</span>
-  <span id="pomoMiniTime" style="font-family:monospace;font-size:1.15rem;color:#5B73E8;font-weight:700;">25:00</span>
+  <span id="pomoMiniPhase" class="pomo-mini-phase">Work Session</span>
+  <span id="pomoMiniTime" class="pomo-mini-time">25:00</span>
   <button id="pomoPauseBtn" class="btn btn-sm btn-outline-primary" style="padding:3px 14px;">Pause</button>
   <button id="pomoStartBtn" class="btn btn-sm btn-primary" style="padding:3px 14px;display:none;">Resume</button>
   <button id="pomoSkipBtn"  class="btn btn-sm btn-outline-secondary" style="padding:3px 14px;">Skip</button>

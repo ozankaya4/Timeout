@@ -36,6 +36,19 @@ function togglePin(noteId, btn) {
   .catch(function(err) { console.error('Pin toggle failed:', err); });
 }
 
+/**
+ * Delete a note via API and remove its element from the DOM.
+ */
+function deleteNote(noteId, deleteUrl) {
+  if (!confirm('Delete this note?')) return;
+  postJSON(deleteUrl, {})
+    .then(function() {
+      var item = document.getElementById('note-' + noteId);
+      if (item) item.remove();
+    })
+    .catch(function() { alert('Failed to delete note. Please try again.'); });
+}
+
 
 /**
  * Display XP reward toast notification with fade animation.
