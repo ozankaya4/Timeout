@@ -1,12 +1,4 @@
-"""Authentication related URL patterns for the timeout app.
-Includes:
-- signup: View to handle user registration.
-- login: View to handle user login.
-- logout: View to handle user logout.
-- complete_profile: View to handle additional profile information after signup.
-- forgot_password: View to handle password reset requests.
-- reset_password: View to handle setting a new password after receiving a reset link.
-"""
+"""Authentication related URL patterns for the timeout app."""
 
 from django.urls import path
 from timeout.views import auth

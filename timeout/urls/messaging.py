@@ -1,13 +1,4 @@
-"""
-Messaging related URL patterns for the timeout app.
-Includes:
-- inbox: View to display the user's inbox with all conversations.
-- conversation: View to display a specific conversation.
-- start_conversation: View to start a new conversation with a specific user.
-- send_message: Endpoint to send a message in a specific conversation.
-- poll_messages: Endpoint for AJAX polling to get new messages in a conversation.
-- delete_message: Endpoint to delete a specific message.
-"""
+"""Messaging related URL patterns for the timeout app.#"""
 
 from django.urls import path
 from timeout.views import messaging

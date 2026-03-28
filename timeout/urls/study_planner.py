@@ -1,9 +1,5 @@
-"""
-Study planner URL patterns for the timeout app.
-Includes:
-- plan_sessions: View to display the study planner interface and generate AI session suggestions based on upcoming deadlines.
-- confirm_sessions: View to receive confirmed session times from the frontend and create Event instances for the study sessions.
-"""
+"""Study planner URL patterns for the timeout app."""
+
 from django.urls import path
 from timeout.views import study_planner
 
