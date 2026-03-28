@@ -33,6 +33,26 @@ class DeadlineService:
         return filter_events(qs)
     
     @staticmethod
+    def get_upcoming_deadlines(user, limit=None, until=None):
+        """Get upcoming deadlines and exams ordered by due date.
+
+        Args:
+            limit: max number of results (None = no limit)
+            until: optional upper bound for start_datetime
+        """
+        now = timezone.now()
+        qs = Event.objects.filter(
+            creator=user,
+            event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
+            start_datetime__gte=now,
+        ).order_by('start_datetime')
+        if until is not None:
+            qs = qs.filter(start_datetime__lte=until)
+        if limit is not None:
+            qs = qs[:limit]
+        return qs
+
+    @staticmethod
     def mark_complete(user, event_id):
         """Mark a single event as completed."""
         try:

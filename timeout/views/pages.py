@@ -1,12 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from timeout.models import User, Note, Message, Conversation
 from timeout.models.like import Like
 from timeout.models.bookmark import Bookmark
-from timeout.models.event import Event
-from timeout.services import FeedService, DeadlineService
+from timeout.services import FeedService, DeadlineService, EventService
 from timeout.views.statistics import get_focus_stats, build_context
 from timeout.views.profile import get_profile_event
 from timeout.services.ai_service import AIService
@@ -23,29 +21,40 @@ def landing(request):
     return render(request, 'pages/landing.html')
 
 
-def _build_dashboard_context(user, greeting):
-    """Assemble context dict for the dashboard page."""
-    now = timezone.now()
-    upcoming_events = Event.objects.filter(
-        creator=user,
-        start_datetime__gte=now,
-        status__in=['upcoming', 'ongoing'],
-    ).order_by('start_datetime')[:5]
-
-    user_conversations = Conversation.objects.filter(participants=user)
-    unread_count = Message.objects.filter(
-        conversation__in=user_conversations,
-        is_read=False,
-    ).exclude(sender=user).count()
-
+def _dashboard_schedule(user):
+    """Schedule widget: upcoming events, deadlines, recent notes."""
     return {
-        'greeting': greeting,
-        'upcoming_events': upcoming_events,
+        'upcoming_events': EventService.get_dashboard_upcoming(user),
         'recent_notes': Note.objects.filter(owner=user).order_by('-updated_at')[:4],
         'deadlines': DeadlineService.get_active_deadlines(user)[:5],
+    }
+
+
+def _dashboard_messaging(user):
+    """Messaging widget: unread message count."""
+    conversations = Conversation.objects.filter(participants=user)
+    unread_count = Message.objects.filter(
+        conversation__in=conversations,
+        is_read=False,
+    ).exclude(sender=user).count()
+    return {'unread_count': unread_count}
+
+
+def _dashboard_social(user):
+    """Social + AI widgets: feed posts and AI briefing."""
+    return {
         'social_posts': FeedService.get_following_feed(user)[:4],
-        'unread_count': unread_count,
         'ai_briefing': AIService.get_dashboard_briefing(user),
+    }
+
+
+def _build_dashboard_context(user, greeting):
+    """Assemble context dict for the dashboard page."""
+    return {
+        'greeting': greeting,
+        **_dashboard_schedule(user),
+        **_dashboard_messaging(user),
+        **_dashboard_social(user),
         **get_focus_stats(user),
     }
 

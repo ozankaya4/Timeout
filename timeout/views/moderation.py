@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
 from timeout.models import Post, User, PostFlag
-from timeout.models.notification import Notification
+from timeout.services.notification_service import NotificationService
 
 
 @login_required
@@ -37,12 +37,7 @@ def approve_flag(request, flag_id):
 
     flag = get_object_or_404(PostFlag, id=flag_id)
     author = flag.post.author
-    Notification.objects.create(
-        user=author,
-        title='⚠️ Post Removed',
-        message='Your post was removed by a moderator.',
-        type=Notification.Type.EVENT,
-    )
+    NotificationService.notify_post_removed(author)
     flag.post.delete()
     return JsonResponse({'success': True})
 

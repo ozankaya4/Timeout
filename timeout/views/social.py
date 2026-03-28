@@ -7,8 +7,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from timeout.forms import PostForm, CommentForm
 from timeout.models import Post, Comment, Like, Bookmark, User, Conversation, FocusSession, FollowRequest, PostFlag, Block
-from timeout.models.notification import Notification
 from timeout.services import FeedService
+from timeout.services.notification_service import NotificationService
 from timeout.views.profile import get_profile_event
 from timeout.services.social_service import (_get_conversation_sidebar,
     _get_follow_request_info, _get_block_status, _can_view_profile,
@@ -202,7 +202,7 @@ def _handle_private_follow(from_user, to_user):
         notif_filter.delete()
         return False
     notif_filter.delete()
-    Notification.objects.create(user=to_user, title="New Follow Request", message=f"{from_user.username} requested to follow you", type=Notification.Type.FOLLOW)
+    NotificationService.notify_follow_request(to_user, from_user)
     return True
 
 @login_required
@@ -253,8 +253,7 @@ def accept_follow_request(request, username):
     from_user = get_object_or_404(User, username=username)
     fr = get_object_or_404(FollowRequest, from_user=from_user, to_user=request.user)
     from_user.following.add(request.user)
-    Notification.objects.create(user=from_user, title="Follow Request Accepted",
-        message=f"{request.user.username} accepted your follow request", type=Notification.Type.FOLLOW)
+    NotificationService.notify_follow_accepted(from_user, request.user)
     fr.delete()
     return JsonResponse({'accepted': True})
 

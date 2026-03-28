@@ -1,7 +1,7 @@
 import json
-from datetime import datetime
 from django.conf import settings
 from django.core.cache import cache
+from timeout.utils import ai_cache_key
 
 
 def get_ai_suggestions(user, events_today):
@@ -13,7 +13,7 @@ def get_ai_suggestions(user, events_today):
     """
     if not getattr(settings, 'OPENAI_API_KEY', ''):
         return []
-    cache_key = f"ai_suggestions_{user.id}_{datetime.now().date()}"
+    cache_key = ai_cache_key("suggestions", user.id)
     cached = cache.get(cache_key)
     if cached:
         return cached

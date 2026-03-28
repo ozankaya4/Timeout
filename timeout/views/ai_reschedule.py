@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from timeout.models import Event
+from timeout.services import DeadlineService
 
 
 def _query_reschedule_events(user, now, lookahead):
@@ -19,12 +20,7 @@ def _query_reschedule_events(user, now, lookahead):
         start_datetime__gte=now,
         start_datetime__lte=lookahead,
     ).order_by('start_datetime')
-    deadlines = Event.objects.filter(
-        creator=user,
-        event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
-        start_datetime__gte=now,
-        start_datetime__lte=lookahead,
-    ).order_by('start_datetime')
+    deadlines = DeadlineService.get_upcoming_deadlines(user, until=lookahead)
     fixed_events = Event.objects.filter(
         creator=user,
         start_datetime__gte=now,

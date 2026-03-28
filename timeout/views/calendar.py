@@ -16,6 +16,8 @@ from timeout.views.ai_workload import get_ai_workload_warning
 from timeout.views.ai_suggestions import get_ai_suggestions
 from timeout.views.deadline_warning import get_deadline_study_warnings
 from timeout.models import DismissedAlert
+from timeout.utils import parse_aware_dt
+from timeout.services import DeadlineService, EventService
 
 MONTH_NAMES = [ 
     "", "January", "February", "March", "April", "May", "June",
@@ -194,9 +196,7 @@ def get_data(request, events_by_date=None):
     now = timezone.now()
     dismissed_keys = set(DismissedAlert.objects.filter(
         user=request.user).values_list('alert_key', flat=True))
-    upcoming_deadlines = Event.objects.filter(
-        creator=request.user, event_type__in=[Event.EventType.DEADLINE, Event.EventType.EXAM],
-        start_datetime__gte=now).order_by('start_datetime')[:20]
+    upcoming_deadlines = DeadlineService.get_upcoming_deadlines(request.user, limit=20)
     all_warnings = get_deadline_study_warnings(request.user)
     warnings = [w for w in all_warnings if w['key'] not in dismissed_keys]
     workload_warning, workload_key, suggestions = _get_workload_and_suggestions(
@@ -234,8 +234,8 @@ def apply_session_schedule(request):
                 creator=request.user,
                 event_type=Event.EventType.STUDY_SESSION,
             )
-            event.start_datetime = timezone.make_aware(datetime.fromisoformat(s['start'])) #added datetime format to clear the warnings
-            event.end_datetime = timezone.make_aware(datetime.fromisoformat(s['end']))
+            event.start_datetime = parse_aware_dt(s['start'])
+            event.end_datetime = parse_aware_dt(s['end'])
             event.save()
             updated += 1
         except (Event.DoesNotExist, KeyError):
@@ -290,18 +290,18 @@ def _parse_event_datetimes(request, is_all_day):
 
 def _build_event_from_post(request, start_datetime, end_datetime, is_all_day, allow_conflict):
     """Construct an Event from POST data and parsed datetimes."""
-    return Event(
-        creator=request.user,
-        title=request.POST["title"],
-        event_type=request.POST.get("event_type", "other"),
-        start_datetime=timezone.make_aware(datetime.fromisoformat(start_datetime)),
-        end_datetime=timezone.make_aware(datetime.fromisoformat(end_datetime)),
-        location=request.POST.get("location", ""),
-        description=request.POST.get("description", ""),
-        allow_conflict=allow_conflict,
-        visibility=request.POST.get("visibility", "public"),
-        is_all_day=is_all_day,
-        recurrence=request.POST.get("recurrence", "none"))
+    return EventService.build_from_data(request.user, {
+        'title': request.POST["title"],
+        'event_type': request.POST.get("event_type", "other"),
+        'start_datetime': parse_aware_dt(start_datetime),
+        'end_datetime': parse_aware_dt(end_datetime),
+        'location': request.POST.get("location", ""),
+        'description': request.POST.get("description", ""),
+        'allow_conflict': allow_conflict,
+        'visibility': request.POST.get("visibility", "public"),
+        'is_all_day': is_all_day,
+        'recurrence': request.POST.get("recurrence", "none"),
+    })
 
 
 @login_required

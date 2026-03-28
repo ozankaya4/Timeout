@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 
 from timeout.models import User, Conversation, Message
-from timeout.models.notification import Notification
 from timeout.services.social_service import are_blocked
+from timeout.services.notification_service import NotificationService
 
 
 @login_required
@@ -82,13 +82,7 @@ def conversation(request, conversation_id):
 def _notify_receiver(receiver, sender, content, conv):
     """Create a message notification for the receiver."""
     if receiver:
-        Notification.objects.create(
-            user=receiver,
-            title=f"💬 {sender.username} sent you a message",
-            message=content[:80],
-            type=Notification.Type.MESSAGE,
-            conversation=conv,
-        )
+        NotificationService.notify_new_message(receiver, sender, content, conv)
 
 
 def _serialize_message(message):

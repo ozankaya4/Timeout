@@ -2,17 +2,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from timeout.models import Event
-from datetime import datetime
-from django.utils import timezone
+from timeout.utils import parse_aware_dt
 
 
 def _parse_event_datetimes(request):
     """Parse start/end datetimes from POST. Returns (start_dt, end_dt) or None on error."""
     try:
-        start_dt = timezone.make_aware(
-            datetime.fromisoformat(request.POST.get("start_datetime")))
-        end_dt = timezone.make_aware(
-            datetime.fromisoformat(request.POST.get("end_datetime")))
+        start_dt = parse_aware_dt(request.POST.get("start_datetime"))
+        end_dt = parse_aware_dt(request.POST.get("end_datetime"))
         return start_dt, end_dt
     except (ValueError, TypeError):
         messages.error(request, "Invalid date/time format.")
