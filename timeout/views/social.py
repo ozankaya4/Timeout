@@ -1,3 +1,27 @@
+"""
+Views for social features: feed, posts, comments, likes, bookmarks, profiles, following, blocking.
+Endpoints:
+- GET /feed: Main feed with tabs for following, discover, and bookmarks
+- POST /posts/create: Create a new post
+- POST /posts/<id>/delete: Delete a post
+- POST /posts/<id>/like: Like/unlike a post (toggle)
+- POST /posts/<id>/bookmark: Bookmark/unbookmark a post (toggle)
+- POST /posts/<id>/comments/add: Add a comment to a post
+- POST /comments/<id>/delete: Delete a comment
+- GET /bookmarks: View bookmarked posts
+- GET /users/<username>: View a user's profile and posts
+- POST /users/<username>/follow: Follow/unfollow a user, or send/cancel a request for private accounts
+- POST /users/<username>/block: Block or unblock a user (toggle)
+- GET /api/followers: List of current user's followers with follow-back status
+- GET /api/following: List of users that current user is following
+- GET /api/friends: List of mutual follows (friends) for current user
+- GET /api/users/<username>/followers: List of a specific user's followers (respects privacy)
+- GET /api/users/<username>/following: List of users that a specific user is following (respects privacy)
+- GET /api/users/<username>/friends: List of a specific user's mutual follows (respects privacy)
+- POST /update_status: Update the logged-in user's status via AJAX
+- POST /reset_focus_timer: Reset focus session timer on page load
+"""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden

@@ -1,3 +1,18 @@
+"""
+Views for note management, including listing, creating, editing, deleting, and sharing notes.
+Includes:
+- note_list: Display user's notes with search, filter, and sorting options
+- note_create: Handle creation of new notes
+- note_edit: View and edit an existing note with a rich text editor
+- note_delete: Delete a note
+- note_toggle_pin: Toggle the pinned status of a note
+- note_share: Share a note as a social post
+- note_autosave: Handle AJAX autosave requests from the note editor
+- notes_stats: Return gamification stats related to notes as JSON
+- heatmap_data: Return data for the study activity heatmap as JSON
+- update_daily_goals: Update user's daily goal targets via AJAX
+- daily_progress: Return today's progress towards daily goals as JSON"""
+
 import json
 
 from django.contrib import messages

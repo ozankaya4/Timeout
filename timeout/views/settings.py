@@ -1,5 +1,11 @@
-import json
+"""
+Views for the user settings page, allowing users to update appearance, change password, and delete account.
+Includes:
+- settings_view: Renders the settings page and handles form submissions for password changes and account deletion
+- settings_save_ajax: Handles AJAX requests to save appearance settings without a full page reload
+"""
 
+import json
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required

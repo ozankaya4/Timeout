@@ -1,3 +1,17 @@
+"""
+Views for the messaging system, allowing users to have private conversations with each other.
+Includes:
+- inbox: List of conversations for the current user
+- start_conversation: Start a new conversation with another user or resume existing one
+- conversation: View a conversation thread and its messages
+- send_message: AJAX endpoint to send a new message in a conversation
+- delete_message: AJAX endpoint to delete a message (staff only)
+- poll_messages: AJAX endpoint to poll for new messages in a conversation since last message ID
+Helper functions:
+- _notify_receiver: Create a notification for the receiver when a new message is sent
+- _serialize_message: Convert a Message object to a JSON-serializable dict for AJAX responses
+"""
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404

@@ -1,3 +1,11 @@
+"""
+Views for user authentication and profile completion. Handles signup, login, logout, and prompting new users to complete their profiles. Accessible to all users for signup/login and only to logged-in users for profile completion.
+Includes:
+- signup_view: Handle user registration with email and password.
+- login_view: Handle user login with email and password.
+- logout_view: Handle user logout.
+- complete_profile: Prompt new users to fill in missing profile fields after signup/login. Only accessible when the session flag 'needs_profile_completion' is set.
+"""
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required

@@ -1,3 +1,10 @@
+"""
+View for generating AI-based suggestions to optimize the user's day based on their scheduled events. Accessible only to logged-in users. Caches results for 1 hour to optimize performance and reduce API calls.
+Includes:
+- get_ai_suggestions: Main function to generate AI suggestions for today's events.
+- _format_events_for_prompt: Helper function to format event objects into human-readable strings for the AI prompt.
+- _call_openai_suggestions: Helper function to call OpenAI API and return a list of suggestions.
+"""
 import json
 from datetime import datetime
 from django.conf import settings

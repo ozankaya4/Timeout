@@ -1,3 +1,10 @@
+"""
+View for generating AI-based workload warnings based on the user's daily events. Accessible only to logged-in users. Caches results for 1 hour to optimize performance and reduce API calls.
+Includes:
+- get_ai_workload_warning: Main function to generate a workload warning message using OpenAI.
+- _summarize_events: Helper function to convert event objects into summary strings for the AI prompt.
+- _call_openai_workload: Helper function to call OpenAI with the event summaries and return a warning string.
+"""
 from datetime import datetime
 from django.conf import settings
 from django.core.cache import cache

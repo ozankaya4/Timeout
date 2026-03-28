@@ -1,3 +1,16 @@
+"""
+Views for user notifications, including listing, marking as read/unread, and deleting notifications.
+Endpoints:
+- GET /notifications: Render the notifications page with pagination and filtering options.
+- POST /notifications/mark_read/<id>: Mark a specific notification as read.
+- POST /notifications/mark_unread/<id>: Mark a specific notification as unread.
+- POST /notifications/mark_all_read: Mark all notifications as read.
+- POST /notifications/mark_all_unread: Mark all notifications as unread.
+- POST /notifications/delete/<id>: Dismiss a specific notification.
+- POST /notifications/delete_all: Dismiss all notifications for the user.
+- GET /notifications/poll: AJAX endpoint to poll for new notifications since last check.
+"""
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from timeout.models.notification import Notification
@@ -60,6 +73,7 @@ def mark_notification_read(request, notification_id):
 
 @login_required
 def mark_all_notifications_unread(request):
+    """Mark all notifications as unread (for testing or user preference)."""
     Notification.objects.filter(
         user=request.user, is_read=True, is_dismissed=False
     ).update(is_read=False)
@@ -79,11 +93,13 @@ def delete_notification(request, notification_id):
 
 @login_required
 def mark_all_notifications_read(request):
+    """Mark all notifications as read."""
     Notification.objects.filter(user=request.user, is_read=False, is_dismissed=False).update(is_read=True)
     return JsonResponse({'success': True})
 
 @login_required
 def mark_notification_unread(request, notification_id):
+    """Mark a specific notification as unread."""
     try:
         n = Notification.objects.get(id=notification_id, user=request.user)
         n.is_read = False
