@@ -1,3 +1,7 @@
+"""
+Views for note management, including listing, creating, editing, deleting, and sharing notes.
+"""
+
 import json
 
 from django.contrib import messages
@@ -180,6 +184,8 @@ def note_delete(request, note_id):
         return HttpResponseForbidden('You cannot delete this note.')
 
     note.delete()
+    if request.headers.get('X-CSRFToken'):
+        return JsonResponse({'ok': True})
     messages.success(request, 'Note deleted successfully!')
     return redirect('notes')
 
