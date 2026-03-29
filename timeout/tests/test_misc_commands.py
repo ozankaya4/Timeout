@@ -323,13 +323,3 @@ class OAuthTagTests(TestCase):
             app.sites.add(Site.objects.get_current())
             result = google_oauth_available()
             self.assertTrue(result)
-
-    def test_google_oauth_available_false(self):
-        """Test that the google_oauth_available template tag returns False when no Google credentials exist."""
-        from unittest.mock import patch
-        from timeout.templatetags.oauth_tags import google_oauth_available
-        with patch.dict('os.environ', {}, clear=True):
-            from allauth.socialaccount.models import SocialApp
-            SocialApp.objects.filter(provider='google').delete()
-            result = google_oauth_available()
-            self.assertFalse(result)

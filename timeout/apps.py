@@ -11,11 +11,12 @@ class TimeoutConfig(AppConfig):
     name = 'timeout'
 
     def ready(self):
-        """Import signal handlers and clean up duplicate Google SocialApp records."""
-        self._deduplicate_google_socialapp()
+        """Register a post_migrate hook to clean up duplicate Google SocialApp records."""
+        from django.db.models.signals import post_migrate
+        post_migrate.connect(self._deduplicate_google_socialapp, sender=self)
 
     @staticmethod
-    def _deduplicate_google_socialapp():
+    def _deduplicate_google_socialapp(**kwargs):
         """Remove DB SocialApp for Google when settings already provides APP credentials.
 
         allauth raises MultipleObjectsReturned if both a settings-based APP
