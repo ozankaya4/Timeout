@@ -145,6 +145,15 @@ class NoteService:
         log.save(update_fields=['pomodoros', 'focus_minutes'])
 
     @staticmethod
+    def log_focus_minutes(user, minutes):
+        """Add focus minutes from a Focus Mode session (no pomodoro increment)."""
+        if minutes <= 0:
+            return
+        log = NoteService._get_today_study_log(user)
+        log.focus_minutes += minutes
+        log.save(update_fields=['focus_minutes'])
+
+    @staticmethod
     def get_heatmap_data(user, weeks=12):
         """Return last N weeks of daily activity for the heatmap."""
         today = timezone.localtime(timezone.now()).date()

@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from timeout.models import User, FollowRequest, Block, FocusSession
+from timeout.services.note_service import NoteService
 from timeout.models.notification import Notification
 from timeout.services.notification_service import NotificationService
 from timeout.services.social_service import _serialize_search_result, _search_users_queryset, are_blocked
@@ -91,7 +92,9 @@ def _save_focus_session_if_leaving(user, new_status):
     if not user.focus_started_at: return
     ended_at = timezone.now()
     duration = int((ended_at - user.focus_started_at).total_seconds())
-    if duration > 0: FocusSession.objects.create(user=user, started_at=user.focus_started_at, ended_at=ended_at, duration_seconds=duration)
+    if duration > 0:
+        FocusSession.objects.create(user=user, started_at=user.focus_started_at, ended_at=ended_at, duration_seconds=duration)
+        NoteService.log_focus_minutes(user, duration // 60)
     user.focus_started_at = None
 
 @login_required
