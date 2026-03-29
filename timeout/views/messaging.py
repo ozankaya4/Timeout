@@ -127,9 +127,9 @@ def send_message(request, conversation_id):
 @require_POST
 def mark_all_conversations_read(request):
     """Mark all received messages across all conversations as read."""
-    from timeout.models import Message as Msg
-    Msg.objects.filter(
-        conversation__participants=request.user
+    conv_ids = request.user.conversations.values_list('id', flat=True)
+    Message.objects.filter(
+        conversation_id__in=conv_ids
     ).exclude(sender=request.user).update(is_read=True)
     return JsonResponse({'success': True})
 

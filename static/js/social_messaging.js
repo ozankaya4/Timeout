@@ -142,13 +142,29 @@ function markUnread(event, btn) {
 /**
  * Mark all conversations as read.
  * Called by the "Mark all as read" button in the inbox header.
+ * Updates the DOM in-place so no page reload is needed.
  */
 function markAllRead(btn) {
     btn.disabled = true;
     fetch(btn.dataset.url, {
         method: 'POST',
         headers: { 'X-CSRFToken': _csrfToken() },
-    }).then(r => r.json()).then(data => {
-        if (data.success) location.reload();
+    }).then(r => {
+        if (!r.ok) throw new Error('Request failed with status ' + r.status);
+        return r.json();
+    }).then(data => {
+        if (!data.success) throw new Error('Server reported failure');
+        document.querySelectorAll('.inbox-row--unread').forEach(row => {
+            row.classList.remove('inbox-row--unread');
+        });
+        document.querySelectorAll('.inbox-unread-dot').forEach(el => el.remove());
+        document.querySelectorAll('.inbox-unread-badge').forEach(el => el.remove());
+        document.querySelectorAll('.msg-name--unread').forEach(el => {
+            el.classList.remove('msg-name--unread');
+        });
+        document.querySelectorAll('.msg-preview--unread').forEach(el => {
+            el.classList.remove('msg-preview--unread');
+        });
+        btn.remove();
     }).catch(() => { btn.disabled = false; });
 }
