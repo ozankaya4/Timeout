@@ -5,7 +5,7 @@ Views for the study planner feature, allowing users to plan study sessions befor
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -65,17 +65,33 @@ def _find_candidate_slots(user, deadline, hours_needed, session_length):
     return candidates, remainder_hours if has_remainder else 0
 
 
-def _add_titles(candidates, deadline_title):
-    """Annotate each candidate slot with a numbered session title in-place."""
+def _finalize_candidates(candidates, deadline_title, session_length, remainder_hours=0.0):
+    """Add numbered titles and compute correct end times for each candidate slot.
+
+    Without GPT, candidates contain the full free-window start/end.  This
+    trims each slot so ``end = start + session_length`` (or the remainder
+    duration for the last slot when there is a remainder).
+    """
+    _MIN_REMAINDER = 1 / 60
     n = len(candidates)
+    has_remainder = remainder_hours >= _MIN_REMAINDER
     for i, slot in enumerate(candidates, 1):
         slot['title'] = f"Study Session {i} of {n} - {deadline_title}"
+        # Determine the correct duration for this slot
+        is_last = (i == n)
+        if is_last and has_remainder:
+            hours = remainder_hours
+        else:
+            hours = session_length
+        start_dt = datetime.fromisoformat(slot['start'])
+        end_dt = start_dt + timedelta(hours=hours)
+        slot['end'] = end_dt.strftime('%Y-%m-%dT%H:%M')
 
 
 def _schedule_with_gpt(deadline, hours_needed, session_length, candidates, remainder_hours=0.0):
     """Call GPT to schedule sessions and return the JSON response."""
     if not getattr(settings, 'OPENAI_API_KEY', ''):
-        _add_titles(candidates, deadline.title)
+        _finalize_candidates(candidates, deadline.title, session_length, remainder_hours)
         return JsonResponse({'success': True, 'sessions': candidates})
     try:
         sessions = call_gpt(deadline, hours_needed, session_length, candidates, remainder_hours)
@@ -84,7 +100,7 @@ def _schedule_with_gpt(deadline, hours_needed, session_length, candidates, remai
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'AI error: {str(e)}'}, status=500)
     if not sessions:
-        _add_titles(candidates, deadline.title)
+        _finalize_candidates(candidates, deadline.title, session_length, remainder_hours)
         return JsonResponse({'success': True, 'sessions': candidates})
     return JsonResponse({'success': True, 'sessions': sessions})
 
