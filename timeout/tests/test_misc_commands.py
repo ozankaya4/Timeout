@@ -306,21 +306,30 @@ class OAuthTagTests(TestCase):
     """Tests for the google_oauth_available template tag, covering scenarios where the SocialApp model is available and when it is not."""
 
     def test_google_oauth_available_true(self):
-        """Test that the google_oauth_available template tag returns True when the SocialApp model is available and has a Google provider configured."""
+        """Test that the google_oauth_available template tag returns True when Google credentials are available."""
         from timeout.templatetags.oauth_tags import google_oauth_available
-        from allauth.socialaccount.models import SocialApp
-        from django.contrib.sites.models import Site
-        app, _ = SocialApp.objects.get_or_create(
-            provider='google',
-            defaults={'name': 'Google', 'client_id': 'test-id', 'secret': 'x'},
-        )
-        app.sites.add(Site.objects.get_current())
-        result = google_oauth_available()
-        self.assertTrue(result)
+        import os
+        # If env var is set, the tag returns True immediately.
+        if os.environ.get('GOOGLE_CLIENT_ID'):
+            result = google_oauth_available()
+            self.assertTrue(result)
+        else:
+            from allauth.socialaccount.models import SocialApp
+            from django.contrib.sites.models import Site
+            app, _ = SocialApp.objects.get_or_create(
+                provider='google',
+                defaults={'name': 'Google', 'client_id': 'test-id', 'secret': 'x'},
+            )
+            app.sites.add(Site.objects.get_current())
+            result = google_oauth_available()
+            self.assertTrue(result)
 
     def test_google_oauth_available_false(self):
-        """Test that the google_oauth_available template tag returns False when the SocialApp model is not available, simulating an ImportError."""
+        """Test that the google_oauth_available template tag returns False when no Google credentials exist."""
+        from unittest.mock import patch
         from timeout.templatetags.oauth_tags import google_oauth_available
-        SocialApp = None  # noqa
-        result = google_oauth_available()
-        self.assertFalse(result)
+        with patch.dict('os.environ', {}, clear=True):
+            from allauth.socialaccount.models import SocialApp
+            SocialApp.objects.filter(provider='google').delete()
+            result = google_oauth_available()
+            self.assertFalse(result)

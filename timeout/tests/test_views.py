@@ -12,7 +12,15 @@ User = get_user_model()
 
 
 def _create_social_app():
-    """Create a dummy Google SocialApp so templates render."""
+    """Create a dummy Google SocialApp so templates render.
+
+    If settings already provides credentials via the APP dict (loaded from
+    .env), skip the DB record to avoid MultipleObjectsReturned from allauth.
+    """
+    from django.conf import settings as _s
+    provider_cfg = getattr(_s, 'SOCIALACCOUNT_PROVIDERS', {}).get('google', {})
+    if 'APP' in provider_cfg:
+        return None
     app, _ = SocialApp.objects.get_or_create(
         provider='google',
         defaults={
