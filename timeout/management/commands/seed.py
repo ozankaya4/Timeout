@@ -366,39 +366,39 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  Site(id=1, domain="{SITE_DOMAIN}") ready.'))
 
     def _setup_google_social_app(self):
-        """Create the Google SocialApp from environment variables.
-
-        If settings already provides credentials via the APP dict, skip the
-        DB record to avoid allauth's MultipleObjectsReturned error.
-        """
+        """Create the Google SocialApp, routing to the appropriate helper."""
         self.stdout.write('\n[2] Setting up Google SocialApp...')
-
         from django.conf import settings as _s
         provider_cfg = getattr(_s, 'SOCIALACCOUNT_PROVIDERS', {}).get('google', {})
         if 'APP' in provider_cfg:
-            SocialApp.objects.filter(provider='google').delete()
-            self.stdout.write(self.style.SUCCESS(
-                '  Google credentials loaded from settings (APP dict). '
-                'Removed any DB SocialApp to avoid duplicates.'))
-            return
+            self._use_settings_google_app()
+        else:
+            self._create_google_social_app_from_env()
 
+    def _use_settings_google_app(self):
+        """Remove any DB SocialApp when settings already provides APP credentials."""
+        SocialApp.objects.filter(provider='google').delete()
+        self.stdout.write(self.style.SUCCESS(
+            '  Google credentials loaded from settings (APP dict). '
+            'Removed any DB SocialApp to avoid duplicates.'))
+
+    def _create_google_social_app_from_env(self):
+        """Create or update the DB SocialApp from GOOGLE_CLIENT_ID/SECRET env vars."""
         load_dotenv()
         client_id = os.environ.get('GOOGLE_CLIENT_ID', '')
         secret = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-
         if not client_id or not secret:
-            self.stdout.write(self.style.WARNING('  GOOGLE_CLIENT_ID and/or GOOGLE_CLIENT_SECRET not set.\n  Skipping Google SocialApp creation.'))
+            self.stdout.write(self.style.WARNING(
+                '  GOOGLE_CLIENT_ID and/or GOOGLE_CLIENT_SECRET not set.\n'
+                '  Skipping Google SocialApp creation.'))
             return
-
-        # get_or_create to avoid duplicate SocialApp records on repeated seeding
-        app, created = SocialApp.objects.get_or_create( 
+        app, created = SocialApp.objects.get_or_create(
             provider='google',
             defaults={'name': 'Google', 'client_id': client_id, 'secret': secret},
         )
         if not created:
             app.client_id, app.secret = client_id, secret
             app.save()
-
         app.sites.add(Site.objects.get(id=1))
         label = 'Created' if created else 'Updated'
         self.stdout.write(self.style.SUCCESS(f'  {label} Google SocialApp and linked to site.'))
