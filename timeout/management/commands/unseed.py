@@ -55,7 +55,9 @@ class Command(BaseCommand):
         """Delete global events, Google SocialApp, and Site(id=1)."""
         count = Event.objects.filter(is_global=True).delete()[0]
         SocialApp.objects.filter(provider='google').delete()
+        # Recreate Site(id=1) so the app remains functional after unseeding
         Site.objects.filter(id=1).delete()
+        Site.objects.create(id=1, domain='localhost', name='Timeout')
         return count
 
     def handle(self, *args, **options):
