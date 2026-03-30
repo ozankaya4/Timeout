@@ -12,13 +12,11 @@ Timeout is a web app designed to help university students stay organised, focuse
 
 - Bader Al Homood
 - Elif Haciyanli
-- Erin Ozdemir
+- Yagmur Erin Ozdemir
 - Hikmet Ozan Kaya
 - Juyeop Lee
 - Som Ajmera
 - Duru Atay
-
----
 
 ---
 
