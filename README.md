@@ -12,16 +12,33 @@ Timeout is a web app designed to help university students stay organised, focuse
 
 - Bader Al Homood
 - Elif Haciyanli
-- Erin Ozdemir
+- Yagmur Erin Ozdemir
 - Hikmet Ozan Kaya
-- Juyeop Lee
+- Juyeop Kim
 - Som Ajmera
-- Duru Yildiz
+- Duru Atay
 
 ---
 
+## Access Credentials
+
+The following credentials are created automatically when running `nix run .#init`.
+
+### Admin / Superuser
+| Field    | Value                  |
+|----------|------------------------|
+| URL      | `/admin/`              |
+| Username | `johndoe`              |
+| Email    | `john.doe@email.com`   |
+
+The admin account has full access to the Django admin panel and all moderation features within the application. We don't want to disclose admin password here, you can run "nix run .#init" to see the admin credentials.
+
 ### Regular Demo Users
-25 additional student accounts are seeded with randomised data. All seeded users have the password `Password123`. Their usernames can be found via the admin panel.
+80 additional student accounts are seeded with randomised data. All seeded users share the password below. Their usernames can be found via the admin panel or the user search on the social page.
+
+| Field    | Value         |
+|----------|---------------|
+| Password | `Student@123` |
 
 ---
 
@@ -57,16 +74,28 @@ nix run .#run          # start server at http://127.0.0.1:8000
 
 ### Environment Variables
 
-Copy `.env.example` to `.env`. All keys except `SECRET_KEY` are optional — the app runs fully without them.
+Copy `.env.example` to `.env`. All keys are optional, the app runs fully without them.
 
 | Variable               | Required | Purpose |
 |------------------------|----------|---------|
-| `SECRET_KEY`           | Yes      | Django secret key |
 | `OPENAI_API_KEY`       | No       | AI calendar event creation and dashboard briefing |
 | `SENDGRID_API_KEY`     | No       | Transactional email (password reset) |
 | `SENDGRID_FROM_EMAIL`  | No       | Sender address for outbound emails |
 | `GOOGLE_CLIENT_ID`     | No       | Google OAuth social login |
 | `GOOGLE_CLIENT_SECRET` | No       | Google OAuth social login |
+
+---
+
+## AI Disclosure
+
+AI assistance (GitHub Copilot / Claude Code) was used during the development of this project in the following areas:
+
+- **Frontend design and implementation** — This was the area where AI assistance was used the most. AI helped with structuring UI components, writing and debugging HTML/CSS layouts, and implementing responsive design patterns.
+- **CSS implementation** — AI was used to implement and refine styling, including dark mode overrides, colorblind accessibility modes, and component-level CSS.
+- **Test case discovery** — AI helped identify edge cases and suggest test scenarios to improve coverage across views, services, and models.
+- **Backend bug finding** — AI assisted in identifying and diagnosing backend bugs, particularly in view logic, model behaviour, and API response handling.
+
+All AI-generated code was reviewed, understood, and integrated by team members. No AI output was used blindly or without verification.
 
 ---
 
@@ -162,5 +191,5 @@ All JavaScript libraries are loaded via CDN (jsDelivr). No npm build step is req
 
 ### Authentication
 - Email-based signup and login
-- Social login via Google, GitHub, and Discord
+- Social login via Google
 - Profile completion flow on first login
