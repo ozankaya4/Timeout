@@ -79,7 +79,7 @@ The following third-party software was used directly or relied upon heavily in b
 | Library | Version | Purpose | Source |
 |---------|---------|---------|--------|
 | Django | 5.x | Web framework (MVT architecture, ORM, auth) | https://www.djangoproject.com |
-| django-allauth | latest | Social authentication (Google, GitHub, Discord) | https://allauth.org |
+| django-allauth | latest | Social authentication (Google) | https://allauth.org |
 | Pillow | latest | Profile picture image processing | https://python-pillow.org |
 | openai | latest | AI calendar event creation and study briefing | https://github.com/openai/openai-python |
 | SendGrid | 6.11.0 | Transactional email delivery | https://github.com/sendgrid/sendgrid-python |
