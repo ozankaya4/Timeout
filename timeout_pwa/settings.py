@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -18,16 +19,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+def read_env_flag(variable_name, default_value):
+    """Read a boolean environment variable, falling back to default_value when unset."""
+    raw_value = os.environ.get(variable_name)
+    if raw_value is None:
+        return default_value
+    return raw_value.strip().lower() in ('1', 'true', 'yes', 'on')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-change-this-in-production-use-environment-variable'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+def read_env_list(variable_name):
+    """Read a comma-separated environment variable into a list of non-empty values."""
+    raw_value = os.environ.get(variable_name, '')
+    return [item.strip() for item in raw_value.split(',') if item.strip()]
 
-ALLOWED_HOSTS = ["*"]
+
+# Local development works with no configuration. The Dockerfile sets DJANGO_DEBUG=false,
+# which requires SECRET_KEY and ALLOWED_HOSTS to be provided through the environment.
+DEBUG = read_env_flag('DJANGO_DEBUG', True)
+
+DEVELOPMENT_SECRET_KEY = 'django-insecure-change-this-in-production-use-environment-variable'
+SECRET_KEY = os.environ.get('SECRET_KEY') or DEVELOPMENT_SECRET_KEY
+if not DEBUG and SECRET_KEY == DEVELOPMENT_SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY must be set when DJANGO_DEBUG is off.')
+
+ALLOWED_HOSTS = read_env_list('ALLOWED_HOSTS') or (['*'] if DEBUG else [])
+CSRF_TRUSTED_ORIGINS = read_env_list('CSRF_TRUSTED_ORIGINS')
+
+# Holds the SQLite database and uploaded media, so production can keep them on a volume.
+DATA_DIRECTORY = Path(os.environ.get('DATA_DIRECTORY', BASE_DIR))
 
 
 # Application definition
@@ -92,7 +111,7 @@ WSGI_APPLICATION = 'timeout_pwa.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATA_DIRECTORY / 'db.sqlite3',
     }
 }
 
@@ -169,7 +188,7 @@ STATICFILES_DIRS = [
 
 # Media files (User uploaded content)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = DATA_DIRECTORY / 'media'
 
 
 # Default primary key field type
@@ -250,3 +269,40 @@ SOCIALACCOUNT_PROVIDERS = {
         }} if os.environ.get('GOOGLE_CLIENT_ID') else {}),
     },
 }
+
+
+# =============================================================================
+# Production settings (DJANGO_DEBUG=false), for running behind an HTTPS proxy
+# =============================================================================
+
+if not DEBUG:
+    # WhiteNoise serves static files, so the proxy needs no access to this container's files.
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+    }
+
+    # The app port is only reachable through the proxy, which sets this header itself.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+    # allauth's own password routes would otherwise try SMTP on localhost.
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    # WAL and a longer lock timeout let requests share SQLite with fewer "database is locked" errors.
+    DATABASES['default']['OPTIONS'] = {
+        'timeout': 20,
+        'transaction_mode': 'IMMEDIATE',
+        'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
+    }
+
+    # Django's default config hides errors from the console when DEBUG is off.
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {'console': {'class': 'logging.StreamHandler'}},
+        'root': {'handlers': ['console'], 'level': 'WARNING'},
+    }

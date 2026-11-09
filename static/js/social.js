@@ -128,8 +128,8 @@ function _renderSearchResult(u) {
     return `<a href="${u.profile_url}" class="search-result-row">
         ${avatar}
         <div class="search-result-info">
-            <span class="search-result-name">${u.full_name}</span>
-            <span class="search-result-username">@${u.username}</span>
+            <span class="search-result-name">${escapeHtml(u.full_name)}</span>
+            <span class="search-result-username">@${escapeHtml(u.username)}</span>
         </div>
         <span class="status-dot status-${u.status}"></span>
     </a>`;

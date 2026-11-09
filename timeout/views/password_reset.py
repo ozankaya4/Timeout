@@ -2,7 +2,7 @@
 Views for the password reset flow, allowing users to request a reset code, verify it, and set a new password.
 """
 
-import random
+import secrets
 import time
 
 from django.contrib import messages
@@ -16,6 +16,17 @@ User = get_user_model()
 
 # Code expiry in seconds (5 minutes)
 CODE_EXPIRY = 300
+
+# Wrong guesses allowed before the code is discarded and a new one must be requested
+MAX_CODE_ATTEMPTS = 5
+
+RESET_SESSION_KEYS = ('reset_code', 'reset_user_id', 'reset_code_time', 'reset_attempts', 'reset_verified')
+
+
+def _clear_reset_session(request):
+    """Remove all password reset state from the session."""
+    for session_key in RESET_SESSION_KEYS:
+        request.session.pop(session_key, None)
 
 
 def forgot_password(request):
@@ -48,13 +59,16 @@ def _handle_code_request(request):
         messages.error(request, 'No account found with that email or username.')
         return render(request, 'auth/forgot_password.html', {'step': 'request', 'identifier': identifier})
 
-    code = f'{random.randint(0, 999999):06d}'
+    code = f'{secrets.randbelow(1000000):06d}'
     request.session['reset_code'] = code
     request.session['reset_user_id'] = user.pk
     request.session['reset_code_time'] = time.time()
+    request.session['reset_attempts'] = 0
+    request.session.pop('reset_verified', None)
 
     sent = EmailService.send_reset_code(user.email, code)
     if not sent:
+        _clear_reset_session(request)
         messages.error(request, 'Failed to send the reset code. Please try again later.')
         return render(request, 'auth/forgot_password.html', {'step': 'request', 'identifier': identifier})
 
@@ -74,17 +88,27 @@ def _handle_code_verify(request):
         return render(request, 'auth/forgot_password.html', {'step': 'request'})
 
     if time.time() - code_time > CODE_EXPIRY:
-        for key in ('reset_code', 'reset_user_id', 'reset_code_time'):
-            request.session.pop(key, None)
+        _clear_reset_session(request)
         messages.error(request, 'Code has expired. Please request a new one.')
         return render(request, 'auth/forgot_password.html', {'step': 'request'})
 
-    if entered_code != stored_code:
-        messages.error(request, 'Invalid code. Please try again.')
-        return render(request, 'auth/forgot_password.html', {'step': 'verify'})
+    if not secrets.compare_digest(entered_code.encode(), stored_code.encode()):
+        return _handle_wrong_code(request)
 
     request.session['reset_verified'] = True
     return redirect('reset_password')
+
+
+def _handle_wrong_code(request):
+    """Count a failed guess, discarding the code once the attempt limit is reached."""
+    attempts = request.session.get('reset_attempts', 0) + 1
+    if attempts >= MAX_CODE_ATTEMPTS:
+        _clear_reset_session(request)
+        messages.error(request, 'Too many incorrect attempts. Please request a new code.')
+        return render(request, 'auth/forgot_password.html', {'step': 'request'})
+    request.session['reset_attempts'] = attempts
+    messages.error(request, 'Invalid code. Please try again.')
+    return render(request, 'auth/forgot_password.html', {'step': 'verify'})
 
 
 def reset_password(request):
@@ -122,7 +146,6 @@ def _handle_password_submit(request, user):
         return render(request, 'auth/reset_password.html')
     user.set_password(password1)
     user.save()
-    for key in ('reset_code', 'reset_user_id', 'reset_code_time', 'reset_verified'):
-        request.session.pop(key, None)
+    _clear_reset_session(request)
     messages.success(request, 'Password reset successfully! You can now log in.')
     return redirect('landing')

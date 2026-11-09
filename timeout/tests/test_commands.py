@@ -29,12 +29,24 @@ class SeedCommandTests(TestCase):
         self.assertTrue(johndoe.is_staff)
 
     def test_seed_creates_80_regular_users(self):
-        """Test that the seed command creates 80 regular users in addition to the superuser."""
+        """Test that the seed command creates 80 regular users plus the demo user and the superuser."""
         self._call_seed()
-        self.assertEqual(User.objects.count(), 81)
-        self.assertEqual(User.objects.filter(is_superuser=False).count(), 80)
-        self.assertEqual(User.objects.count(), 81)
-        self.assertEqual(User.objects.filter(is_superuser=False).count(), 80)
+        self.assertEqual(User.objects.count(), 82)
+        self.assertEqual(User.objects.filter(is_superuser=False).count(), 81)
+
+    def test_seed_creates_non_admin_demo_user_with_johndoe_schedule(self):
+        """The demo account should be non-admin, log in with its public password, and have johndoe's schedule."""
+        self._call_seed()
+        demo_user = User.objects.get(username='demo')
+        self.assertFalse(demo_user.is_staff)
+        self.assertFalse(demo_user.is_superuser)
+        self.assertTrue(demo_user.check_password('Demo@1234'))
+        johndoe = User.objects.get(username='johndoe')
+        johndoe_schedule_titles = set(johndoe.created_events.values_list('title', flat=True))
+        demo_event_titles = set(demo_user.created_events.values_list('title', flat=True))
+        self.assertTrue(johndoe_schedule_titles)
+        self.assertTrue(johndoe_schedule_titles.issubset(demo_event_titles))
+        self.assertTrue(demo_user.conversations.exists())
 
     def test_seed_creates_follow_relationships(self):
         """Test that the seed command creates follow relationships between users."""

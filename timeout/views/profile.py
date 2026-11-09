@@ -9,6 +9,7 @@ from django.contrib import messages
 from datetime import timedelta
 from timeout.models import Event
 from timeout.forms import ProfileEditForm, ChangeUsernameForm
+from timeout.utils import is_demo_account
 
 
 def _find_event(user, status, **filters):
@@ -56,6 +57,9 @@ def profile_edit(request):
 @login_required
 def change_username(request):
     """Handle username change from the profile edit page."""
+    if is_demo_account(request.user):
+        messages.error(request, 'This action is disabled on the shared demo account.')
+        return redirect('profile')
     if request.method == 'POST':
         form = ChangeUsernameForm(request.POST, user=request.user)
         if form.is_valid():

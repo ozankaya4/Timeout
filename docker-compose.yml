@@ -1,0 +1,16 @@
+# Published on loopback only: host nginx proxies to it, and it isn't reachable from outside the VM.
+name: timeout
+
+services:
+  web:
+    build: .
+    container_name: timeout-web
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:18280:8000"
+    volumes:
+      - timeout_data:/data
+
+volumes:
+  timeout_data:

@@ -273,14 +273,17 @@ document.addEventListener("DOMContentLoaded", () => {
             : `<button class="mark-read-btn notif-btn notif-btn-read" data-id="${n.id}">Read</button>`;
         div.innerHTML = `
             <div class="notification-main">
-                <div class="notification-title">${n.title}</div>
-                <div class="notification-message">${n.message}</div>
-                <div class="notification-time">${timeStr}</div>
+                <div class="notification-title"></div>
+                <div class="notification-message"></div>
+                <div class="notification-time"></div>
             </div>
             <div class="notification-actions">
                 ${readBtn}
                 <button class="delete-notif-btn notif-btn notif-btn-delete" data-id="${n.id}">Delete</button>
             </div>`;
+        div.querySelector('.notification-title').textContent = n.title;
+        div.querySelector('.notification-message').textContent = n.message;
+        div.querySelector('.notification-time').textContent = timeStr;
         return div;
     }
 

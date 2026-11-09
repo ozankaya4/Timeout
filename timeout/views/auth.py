@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from timeout.forms import SignupForm, LoginForm, CompleteProfileForm
 
@@ -31,6 +32,17 @@ def signup_view(request):
     return render(request, 'auth/signup.html', {'form': form})
 
 
+def _safe_next_url(request):
+    """Return the ?next= target if it stays on this site, otherwise the dashboard."""
+    next_url = request.GET.get('next', '')
+    is_same_site = url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    )
+    return next_url if is_same_site else 'dashboard'
+
+
 def login_view(request):
     """Handle user login."""
     if request.user.is_authenticated:
@@ -48,8 +60,7 @@ def login_view(request):
                 request,
                 f'Welcome back, {user.username}!'
             )
-            next_url = request.GET.get('next', 'dashboard')
-            return redirect(next_url)
+            return redirect(_safe_next_url(request))
     else:
         form = LoginForm()
 

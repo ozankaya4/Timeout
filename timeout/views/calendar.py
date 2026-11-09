@@ -10,6 +10,7 @@ from timeout.models import Event, DismissedAlert
 from django.db.models import Q
 from timeout.views.deadline_warning import get_deadline_study_warnings
 from timeout.services import DeadlineService, AIService
+from timeout.utils import AI_DISABLED_MESSAGE, ai_features_enabled
 
 MONTH_NAMES = [
     "", "January", "February", "March", "April", "May", "June",
@@ -197,7 +198,9 @@ def get_data(request, events_by_date=None):
         "warnings": warnings,
         "workload_warning": workload_warning,
         "workload_alert_key": workload_key,
-        "ai_suggestions": suggestions}
+        "ai_suggestions": suggestions,
+        "ai_enabled": ai_features_enabled(),
+        "ai_disabled_message": AI_DISABLED_MESSAGE}
 
 def event_status(start_dt, end_dt, now):
     """Helper function to derive a human-readable status"""

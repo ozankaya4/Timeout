@@ -8,12 +8,14 @@ This fixes the "Site matching query does not exist" error that occurs
 when django.contrib.sites / allauth tries to look up SITE_ID = 1.
 """
 
+import os
+
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 
 
-DOMAIN = '127.0.0.1:8000'
-NAME = 'Timeout Local'
+DOMAIN = os.environ.get('SITE_DOMAIN', '127.0.0.1:8000')
+NAME = os.environ.get('SITE_NAME', 'Timeout Local')
 
 
 class Command(BaseCommand):

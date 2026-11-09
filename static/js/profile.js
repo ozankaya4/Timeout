@@ -96,8 +96,8 @@ function _userItemHtml(u, options) {
   const inner = `
         ${userAvatarHtml(u.profile_picture, u.username)}
         <div>
-          <div class="fw-semibold">@${u.username}</div>
-          ${u.full_name ? `<div class="text-muted small">${u.full_name}</div>` : ''}
+          <div class="fw-semibold">@${escapeHtml(u.username)}</div>
+          ${u.full_name ? `<div class="text-muted small">${escapeHtml(u.full_name)}</div>` : ''}
         </div>`;
   const wrapper = options.noLink
     ? `<div class="d-flex align-items-center gap-3">${inner}</div>`

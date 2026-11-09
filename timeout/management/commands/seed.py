@@ -23,6 +23,7 @@ from faker import Faker
 
 from allauth.socialaccount.models import SocialApp
 from timeout.models import Event, Post, Comment, Like, Bookmark, FocusSession, Note, StudyLog, Conversation, Message
+from timeout.utils import DEMO_USERNAME
 
 User = get_user_model()
 fake = Faker()
@@ -33,9 +34,13 @@ NUM_POSTS = 200
 NUM_NOTES_PER_USER = (8, 60)  # min, max notes per user
 HEATMAP_WEEKS = 16
 SUPERUSER_USERNAME = 'johndoe'
-SUPERUSER_PASSWORD = 'Password123'
+# Set SEED_SUPERUSER_PASSWORD on any public deployment: this default is published in the repo.
+SUPERUSER_PASSWORD = os.environ.get('SEED_SUPERUSER_PASSWORD', 'Password123')
 SUPERUSER_EMAIL = 'john.doe@email.com'
 DEFAULT_PASSWORD = 'Student@123'
+DEMO_PASSWORD = 'Demo@1234'
+DEMO_EMAIL = 'demo@timeout.example'
+DEMO_CONVERSATION_COUNT = 15
 
 UNIVERSITIES = [
     'Kings College London',
@@ -213,8 +218,8 @@ NOTE_SUBJECTS = [
     'Distributed Systems', 'Computer Architecture',
 ]
 
-SITE_DOMAIN = '127.0.0.1:8000'
-SITE_NAME = 'Timeout Local'
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN', '127.0.0.1:8000')
+SITE_NAME = os.environ.get('SITE_NAME', 'Timeout Local')
 
 MESSAGE_PAIRS = [
     ("Hey! Are you going to the study session tomorrow?", "Yeah, planning to! What time works for you?"),
@@ -323,7 +328,7 @@ def _days_offset(n, hour=9, minute=0, duration_h=1):
 
 class Command(BaseCommand):
     """Management command to seed the database with test data."""
-    help = 'Seed the database with site config, Google OAuth app, a superuser, and 25 random student users.'
+    help = 'Seed the database with site config, Google OAuth app, a superuser, a demo user, and 80 random student users.'
 
     def handle(self, *args, **options):
         """Main entry point for the command. Runs all setup and seeding steps in order."""
@@ -331,7 +336,8 @@ class Command(BaseCommand):
         self._setup_site()
         self._setup_google_social_app()
         self._create_superuser()
-        users = self._create_users(NUM_USERS)
+        demo_user = self._create_demo_user()
+        users = [demo_user] + self._create_users(NUM_USERS)
         self._create_follow_relationships(users)
         events = self._create_events(users)
         posts = self._create_posts(users, events)
@@ -421,6 +427,24 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'  Superuser @{SUPERUSER_USERNAME} created.'))
         except IntegrityError as e:
             self.stdout.write(self.style.ERROR(f'  Failed to create superuser: {e}'))
+
+    def _create_demo_user(self):
+        """Create the shared non-admin demo account published in the README."""
+        self.stdout.write(f'\n[3b] Creating demo user @{DEMO_USERNAME}...')
+        demo_user, created = User.objects.get_or_create(
+            username=DEMO_USERNAME,
+            defaults={
+                'email': DEMO_EMAIL, 'first_name': 'Demo', 'last_name': 'Student',
+                'university': 'Galatasaray University', 'year_of_study': 3,
+                'bio': 'Shared demo account. Feel free to explore!',
+                'academic_interests': 'Computer Science, Data Science',
+                'management_style': 'early_bird',
+            },
+        )
+        if created:
+            demo_user.set_password(DEMO_PASSWORD)
+            demo_user.save(update_fields=['password'])
+        return demo_user
 
     def _create_users(self, count):
         """Create regular user accounts with Faker data."""
@@ -586,17 +610,21 @@ class Command(BaseCommand):
 
     def _create_johndoe_schedule(self):
         """Create a realistic student schedule for johndoe."""
-        self.stdout.write('\n[11] Creating johndoe schedule...')
+        self.stdout.write('\n[11] Creating johndoe and demo schedules...')
         johndoe = User.objects.filter(username=SUPERUSER_USERNAME).first()
         if not johndoe:
             self.stdout.write(self.style.WARNING('  johndoe not found, skipping.'))
             return
+        self._create_schedule_for(johndoe)
+        self._create_schedule_for(User.objects.get(username=DEMO_USERNAME))
 
+    def _create_schedule_for(self, schedule_owner):
+        """Create the realistic student schedule for one account."""
         events = []
-        events.extend(self._johndoe_weekly_classes(johndoe))
-        events.extend(self._johndoe_exams(johndoe))
-        events.extend(self._johndoe_deadlines(johndoe))
-        events.extend(self._johndoe_study_meetings(johndoe))
+        events.extend(self._johndoe_weekly_classes(schedule_owner))
+        events.extend(self._johndoe_exams(schedule_owner))
+        events.extend(self._johndoe_deadlines(schedule_owner))
+        events.extend(self._johndoe_study_meetings(schedule_owner))
 
         created = 0
         total = len(events)
@@ -606,7 +634,7 @@ class Command(BaseCommand):
             Event.objects.create(**ev)
             created += 1
             self.stdout.write(f'  [{created}/{total}] Created schedule event: {ev["title"]}')
-        self.stdout.write(self.style.SUCCESS(f'  Created {created} events for @{SUPERUSER_USERNAME}.'))
+        self.stdout.write(self.style.SUCCESS(f'  Created {created} events for @{schedule_owner.username}.'))
 
     def _johndoe_weekly_classes(self, johndoe):
         """Generate 8 weeks of recurring class events."""
@@ -816,13 +844,19 @@ class Command(BaseCommand):
         if not johndoe:
             self.stdout.write(self.style.WARNING('  johndoe not found, skipping.'))
             return
-        other_users = list(User.objects.exclude(username=SUPERUSER_USERNAME))
-        targets = random.sample(other_users, min(50, len(other_users)))
+        other_users = list(User.objects.exclude(username__in=[SUPERUSER_USERNAME, DEMO_USERNAME]))
+        self._create_conversations_for(johndoe, other_users, 50)
+        demo_user = User.objects.get(username=DEMO_USERNAME)
+        self._create_conversations_for(demo_user, other_users, DEMO_CONVERSATION_COUNT)
+
+    def _create_conversations_for(self, conversation_owner, other_users, conversation_count):
+        """Create conversations between one account and a random sample of users."""
+        targets = random.sample(other_users, min(conversation_count, len(other_users)))
         conv_count, msg_count = 0, 0
         total = len(targets)
         for i, other in enumerate(targets):
             conv_count += 1
-            msgs = self._create_conversation(johndoe, other, i)
+            msgs = self._create_conversation(conversation_owner, other, i)
             msg_count += msgs
             self.stdout.write(f'  [{conv_count}/{total}] Conversation with @{other.username} ({msgs} messages)')
         self.stdout.write(self.style.SUCCESS(f'  Created {conv_count} conversations, {msg_count} messages.'))

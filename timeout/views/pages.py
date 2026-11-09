@@ -12,6 +12,7 @@ from timeout.services import FeedService, DeadlineService, EventService
 from timeout.views.statistics import get_focus_stats, build_context
 from timeout.views.profile import get_profile_event
 from timeout.services.ai_service import AIService
+from timeout.utils import AI_DISABLED_MESSAGE, ai_features_enabled
 
 
 def banned(request):
@@ -50,6 +51,8 @@ def _dashboard_social(user):
     return {
         'social_posts': FeedService.get_following_feed(user)[:4],
         'ai_briefing': AIService.get_dashboard_briefing(user),
+        'ai_enabled': ai_features_enabled(),
+        'ai_disabled_message': AI_DISABLED_MESSAGE,
     }
 
 

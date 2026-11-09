@@ -11,11 +11,15 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
 from timeout.forms import AppearanceForm
+from timeout.utils import is_demo_account
 
 
 def _handle_settings_post(request, user):
     """Process POST actions on the settings page. Returns a redirect or updated password_form."""
     action = request.POST.get('action', '')
+    if action in ('password', 'delete_account') and is_demo_account(user):
+        messages.error(request, 'This action is disabled on the shared demo account.')
+        return redirect('settings')
     if action == 'password':
         password_form = PasswordChangeForm(user, request.POST)
         if password_form.is_valid():

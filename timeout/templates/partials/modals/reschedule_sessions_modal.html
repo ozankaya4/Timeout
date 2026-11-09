@@ -9,6 +9,7 @@
       <div class="modal-body">
 
         <div id="rs-step-1">
+          {% if not ai_enabled %}<div class="alert alert-info">{{ ai_disabled_message }}</div>{% endif %}
           <p class="text-muted small mb-0">
             AI will look at all your upcoming study sessions and redistribute them into a balanced schedule —
             spread evenly, timed before your deadlines, and away from your other events.
@@ -42,7 +43,7 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-nep text-white" id="rs-suggest-btn" onclick="fetchRescheduleSuggestions()">Reschedule with AI</button>
+        <button type="button" class="btn {% if ai_enabled %}btn-nep text-white{% else %}btn-secondary{% endif %}" id="rs-suggest-btn" onclick="fetchRescheduleSuggestions()" {% if not ai_enabled %}disabled{% endif %}>Reschedule with AI</button>
         <button type="button" class="btn btn-light d-none" id="rs-back-btn" onclick="rsShowStep1()">Back</button>
         <button type="button" class="btn btn-nep text-white d-none" id="rs-apply-btn" onclick="applyReschedule()">Apply Changes</button>
       </div>

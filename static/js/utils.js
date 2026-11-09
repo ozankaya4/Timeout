@@ -37,6 +37,17 @@ function getJSON(url) {
 }
 
 /**
+ * Escape text so it can be placed safely inside an HTML template string.
+ * @param {string} text - Untrusted text, such as a user-editable name.
+ * @returns {string} The text with HTML special characters escaped.
+ */
+function escapeHtml(text) {
+    const container = document.createElement('div');
+    container.textContent = text;
+    return container.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/**
  * Generate avatar HTML for a user — image if available, initial badge otherwise.
  * @param {string} pic - Profile picture URL (may be empty).
  * @param {string} username - Username for initial fallback.

@@ -5,11 +5,11 @@ The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
+from django.views.static import serve
 
 from allauth.socialaccount.views import SignupView
 from timeout.sitemaps import StaticViewSitemap
@@ -30,8 +30,7 @@ urlpatterns = [
     ),
     path('accounts/', include('allauth.urls')),
     path('', include('timeout.urls')),
+    # Uploaded profile pictures. Django serves these directly so the reverse proxy
+    # does not need access to the app's data volume; traffic here is demo-sized.
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
-
-# Serve media files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

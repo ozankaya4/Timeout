@@ -249,10 +249,11 @@ class AICalendarTests(TestCase):
 
     @patch('timeout.views.ai_calendar.settings')
     def test_no_api_key(self, mock_settings):
-        """Test that if no OpenAI API key is set, the view returns a 500 status code."""
+        """Test that if no OpenAI API key is set, the view explains that AI is disabled."""
         mock_settings.OPENAI_API_KEY = ''
         resp = self.client.post(reverse('ai_event_create'), {'user_input': 'meeting tomorrow'})
-        self.assertEqual(resp.status_code, 500)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(json.loads(resp.content)['ai_disabled'])
 
     @patch('timeout.views.ai_calendar.settings')
     def test_ai_json_error(self, mock_settings):

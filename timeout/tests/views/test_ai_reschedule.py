@@ -206,12 +206,13 @@ class AiSuggestRescheduleTests(TestCase):
         self.assertIn('No event ID provided', response.json()['error'])
 
     @override_settings(OPENAI_API_KEY='')
-    def test_no_api_key_returns_500(self):
-        """Missing OpenAI API key returns 500 with a descriptive error."""
+    def test_no_api_key_returns_disabled_message(self):
+        """Missing OpenAI API key returns a clear message rather than a server error."""
         self.client.login(username='testuser', password='pass1234')
         response = self.client.post(self.url, {'event_id': self.session.pk})
-        self.assertEqual(response.status_code, 500)
-        self.assertIn('OpenAI API key not configured', response.json()['error'])
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['success'])
+        self.assertIn('AI features are disabled', response.json()['error'])
 
     def test_nonexistent_event_returns_404(self):
         """Requesting a reschedule for a non-existent event ID returns 404."""

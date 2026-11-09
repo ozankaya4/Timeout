@@ -16,9 +16,11 @@ function _appendMessage(container, msg) {
     row.dataset.messageId = msg.id;
     row.innerHTML = `
         <div class="msg-bubble">
-            <div class="msg-text">${msg.content}</div>
-            <div class="msg-time">${msg.created_at}</div>
+            <div class="msg-text"></div>
+            <div class="msg-time"></div>
         </div>`;
+    row.querySelector('.msg-text').textContent = msg.content;
+    row.querySelector('.msg-time').textContent = msg.created_at;
     container.appendChild(row);
     container.scrollTop = container.scrollHeight;
 }

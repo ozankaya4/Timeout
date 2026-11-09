@@ -9,6 +9,8 @@ from django.shortcuts import resolve_url
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
+from timeout.utils import is_demo_account
+
 User = get_user_model()
 
 
@@ -18,6 +20,12 @@ class TimeoutAccountAdapter(DefaultAccountAdapter):
     Redirects users to the profile-completion page after signup
     so they can choose a username and fill in university details.
     """
+
+    def set_password(self, user, password):
+        """Keep allauth's password routes from locking visitors out of the shared demo login."""
+        if is_demo_account(user):
+            return
+        super().set_password(user, password)
 
     def get_signup_redirect_url(self, request):
         """After email/password signup, redirect to the "Complete Profile" page."""

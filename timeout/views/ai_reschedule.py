@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 
 from timeout.models import Event
 from timeout.services import DeadlineService
+from timeout.utils import ai_disabled_response
 
 
 
@@ -129,6 +130,8 @@ def _suggestion_response(event, data):
 @require_POST
 def reschedule_study_sessions(request):
     """Ask AI to redistribute all upcoming study sessions into a balanced schedule."""
+    if not settings.OPENAI_API_KEY:
+        return ai_disabled_response()
     now = timezone.now()
     lookahead = now + timedelta(days=21)
     sessions, deadlines, fixed_events = _query_reschedule_events(request.user, now, lookahead)
@@ -162,7 +165,7 @@ def ai_suggest_reschedule(request):
     if not event_id:
         return JsonResponse({'success': False, 'error': 'No event ID provided.'}, status=400)
     if not settings.OPENAI_API_KEY:
-        return JsonResponse({'success': False, 'error': 'OpenAI API key not configured.'}, status=500)
+        return ai_disabled_response()
     try:
         event = Event.objects.get(pk=event_id, creator=request.user)
     except Event.DoesNotExist:

@@ -2,7 +2,27 @@
 Utility functions for Timeout views and services.
 """
 from datetime import datetime, date
+from django.conf import settings
+from django.http import JsonResponse
 from django.utils import timezone
+
+AI_DISABLED_MESSAGE = 'AI features are disabled on this demo deployment.'
+DEMO_USERNAME = 'demo'
+
+
+def ai_features_enabled():
+    """Return True if an OpenAI API key is configured."""
+    return bool(getattr(settings, 'OPENAI_API_KEY', ''))
+
+
+def ai_disabled_response():
+    """Return the JSON response AI endpoints send when no API key is configured."""
+    return JsonResponse({'success': False, 'ai_disabled': True, 'error': AI_DISABLED_MESSAGE})
+
+
+def is_demo_account(user):
+    """Return True for the shared demo login, whose credentials are public."""
+    return user.username == DEMO_USERNAME
 
 
 def parse_aware_dt(dt_str):

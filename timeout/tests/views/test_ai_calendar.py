@@ -80,12 +80,13 @@ class AiCreateEventTests(TestCase):
         self.assertFalse(response.json()['success'])
 
     @override_settings(OPENAI_API_KEY='')
-    def test_no_api_key_returns_500(self):
-        """Missing OpenAI API key returns 500 with a descriptive error."""
+    def test_no_api_key_returns_disabled_message(self):
+        """Missing OpenAI API key returns a clear message rather than a server error."""
         self.client.login(username='testuser', password='pass1234')
         response = self.client.post(self.url, {'user_input': 'meeting tomorrow'})
-        self.assertEqual(response.status_code, 500)
-        self.assertIn('OpenAI API key not configured', response.json()['error'])
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['success'])
+        self.assertIn('AI features are disabled', response.json()['error'])
 
     @patch('openai.OpenAI', new_callable=lambda: lambda: make_mock_openai(VALID_AI_RESPONSE))
     def test_successful_event_creation(self, _):

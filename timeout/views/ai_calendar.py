@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from timeout.models import Event
-from timeout.utils import parse_aware_dt
+from timeout.utils import ai_disabled_response, parse_aware_dt
 from timeout.services import EventService
 
 
@@ -124,7 +124,7 @@ def ai_create_event(request):
         return JsonResponse({'success': False, 'error': 'No input provided.'}, status=400)
 
     if not settings.OPENAI_API_KEY:
-        return JsonResponse({'success': False, 'error': 'OpenAI API key not configured.'}, status=500)
+        return ai_disabled_response()
 
     system_prompt = _build_system_prompt(request.user, timezone.now())
 

@@ -4,7 +4,16 @@
 
 Timeout is a web app designed to help university students stay organised, focused, and connected. It combines a Pomodoro focus timer, smart note-taking, calendar and deadline management, a social community, gamification, and productivity analytics into one platform.
 
-**Deployed at:** https://kcltimeout.com
+**Live demo:** https://timeout.ozankaya.net
+
+Log in with the shared demo account:
+
+| Field    | Value       |
+|----------|-------------|
+| Username | `demo`      |
+| Password | `Demo@1234` |
+
+The demo account is shared, so other visitors can see what you add. Its password, username and deletion are locked. AI features are disabled on this deployment.
 
 ---
 
@@ -22,7 +31,7 @@ Timeout is a web app designed to help university students stay organised, focuse
 
 ## Access Credentials
 
-The following credentials are created automatically when running `nix run .#init`.
+The following credentials are created automatically when running `nix run .#init`. The live demo uses a different, private admin password.
 
 ### Admin / Superuser
 | Field    | Value                  |
@@ -32,6 +41,9 @@ The following credentials are created automatically when running `nix run .#init
 | Email    | `john.doe@email.com`   |
 
 The admin account has full access to the Django admin panel and all moderation features within the application. We don't want to disclose admin password here, you can run "nix run .#init" to see the admin credentials.
+
+### Demo Account
+A non-admin `demo` account (password `Demo@1234`) is seeded with the same schedule as the admin account.
 
 ### Regular Demo Users
 80 additional student accounts are seeded with randomised data. All seeded users share the password below. Their usernames can be found via the admin panel or the user search on the social page.
@@ -83,6 +95,16 @@ Copy `.env.example` to `.env`. All keys are optional, the app runs fully without
 | `SENDGRID_FROM_EMAIL`  | No       | Sender address for outbound emails |
 | `GOOGLE_CLIENT_ID`     | No       | Google OAuth social login |
 | `GOOGLE_CLIENT_SECRET` | No       | Google OAuth social login |
+
+---
+
+## Deployment
+
+The live demo runs on a VM with Docker Compose behind host nginx, using SQLite and uploaded media on a named volume. The container is published only on `127.0.0.1:18280`.
+
+- **Image:** `Dockerfile` runs gunicorn through `docker-entrypoint.sh`, which applies migrations and seeds demo data only when the database is empty.
+- **Configuration:** copy `.env.production.example` to `.env.production` on the server. Setting `DJANGO_DEBUG=false` (done by the image) makes `SECRET_KEY` and `ALLOWED_HOSTS` required.
+- **CI/CD:** `.github/workflows/deploy.yml` runs the tests on every push and deploys `main` over SSH. It needs the `VM_HOST`, `VM_USER`, `VM_SSH_KEY` and `VM_SSH_FINGERPRINT` repository secrets.
 
 ---
 
