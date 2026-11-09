@@ -158,12 +158,13 @@ Other external dependencies are Bootstrap, Bootstrap Icons, Chart.js and Quill f
 - **[init_site.py](timeout/management/commands/init_site.py)** and **[check_site.py](timeout/management/commands/check_site.py)** set up and diagnose the `Site` and `SocialApp` records.
 - **[check_notifications.py](timeout/management/commands/check_notifications.py)** generates alerts for all users. It's built for cron, though the app also generates them when users poll.
 - **[bootstrap_demo.py](timeout/management/commands/bootstrap_demo.py)** runs `seed` once, in one transaction, only when the database has no users. The container entrypoint calls it on every start.
+- **[reseed_demo.py](timeout/management/commands/reseed_demo.py)** replaces demo data on a deployed site. It refuses to run if accounts exist that seeding didn't create, backs up the database, then runs `unseed` and `seed` in one transaction.
 
 Things to know:
 
 - **`seed` is not idempotent.** Each direct run adds another 80 users and the rest of the data, and deletes and recreates `Site` records.
 - **Environment overrides:** `SITE_DOMAIN`, `SITE_NAME` and `SEED_SUPERUSER_PASSWORD` replace the local defaults. The default superuser password is public, so any public deployment must set its own.
-- **Dates are relative to seed time,** so demo data goes stale after a few weeks.
+- **Dates are relative to seed time.** Each showcase account gets last week's completed classes, two completed deadlines, one overdue deadline and a mostly upcoming schedule. Nothing marks events done as time passes, so past classes and deadlines start showing as overdue within days of seeding.
 - **The flake only targets `x86_64-linux`,** so `nix run` won't work on a Mac or an ARM server.
 
 ---

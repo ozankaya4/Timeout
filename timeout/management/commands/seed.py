@@ -42,6 +42,12 @@ DEMO_PASSWORD = 'Demo@1234'
 DEMO_EMAIL = 'demo@timeout.example'
 DEMO_CONVERSATION_COUNT = 15
 
+# All event dates are relative to the seeding date, and past events are marked complete
+# so they don't appear as overdue. Only OVERDUE_DEADLINES are left incomplete.
+PAST_EVENT_SHARE = 0.1
+RECENTLY_COMPLETED_DEADLINES = [('Database Lab Report', -3), ('ML Quiz 1', -6)]
+OVERDUE_DEADLINES = [('Algorithms Problem Set 2', -2)]
+
 UNIVERSITIES = [
     'Kings College London',
     'Imperial College London',
@@ -320,6 +326,16 @@ JOHNDOE_STUDY_MEETINGS = [
 ]
 
 
+def _random_event_window(now):
+    """Return (start, end) for a random event: usually upcoming, sometimes in the recent past."""
+    if random.random() < PAST_EVENT_SHARE:
+        day_offset = random.randint(-14, -2)
+    else:
+        day_offset = random.randint(1, 60)
+    start = now + timedelta(days=day_offset, hours=random.randint(8, 20))
+    return start, start + timedelta(hours=random.randint(1, 3))
+
+
 def _days_offset(n, hour=9, minute=0, duration_h=1):
     """Return (start, end) datetimes offset by n days from now."""
     start = timezone.now().replace(hour=hour, minute=minute, second=0, microsecond=0) + timedelta(days=n)
@@ -504,15 +520,19 @@ class Command(BaseCommand):
         """Create calendar events."""
         self.stdout.write(f'\n[6] Creating {NUM_EVENTS} events...')
         events, event_types = [], ['deadline', 'exam', 'class', 'meeting', 'study_session']
+        now = timezone.now()
         for i in range(NUM_EVENTS):
             creator = random.choice(users)
-            start = timezone.now() + timedelta(days=random.randint(-60, 60), hours=random.randint(8, 20))
+            start, end = _random_event_window(now)
+            is_finished = end <= now
             event = Event.objects.create(
                 creator=creator, title=fake.sentence(nb_words=4).rstrip('.'),
                 description=fake.paragraph(), event_type=random.choice(event_types),
-                start_datetime=start, end_datetime=start + timedelta(hours=random.randint(1, 3)),
+                start_datetime=start, end_datetime=end,
                 location=fake.city() if random.random() < 0.5 else '',
                 is_all_day=random.random() < 0.2,
+                status='completed' if is_finished else 'upcoming',
+                is_completed=is_finished,
             )
             events.append(event)
             self.stdout.write(f'  [{i + 1}/{NUM_EVENTS}] Created event: {event.title}')
@@ -637,24 +657,27 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  Created {created} events for @{schedule_owner.username}.'))
 
     def _johndoe_weekly_classes(self, johndoe):
-        """Generate 8 weeks of recurring class events."""
+        """Generate last week's completed classes and the next 8 weeks of class events."""
         classes = [
             ('Software Engineering Group Project', 0, 'Bush House, KCL', 10, 0, 2),
             ('Database Systems', 1, 'Waterloo Campus', 9, 0, 1),
             ('Algorithms & Complexity', 2, 'Strand Building, KCL', 14, 0, 1),
             ('Machine Learning', 3, 'Bush House, KCL', 13, 0, 2),
         ]
-        events, today_wd = [], timezone.now().weekday()
+        now = timezone.now()
+        events, today_wd = [], now.weekday()
         for title, weekday, loc, hour, minute, dur in classes:
             days_to_next = (weekday - today_wd) % 7
-            for week in range(-8, 9):
+            for week in range(-1, 9):
                 offset = days_to_next + week * 7
                 start, end = _days_offset(offset, hour, minute, dur)
+                is_finished = end <= now
                 events.append(dict(
                     creator=johndoe, title=title, event_type='class',
                     start_datetime=start, end_datetime=end,
                     location=loc, visibility='private',
-                    status='completed' if offset < 0 else 'upcoming',
+                    status='completed' if is_finished else 'upcoming',
+                    is_completed=is_finished,
                 ))
         return events
 
@@ -692,15 +715,20 @@ class Command(BaseCommand):
             ('Algorithms Final Submission', 105),
             ('SEG Peer Review', 115),
         ]
-        events = []
-        for title, day in deadlines:
-            start, _ = _days_offset(day, 23, 59, 0)
-            events.append(dict(
-                creator=johndoe, title=title, event_type='deadline',
-                start_datetime=start, end_datetime=start + timedelta(minutes=1),
-                location='', visibility='private', status='upcoming',
-            ))
+        events = [self._deadline_event(johndoe, title, day, 'upcoming') for title, day in deadlines]
+        events += [self._deadline_event(johndoe, title, day, 'completed') for title, day in RECENTLY_COMPLETED_DEADLINES]
+        events += [self._deadline_event(johndoe, title, day, 'upcoming') for title, day in OVERDUE_DEADLINES]
         return events
+
+    def _deadline_event(self, johndoe, title, day, status):
+        """Build a single deadline event dict due at 23:59 on the given day offset."""
+        start, _ = _days_offset(day, 23, 59, 0)
+        return dict(
+            creator=johndoe, title=title, event_type='deadline',
+            start_datetime=start, end_datetime=start + timedelta(minutes=1),
+            location='', visibility='private', status=status,
+            is_completed=status == 'completed',
+        )
 
     def _johndoe_study_meetings(self, johndoe):
         """Generate study sessions and meetings for johndoe."""
@@ -797,7 +825,7 @@ class Command(BaseCommand):
     def _random_due_date(self, category, now):
         """Return a due date or None based on category."""
         if category in ('todo', 'study_plan') and random.random() < 0.6:
-            return now + timedelta(days=random.randint(-3, 14), hours=random.randint(8, 23))
+            return now + timedelta(days=random.randint(1, 14), hours=random.randint(8, 23))
         if random.random() < 0.15:
             return now + timedelta(days=random.randint(1, 30))
         return None
